@@ -1,1 +1,2 @@
+cd /vagrant
 cabal update
