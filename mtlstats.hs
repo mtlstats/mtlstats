@@ -2,6 +2,7 @@
 
 mtlstats
 Copyright (C) 1985, 1996, 2017 Rhéal Lamothe
+<rheal.lamothe@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
