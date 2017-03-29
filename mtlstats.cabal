@@ -19,3 +19,10 @@ executable mtlstats
   main-is:           mtlstats.hs
   -- other-modules:       
   build-depends:     base ==4.*
+
+Test-Suite test-mtlstats
+  type:              exitcode-stdio-1.0
+  main-is:           tests.hs
+  build-depends:
+    base ==4.*,
+    HUnit
