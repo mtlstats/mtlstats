@@ -1,4 +1,6 @@
 import Test.Hspec (hspec)
 
+import qualified TypesSpec as Types
+
 main :: IO ()
-main = hspec $ return ()
+main = hspec Types.spec

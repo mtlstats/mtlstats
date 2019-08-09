@@ -21,6 +21,8 @@ description:         Please see the README on GitHub at <https://github.com/jlam
 
 dependencies:
 - base >= 4.7 && < 5
+- microlens-th >= 0.4.2.3 && < 0.5
+- microlens
 
 library:
   source-dirs: src
