@@ -21,6 +21,11 @@ description:         Please see the README on GitHub at <https://github.com/jlam
 
 dependencies:
 - base >= 4.7 && < 5
+- aeson >= 1.4.4.0 && < 1.5
+- microlens-th >= 0.4.2.3 && < 0.5
+- raw-strings-qq >= 1.1 && < 1.2
+- bytestring
+- microlens
 
 library:
   source-dirs: src
