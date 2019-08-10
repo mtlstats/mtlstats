@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
 
 module Mtlstats.Types (
   -- * Types
@@ -22,6 +22,18 @@ module Mtlstats.Types (
   pPoints
 ) where
 
+import Data.Aeson
+  ( FromJSON
+  , ToJSON
+  , object
+  , pairs
+  , parseJSON
+  , toEncoding
+  , toJSON
+  , withObject
+  , (.:)
+  , (.=)
+  )
 import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
 
@@ -39,6 +51,29 @@ data Player = Player
   -- ^ The player's lifetime stats
   } deriving (Eq, Show)
 
+instance FromJSON Player where
+  parseJSON = withObject "Player" $ \v -> Player
+    <$> v .: "number"
+    <*> v .: "name"
+    <*> v .: "position"
+    <*> v .: "ytd"
+    <*> v .: "lifetime"
+
+instance ToJSON Player where
+  toJSON (Player num name pos ytd lt) = object
+    [ "number"   .= num
+    , "name"     .= name
+    , "position" .= pos
+    , "ytd"      .= ytd
+    , "lifetime" .= lt
+    ]
+  toEncoding (Player num name pos ytd lt) = pairs $
+    "number"   .= num  <>
+    "name"     .= name <>
+    "position" .= pos  <>
+    "ytd"      .= ytd  <>
+    "lifetime" .= lt
+
 -- | Represents a (non-goalie) player's stats
 data PlayerStats = PlayerStats
   { _psGoals   :: Int
@@ -48,6 +83,23 @@ data PlayerStats = PlayerStats
   , _psPMin    :: Int
   -- ^ The number of penalty minutes
   } deriving (Eq, Show)
+
+instance FromJSON PlayerStats where
+  parseJSON = withObject "PlayerStats" $ \v -> PlayerStats
+    <$> v .: "goals"
+    <*> v .: "assists"
+    <*> v .: "penalty_mins"
+
+instance ToJSON PlayerStats where
+  toJSON (PlayerStats g a pm) = object
+    [ "goals"        .= g
+    , "assists"      .= a
+    , "penalty_mins" .= pm
+    ]
+  toEncoding (PlayerStats g a pm) = pairs $
+    "goals"        .= g  <>
+    "assists"      .= a  <>
+    "penalty_mins" .= pm
 
 makeLenses ''Player
 makeLenses ''PlayerStats
