@@ -4,6 +4,8 @@ module Mtlstats.Types (
   -- * Types
   Player (..),
   PlayerStats (..),
+  Goalie (..),
+  GoalieStats (..),
   -- * Lenses
   -- ** Player Lenses
   pNumber,
@@ -15,9 +17,24 @@ module Mtlstats.Types (
   psGoals,
   psAssists,
   psPMin,
+  -- ** Goalie Lenses
+  gNumber,
+  gName,
+  gYtd,
+  gLifetime,
+  -- ** GoalieStats Lenses
+  gsGames,
+  gsMinsPlayed,
+  gsGoalsAllowed,
+  gsGoalsAgainst,
+  gsWins,
+  gsLosses,
+  gsTies,
   -- * Constructors
   newPlayer,
   newPlayerStats,
+  newGoalie,
+  newGoalieStats,
   -- * Helper functions
   pPoints
 ) where
@@ -101,8 +118,89 @@ instance ToJSON PlayerStats where
     "assists"      .= a  <>
     "penalty_mins" .= pm
 
+-- | Represents a goalie
+data Goalie = Goalie
+  { _gNumber   :: Int
+  -- ^ The goalie's number
+  , _gName     :: String
+  -- ^ The goalie's name
+  , _gYtd      :: GoalieStats
+  -- ^ The goalie's year-to-date stats
+  , _gLifetime :: GoalieStats
+  -- ^ The goalie's lifetime stats
+  } deriving (Eq, Show)
+
+instance FromJSON Goalie where
+  parseJSON = withObject "Goalie" $ \v -> Goalie
+    <$> v .: "number"
+    <*> v .: "name"
+    <*> v .: "ytd"
+    <*> v .: "lifetime"
+
+instance ToJSON Goalie where
+  toJSON (Goalie num name ytd lt) = object
+    [ "number"   .= num
+    , "name"     .= name
+    , "ytd"      .= ytd
+    , "lifetime" .= lt
+    ]
+  toEncoding (Goalie num name ytd lt) = pairs $
+    "number"   .= num  <>
+    "name"     .= name <>
+    "ytd"      .= ytd  <>
+    "lifetime" .= lt
+
+-- | Represents a goalie's stats
+data GoalieStats = GoalieStats
+  { _gsGames        :: Int
+  -- ^ The number of games played
+  , _gsMinsPlayed   :: Int
+  -- ^ The number of minutes played
+  , _gsGoalsAllowed :: Int
+  -- ^ The number of goals allowed
+  , _gsGoalsAgainst :: Int
+  -- ^ The number of goals against
+  , _gsWins         :: Int
+  -- ^ The number of wins
+  , _gsLosses       :: Int
+  -- ^ The number of losses
+  , _gsTies         :: Int
+  -- ^ The number of ties
+  } deriving (Eq, Show)
+
+instance FromJSON GoalieStats where
+  parseJSON = withObject "GoalieStats" $ \v -> GoalieStats
+    <$> v .: "games"
+    <*> v .: "mins_played"
+    <*> v .: "goals_allowed"
+    <*> v .: "goals_against"
+    <*> v .: "wins"
+    <*> v .: "losses"
+    <*> v .: "ties"
+
+instance ToJSON GoalieStats where
+  toJSON (GoalieStats g m al ag w l t) = object
+    [ "games"         .= g
+    , "mins_played"   .= m
+    , "goals_allowed" .= al
+    , "goals_against" .= ag
+    , "wins"          .= w
+    , "losses"        .= l
+    , "ties"          .= t
+    ]
+  toEncoding (GoalieStats g m al ag w l t) = pairs $
+      "games"         .= g  <>
+      "mins_played"   .= m  <>
+      "goals_allowed" .= al <>
+      "goals_against" .= ag <>
+      "wins"          .= w  <>
+      "losses"        .= l  <>
+      "ties"          .= t
+
 makeLenses ''Player
 makeLenses ''PlayerStats
+makeLenses ''Goalie
+makeLenses ''GoalieStats
 
 -- | Constructor for a 'Player'
 newPlayer
@@ -127,6 +225,32 @@ newPlayerStats = PlayerStats
   { _psGoals   = 0
   , _psAssists = 0
   , _psPMin    = 0
+  }
+
+-- | Constructor for a 'Goalie'
+newGoalie
+  :: Int
+  -- ^ The goalie's number
+  -> String
+  -- ^ The goalie's name
+  -> Goalie
+newGoalie num name = Goalie
+  { _gNumber   = num
+  , _gName     = name
+  , _gYtd      = newGoalieStats
+  , _gLifetime = newGoalieStats
+  }
+
+-- | Constructor for a 'GoalieStats' value
+newGoalieStats :: GoalieStats
+newGoalieStats = GoalieStats
+  { _gsGames        = 0
+  , _gsMinsPlayed   = 0
+  , _gsGoalsAllowed = 0
+  , _gsGoalsAgainst = 0
+  , _gsWins         = 0
+  , _gsLosses       = 0
+  , _gsTies         = 0
   }
 
 -- | Calculates a player's points

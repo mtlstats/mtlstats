@@ -13,6 +13,7 @@ spec :: Spec
 spec = describe "Mtlstats.Types" $ do
   pPointsSpec
   playerSpec
+  goalieSpec
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_
@@ -43,6 +44,17 @@ playerSpec = describe "Player" $ do
     it "should encode" $
       decode (encode player) `shouldBe` Just player
 
+goalieSpec :: Spec
+goalieSpec = describe "Goalie" $ do
+
+  describe "decode" $
+    it "should decode" $
+      decode goalieJSON `shouldBe` Just goalie
+
+  describe "encode" $
+    it "should encode" $
+      decode (encode goalie) `shouldBe` Just goalie
+
 player :: Player
 player = newPlayer 1 "Joe" "centre"
   & pYtd . psGoals        .~ 2
@@ -51,6 +63,23 @@ player = newPlayer 1 "Joe" "centre"
   & pLifetime . psGoals   .~ 5
   & pLifetime . psAssists .~ 6
   & pLifetime . psPMin    .~ 7
+
+goalie :: Goalie
+goalie = newGoalie 1 "Joe"
+  & gYtd . gsGames             .~ 2
+  & gYtd . gsMinsPlayed        .~ 3
+  & gYtd . gsGoalsAllowed      .~ 4
+  & gYtd . gsGoalsAgainst      .~ 5
+  & gYtd . gsWins              .~ 6
+  & gYtd . gsLosses            .~ 7
+  & gYtd . gsTies              .~ 8
+  & gLifetime . gsGames        .~ 9
+  & gLifetime . gsMinsPlayed   .~ 10
+  & gLifetime . gsGoalsAllowed .~ 11
+  & gLifetime . gsGoalsAgainst .~ 12
+  & gLifetime . gsWins         .~ 13
+  & gLifetime . gsLosses       .~ 14
+  & gLifetime . gsTies         .~ 15
 
 playerJSON :: ByteString
 playerJSON = [r|
@@ -66,5 +95,29 @@ playerJSON = [r|
     { "goals": 5
     , "assists": 6
     , "penalty_mins": 7
+    }
+  }|]
+
+goalieJSON :: ByteString
+goalieJSON = [r|
+  { "number": 1
+  , "name": "Joe"
+  , "ytd":
+    { "games": 2
+    , "mins_played": 3
+    , "goals_allowed": 4
+    , "goals_against": 5
+    , "wins": 6
+    , "losses": 7
+    , "ties": 8
+    }
+  , "lifetime":
+    { "games": 9
+    , "mins_played": 10
+    , "goals_allowed": 11
+    , "goals_against": 12
+    , "wins": 13
+    , "losses": 14
+    , "ties": 15
     }
   }|]
