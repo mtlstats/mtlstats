@@ -2,6 +2,7 @@
 
 module Mtlstats.Types (
   -- * Types
+  ProgState (..),
   Player (..),
   PlayerStats (..),
   Goalie (..),
@@ -53,6 +54,9 @@ import Data.Aeson
   )
 import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
+
+-- | Represents the program state
+data ProgState = ProgState
 
 -- | Represents a (non-goalie) player
 data Player = Player

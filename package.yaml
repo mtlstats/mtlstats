@@ -23,7 +23,9 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson >= 1.4.4.0 && < 1.5
 - microlens-th >= 0.4.2.3 && < 0.5
+- ncurses >= 0.2.16 && < 0.3
 - raw-strings-qq >= 1.1 && < 1.2
+- transformers >= 0.5.6.2 && < 0.6
 - bytestring
 - microlens
 
@@ -31,7 +33,7 @@ library:
   source-dirs: src
 
 executables:
-  mtlstats-exe:
+  mtlstats:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

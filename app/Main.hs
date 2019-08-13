@@ -1,6 +1,9 @@
 module Main where
 
-import Lib
+import Control.Monad.Trans.State (evalStateT)
+import UI.NCurses (runCurses)
+
+import Mtlstats
 
 main :: IO ()
-main = someFunc
+main = runCurses $ initState >>= evalStateT mainLoop
