@@ -14,6 +14,7 @@ spec = describe "Mtlstats.Types" $ do
   pPointsSpec
   playerSpec
   goalieSpec
+  databaseSpec
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_
@@ -55,6 +56,17 @@ goalieSpec = describe "Goalie" $ do
     it "should encode" $
       decode (encode goalie) `shouldBe` Just goalie
 
+databaseSpec :: Spec
+databaseSpec = describe "Database" $ do
+
+  describe "decode" $
+    it "should decode" $
+      decode dbJSON `shouldBe` Just db
+
+  describe "encode" $
+    it "should encode" $
+      decode (encode db) `shouldBe` Just db
+
 player :: Player
 player = newPlayer 1 "Joe" "centre"
   & pYtd . psGoals        .~ 2
@@ -80,6 +92,11 @@ goalie = newGoalie 1 "Joe"
   & gLifetime . gsWins         .~ 13
   & gLifetime . gsLosses       .~ 14
   & gLifetime . gsTies         .~ 15
+
+db :: Database
+db = newDatabase
+  & dbPlayers .~ [player]
+  & dbGoalies .~ [goalie]
 
 playerJSON :: ByteString
 playerJSON = [r|
@@ -120,4 +137,12 @@ goalieJSON = [r|
     , "losses": 14
     , "ties": 15
     }
+  }|]
+
+dbJSON :: ByteString
+dbJSON = [r|
+  { "players":
+    [ |] <> playerJSON <> [r| ]
+  , "goalies":
+    [ |] <> goalieJSON <> [r| ]
   }|]

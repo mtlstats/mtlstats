@@ -3,11 +3,15 @@
 module Mtlstats.Types (
   -- * Types
   ProgState (..),
+  Database (..),
   Player (..),
   PlayerStats (..),
   Goalie (..),
   GoalieStats (..),
   -- * Lenses
+  -- ** Database Lenses
+  dbPlayers,
+  dbGoalies,
   -- ** Player Lenses
   pNumber,
   pName,
@@ -32,6 +36,7 @@ module Mtlstats.Types (
   gsLosses,
   gsTies,
   -- * Constructors
+  newDatabase,
   newPlayer,
   newPlayerStats,
   newGoalie,
@@ -57,6 +62,28 @@ import Lens.Micro.TH (makeLenses)
 
 -- | Represents the program state
 data ProgState = ProgState
+
+-- | Represents the database
+data Database = Database
+  { _dbPlayers :: [Player]
+  -- ^ The list of players
+  , _dbGoalies :: [Goalie]
+  -- ^ The lidt of goalies
+  } deriving (Eq, Show)
+
+instance FromJSON Database where
+  parseJSON = withObject "Database" $ \v -> Database
+    <$> v .: "players"
+    <*> v .: "goalies"
+
+instance ToJSON Database where
+  toJSON (Database ps gs) = object
+    [ "players" .= ps
+    , "goalies" .= gs
+    ]
+  toEncoding (Database ps gs) = pairs $
+    "players" .= ps <>
+    "goalies" .= gs
 
 -- | Represents a (non-goalie) player
 data Player = Player
@@ -201,10 +228,18 @@ instance ToJSON GoalieStats where
       "losses"        .= l  <>
       "ties"          .= t
 
+makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
+
+-- | Constructor for a 'Database'
+newDatabase :: Database
+newDatabase = Database
+  { _dbPlayers = []
+  , _dbGoalies = []
+  }
 
 -- | Constructor for a 'Player'
 newPlayer
