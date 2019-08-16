@@ -8,6 +8,7 @@ import Mtlstats.Types
 -- | Initializes the progran
 initState :: C.Curses ProgState
 initState = do
+  C.setEcho False
   w <- C.defaultWindow
   C.updateWindow w C.clear
   C.render
