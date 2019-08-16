@@ -10,6 +10,7 @@ initState :: C.Curses ProgState
 initState = do
   w <- C.defaultWindow
   C.updateWindow w C.clear
+  C.render
   return ProgState
 
 -- | Main program loop
