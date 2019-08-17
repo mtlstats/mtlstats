@@ -9,9 +9,6 @@ import Mtlstats.Types
 initState :: C.Curses ProgState
 initState = do
   C.setEcho False
-  w <- C.defaultWindow
-  C.updateWindow w C.clear
-  C.render
   return ProgState
 
 -- | Main program loop
