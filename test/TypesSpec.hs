@@ -97,6 +97,7 @@ db :: Database
 db = newDatabase
   & dbPlayers .~ [player]
   & dbGoalies .~ [goalie]
+  & dbGames   .~ 1
 
 playerJSON :: ByteString
 playerJSON = [r|
@@ -145,4 +146,5 @@ dbJSON = [r|
     [ |] <> playerJSON <> [r| ]
   , "goalies":
     [ |] <> goalieJSON <> [r| ]
+  , "games": 1
   }|]

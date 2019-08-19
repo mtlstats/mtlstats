@@ -12,6 +12,7 @@ module Mtlstats.Types (
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
+  dbGames,
   -- ** Player Lenses
   pNumber,
   pName,
@@ -69,21 +70,26 @@ data Database = Database
   -- ^ The list of players
   , _dbGoalies :: [Goalie]
   -- ^ The lidt of goalies
+  , _dbGames   :: Int
+  -- ^ The number of games recorded
   } deriving (Eq, Show)
 
 instance FromJSON Database where
   parseJSON = withObject "Database" $ \v -> Database
     <$> v .: "players"
     <*> v .: "goalies"
+    <*> v .: "games"
 
 instance ToJSON Database where
-  toJSON (Database ps gs) = object
-    [ "players" .= ps
-    , "goalies" .= gs
+  toJSON (Database players goalies games) = object
+    [ "players" .= players
+    , "goalies" .= goalies
+    , "games"   .= games
     ]
-  toEncoding (Database ps gs) = pairs $
-    "players" .= ps <>
-    "goalies" .= gs
+  toEncoding (Database players goalies games) = pairs $
+    "players" .= players <>
+    "goalies" .= goalies <>
+    "games"   .= games
 
 -- | Represents a (non-goalie) player
 data Player = Player
@@ -239,6 +245,7 @@ newDatabase :: Database
 newDatabase = Database
   { _dbPlayers = []
   , _dbGoalies = []
+  , _dbGames   = 0
   }
 
 -- | Constructor for a 'Player'
