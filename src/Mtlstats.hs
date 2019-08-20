@@ -28,9 +28,7 @@ import Mtlstats.Types
 
 -- | Initializes the progran
 initState :: C.Curses ProgState
-initState = do
-  C.setEcho False
-  return ProgState
+initState = return newProgState
 
 -- | Main program loop
 mainLoop :: StateT ProgState C.Curses ()

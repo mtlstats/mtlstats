@@ -30,6 +30,8 @@ module Mtlstats.Types (
   Goalie (..),
   GoalieStats (..),
   -- * Lenses
+  -- ** ProgState Lenses
+  database,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -58,6 +60,7 @@ module Mtlstats.Types (
   gsLosses,
   gsTies,
   -- * Constructors
+  newProgState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -83,7 +86,9 @@ import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
 
 -- | Represents the program state
-data ProgState = ProgState
+newtype ProgState = ProgState
+  { _database :: Database
+  } deriving (Eq, Show)
 
 -- | Represents the database
 data Database = Database
@@ -255,11 +260,18 @@ instance ToJSON GoalieStats where
       "losses"        .= l  <>
       "ties"          .= t
 
+makeLenses ''ProgState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
+
+-- | Constructor for a new 'ProgState'
+newProgState :: ProgState
+newProgState = ProgState
+  { _database = newDatabase
+  }
 
 -- | Constructor for a 'Database'
 newDatabase :: Database
