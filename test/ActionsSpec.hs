@@ -19,12 +19,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module ActionsSpec (spec) where
 
-import qualified ActionsSpec as Actions
-import qualified TypesSpec as Types
+import Test.Hspec (Spec, describe)
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
+spec :: Spec
+spec = describe "Mtlstats.Actions" $ do
+  startSeasonSpec
+  startGameSpec
+
+startSeasonSpec :: Spec
+startSeasonSpec = describe "startSeason" $ return ()
+
+startGameSpec :: Spec
+startGameSpec = describe "startGame" $ return ()
