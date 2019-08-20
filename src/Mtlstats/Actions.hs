@@ -21,11 +21,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Actions (startNewSeason, startNewGame) where
 
+import Lens.Micro ((.~))
+
 import Mtlstats.Types
 
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState
-startNewSeason = undefined
+startNewSeason = (progMode .~ NewSeason) . (database . dbGames .~ 0)
 
 -- | Starts a new game
 startNewGame :: ProgState -> ProgState

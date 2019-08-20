@@ -21,15 +21,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module ActionsSpec (spec) where
 
-import Test.Hspec (Spec, describe)
+import Lens.Micro ((&), (.~), (^.))
+import Test.Hspec (Spec, describe, it, shouldBe)
+
+import Mtlstats.Actions
+import Mtlstats.Types
 
 spec :: Spec
 spec = describe "Mtlstats.Actions" $ do
-  startSeasonSpec
-  startGameSpec
+  startNewSeasonSpec
+  startNewGameSpec
 
-startSeasonSpec :: Spec
-startSeasonSpec = describe "startSeason" $ return ()
+startNewSeasonSpec :: Spec
+startNewSeasonSpec = describe "startNewSeason" $ do
+  let
+    s = newProgState
+      & database . dbGames .~ 1
+      & startNewSeason
 
-startGameSpec :: Spec
-startGameSpec = describe "startGame" $ return ()
+  it "should set the progState to NewSeason" $
+    s ^. progMode `shouldBe` NewSeason
+
+  it "should set the number of games to 0" $
+    s ^. database . dbGames `shouldBe` 0
+
+startNewGameSpec :: Spec
+startNewGameSpec = describe "startGame" $ return ()
