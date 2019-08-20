@@ -45,4 +45,8 @@ mainMenu = C.drawString $ unlines
   ]
 
 newSeason :: C.Update ()
-newSeason = return ()
+newSeason = C.drawString $ unlines
+  [ "*** SEASON TYPE ***"
+  , "1) Regular Season"
+  , "2) Playoffs"
+  ]
