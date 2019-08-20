@@ -21,7 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Events (handleEvent) where
 
-import Control.Monad.Trans.State (StateT)
+import Control.Monad.Trans.State (StateT, gets, modify)
+import Lens.Micro ((.~))
+import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Types
@@ -31,4 +33,21 @@ handleEvent
   :: C.Event
   -- ^ The even being handled
   -> StateT ProgState C.Curses Bool
-handleEvent _ = return False
+handleEvent e = do
+  m <- gets $ view progMode
+  case m of
+    MainMenu  -> mainMenu e
+    NewSeason -> newSeason e >> return False
+
+mainMenu :: C.Event -> StateT ProgState C.Curses Bool
+mainMenu (C.EventCharacter c) = case c of
+  '1' -> startNewSeason >> return True
+  '2' -> return False
+  _   -> return True
+mainMenu _ = return True
+
+newSeason :: C.Event -> StateT ProgState C.Curses ()
+newSeason = undefined
+
+startNewSeason :: StateT ProgState C.Curses ()
+startNewSeason = modify $ progMode .~ NewSeason

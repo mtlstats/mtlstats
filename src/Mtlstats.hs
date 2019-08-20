@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats (initState, mainLoop) where
 
+import Control.Monad (void)
 import Control.Monad.Extra (whenM)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (StateT, get)
@@ -33,7 +34,10 @@ import Mtlstats.UI
 
 -- | Initializes the progran
 initState :: C.Curses ProgState
-initState = return newProgState
+initState = do
+  C.setEcho False
+  void $ C.setCursorMode C.CursorInvisible
+  return newProgState
 
 -- | Main program loop
 mainLoop :: StateT ProgState C.Curses ()

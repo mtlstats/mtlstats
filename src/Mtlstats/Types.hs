@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Types (
   -- * Types
   ProgState (..),
+  ProgMode (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -32,6 +33,7 @@ module Mtlstats.Types (
   -- * Lenses
   -- ** ProgState Lenses
   database,
+  progMode,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -86,9 +88,13 @@ import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
 
 -- | Represents the program state
-newtype ProgState = ProgState
+data ProgState = ProgState
   { _database :: Database
+  , _progMode :: ProgMode
   } deriving (Eq, Show)
+
+-- | The program mode
+data ProgMode = MainMenu | NewSeason deriving (Eq, Show)
 
 -- | Represents the database
 data Database = Database
@@ -271,6 +277,7 @@ makeLenses ''GoalieStats
 newProgState :: ProgState
 newProgState = ProgState
   { _database = newDatabase
+  , _progMode = MainMenu
   }
 
 -- | Constructor for a 'Database'

@@ -21,10 +21,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.UI (draw) where
 
+import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
 import Mtlstats.Types
 
 -- | Drawing function
 draw :: ProgState -> C.Curses ()
-draw _ = return ()
+draw s = do
+  w <- C.defaultWindow
+  C.updateWindow w $ do
+    C.clear
+    case s ^. progMode of
+      MainMenu  -> mainMenu
+      NewSeason -> newSeason
+  C.render
+
+mainMenu :: C.Update ()
+mainMenu = C.drawString $ unlines
+  [ "*** MAIN MENU ***"
+  , "1) New Season"
+  , "2) Exit"
+  ]
+
+newSeason :: C.Update ()
+newSeason = return ()
