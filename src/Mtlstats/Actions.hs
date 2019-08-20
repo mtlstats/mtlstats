@@ -19,39 +19,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.UI (draw) where
-
-import Lens.Micro ((^.))
-import qualified UI.NCurses as C
+module Mtlstats.Actions (startNewSeason, startNewGame) where
 
 import Mtlstats.Types
 
--- | Drawing function
-draw :: ProgState -> C.Curses ()
-draw s = do
-  w <- C.defaultWindow
-  C.updateWindow w $ do
-    C.clear
-    case s ^. progMode of
-      MainMenu  -> mainMenu
-      NewSeason -> newSeason
-      NewGame   -> newGame
-  C.render
+startNewSeason :: ProgState -> ProgState
+startNewSeason = undefined
 
-mainMenu :: C.Update ()
-mainMenu = C.drawString $ unlines
-  [ "*** MAIN MENU ***"
-  , "1) New Season"
-  , "2) New Game"
-  , "3) Exit"
-  ]
-
-newSeason :: C.Update ()
-newSeason = C.drawString $ unlines
-  [ "*** SEASON TYPE ***"
-  , "1) Regular Season"
-  , "2) Playoffs"
-  ]
-
-newGame :: C.Update ()
-newGame = return ()
+startNewGame :: ProgState -> ProgState
+startNewGame = undefined

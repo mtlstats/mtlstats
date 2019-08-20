@@ -94,7 +94,11 @@ data ProgState = ProgState
   } deriving (Eq, Show)
 
 -- | The program mode
-data ProgMode = MainMenu | NewSeason deriving (Eq, Show)
+data ProgMode
+  = MainMenu
+  | NewSeason
+  | NewGame
+  deriving (Eq, Show)
 
 -- | Represents the database
 data Database = Database
