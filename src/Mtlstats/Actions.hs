@@ -23,8 +23,10 @@ module Mtlstats.Actions (startNewSeason, startNewGame) where
 
 import Mtlstats.Types
 
+-- | Starts a new season
 startNewSeason :: ProgState -> ProgState
 startNewSeason = undefined
 
+-- | Starts a new game
 startNewGame :: ProgState -> ProgState
 startNewGame = undefined
