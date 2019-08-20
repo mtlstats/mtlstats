@@ -19,7 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Actions (startNewSeason, startNewGame) where
+module Mtlstats.Actions
+  ( startNewSeason
+  , resetYtd
+  , startNewGame
+  ) where
 
 import Lens.Micro ((.~))
 
@@ -28,6 +32,10 @@ import Mtlstats.Types
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState
 startNewSeason = (progMode .~ NewSeason) . (database . dbGames .~ 0)
+
+-- | Resets all players year-to-date stats
+resetYtd :: ProgState -> ProgState
+resetYtd = undefined
 
 -- | Starts a new game
 startNewGame :: ProgState -> ProgState

@@ -50,7 +50,11 @@ mainMenu (C.EventCharacter c) = case c of
 mainMenu _ = return True
 
 newSeason :: C.Event -> StateT ProgState C.Curses ()
-newSeason = undefined
+newSeason (C.EventCharacter c) = case c of
+  '1' -> modify $ resetYtd . startNewGame
+  '2' -> modify startNewGame
+  _   -> return ()
+newSeason _ = return ()
 
 newGame :: C.Event -> StateT ProgState C.Curses ()
 newGame = undefined
