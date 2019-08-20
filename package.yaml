@@ -1,7 +1,7 @@
 name:                mtlstats
 version:             0.0.0
 github:              "mtlstats/mtlstats"
-license:             BSD3
+license:             GPL-3
 author:              "Jonathan Lamothe"
 maintainer:          "jlamothe1980@gmail.com"
 copyright:           "Rhéal Lamothe"
