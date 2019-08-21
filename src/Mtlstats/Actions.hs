@@ -25,7 +25,7 @@ module Mtlstats.Actions
   , startNewGame
   ) where
 
-import Lens.Micro ((.~))
+import Lens.Micro ((.~), (%~))
 
 import Mtlstats.Types
 
@@ -35,7 +35,9 @@ startNewSeason = (progMode .~ NewSeason) . (database . dbGames .~ 0)
 
 -- | Resets all players year-to-date stats
 resetYtd :: ProgState -> ProgState
-resetYtd = undefined
+resetYtd
+  = (database . dbPlayers %~ map (pYtd .~ newPlayerStats))
+  . (database . dbGoalies %~ map (gYtd .~ newGoalieStats))
 
 -- | Starts a new game
 startNewGame :: ProgState -> ProgState
