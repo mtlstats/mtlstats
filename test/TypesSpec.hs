@@ -30,12 +30,15 @@ import Test.Hspec (Spec, context, describe, it, shouldBe)
 import Text.RawString.QQ (r)
 import Mtlstats.Types
 
+import qualified Types.MenuSpec as Menu
+
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
   pPointsSpec
   playerSpec
   goalieSpec
   databaseSpec
+  Menu.spec
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_
