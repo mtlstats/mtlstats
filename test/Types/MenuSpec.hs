@@ -36,7 +36,7 @@ menuSpec = describe "Menu"
 showSpec :: Spec
 showSpec = describe "show" $
   it "should display correctly" $ let
-    menu = Menu "Foo"
+    menu = Menu "Foo" ()
       [ MenuItem '1' "Item 1" $ return ()
       , MenuItem '2' "Item 2" $ return ()
       ]

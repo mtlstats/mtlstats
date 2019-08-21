@@ -28,6 +28,7 @@ module Mtlstats.Types.Menu (
   -- * Lenses
   -- ** Menu Lenses
   menuTitle,
+  menuDefault,
   menuItems,
   -- ** MenuItem Lenses
   miKey,
@@ -44,15 +45,22 @@ import Mtlstats.Types
 
 -- | Defines a menu
 data Menu a = Menu
-  { _menuTitle :: String
-  , _menuItems :: [MenuItem a]
+  { _menuTitle   :: String
+  -- ^ The menu title
+  , _menuDefault :: a
+  -- ^ The default value
+  , _menuItems   :: [MenuItem a]
+  -- ^ The list of items in the menu
   }
 
 -- | Defines a menu item
 data MenuItem a = MenuItem
   { _miKey         :: Char
+  -- ^ The key that selects the menu item
   , _miDescription :: String
+  -- ^ The description of the menu item
   , _miAction      :: StateT ProgState C.Curses a
+  -- ^ The action to be performed when selected
   }
 
 makeLenses ''Menu
