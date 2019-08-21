@@ -24,7 +24,8 @@ module Mtlstats.Menu (
   drawMenu,
   menuHandler,
   -- * Menus
-  mainMenu
+  mainMenu,
+  newSeasonMenu
 ) where
 
 import Control.Monad.Trans.State (StateT, modify)
@@ -55,4 +56,12 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify startNewGame >> return True
   , MenuItem '3' "Exit" $
     return False
+  ]
+
+newSeasonMenu :: Menu ()
+newSeasonMenu = Menu "*** SEASON TYPE ***" ()
+  [ MenuItem '1' "Regular Season" $
+    modify $ resetYtd . startNewGame
+  , MenuItem '2' "Playoffs" $
+    modify startNewGame
   ]

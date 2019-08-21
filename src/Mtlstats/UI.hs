@@ -35,16 +35,9 @@ draw s = do
     C.clear
     case s ^. progMode of
       MainMenu  -> drawMenu mainMenu
-      NewSeason -> newSeason
+      NewSeason -> drawMenu newSeasonMenu
       NewGame   -> newGame
   C.render
-
-newSeason :: C.Update ()
-newSeason = C.drawString $ unlines
-  [ "*** SEASON TYPE ***"
-  , "1) Regular Season"
-  , "2) Playoffs"
-  ]
 
 newGame :: C.Update ()
 newGame = return ()

@@ -39,15 +39,8 @@ handleEvent e = do
   m <- gets $ view progMode
   case m of
     MainMenu  -> menuHandler mainMenu e
-    NewSeason -> newSeason e >> return True
+    NewSeason -> menuHandler newSeasonMenu e >> return True
     NewGame   -> newGame e >> return True
-
-newSeason :: C.Event -> StateT ProgState C.Curses ()
-newSeason (C.EventCharacter c) = case c of
-  '1' -> modify $ resetYtd . startNewGame
-  '2' -> modify startNewGame
-  _   -> return ()
-newSeason _ = return ()
 
 newGame :: C.Event -> StateT ProgState C.Curses ()
 newGame = undefined
