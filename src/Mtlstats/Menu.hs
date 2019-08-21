@@ -20,14 +20,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -}
 
 module Mtlstats.Menu (
+  -- * Menu Functions
   drawMenu,
   menuHandler,
+  -- * Menus
+  mainMenu
 ) where
 
-import Control.Monad.Trans.State (StateT)
+import Control.Monad.Trans.State (StateT, modify)
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
+import Mtlstats.Actions
 import Mtlstats.Types
 import Mtlstats.Types.Menu
 
@@ -42,3 +46,13 @@ menuHandler m (C.EventCharacter c) =
     i:_ -> i ^. miAction
     []  -> return $ m ^. menuDefault
 menuHandler m _ = return $ m ^. menuDefault
+
+mainMenu :: Menu Bool
+mainMenu = Menu "*** MAIN MENU ***" True
+  [ MenuItem '1' "New Season" $
+    modify startNewSeason >> return True
+  , MenuItem '2' "New Game" $
+    modify startNewGame >> return True
+  , MenuItem '3' "Exit" $
+    return False
+  ]

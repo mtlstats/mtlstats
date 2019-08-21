@@ -27,6 +27,7 @@ import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Menu
 import Mtlstats.Types
 
 -- | Event handler
@@ -37,17 +38,9 @@ handleEvent
 handleEvent e = do
   m <- gets $ view progMode
   case m of
-    MainMenu  -> mainMenu e
+    MainMenu  -> menuHandler mainMenu e
     NewSeason -> newSeason e >> return True
     NewGame   -> newGame e >> return True
-
-mainMenu :: C.Event -> StateT ProgState C.Curses Bool
-mainMenu (C.EventCharacter c) = case c of
-  '1' -> modify startNewSeason >> return True
-  '2' -> modify startNewGame >> return True
-  '3' -> return False
-  _   -> return True
-mainMenu _ = return True
 
 newSeason :: C.Event -> StateT ProgState C.Curses ()
 newSeason (C.EventCharacter c) = case c of

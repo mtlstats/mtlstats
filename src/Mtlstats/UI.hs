@@ -24,6 +24,7 @@ module Mtlstats.UI (draw) where
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
+import Mtlstats.Menu
 import Mtlstats.Types
 
 -- | Drawing function
@@ -33,18 +34,10 @@ draw s = do
   C.updateWindow w $ do
     C.clear
     case s ^. progMode of
-      MainMenu  -> mainMenu
+      MainMenu  -> drawMenu mainMenu
       NewSeason -> newSeason
       NewGame   -> newGame
   C.render
-
-mainMenu :: C.Update ()
-mainMenu = C.drawString $ unlines
-  [ "*** MAIN MENU ***"
-  , "1) New Season"
-  , "2) New Game"
-  , "3) Exit"
-  ]
 
 newSeason :: C.Update ()
 newSeason = C.drawString $ unlines
