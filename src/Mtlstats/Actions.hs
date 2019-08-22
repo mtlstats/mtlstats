@@ -29,7 +29,7 @@ module Mtlstats.Actions
   , setAwayGame
   ) where
 
-import Lens.Micro (over, (&), (.~), (%~))
+import Lens.Micro (over, (&), (.~), (?~), (%~))
 
 import Mtlstats.Types
 
@@ -52,11 +52,11 @@ startNewGame
 -- | Sets the game type to 'HomeGame'
 setHomeGame :: ProgState -> ProgState
 setHomeGame = over progMode $ \case
-  NewGame gs -> NewGame (gs & gameType .~ Just HomeGame)
-  _ -> NewGame $ newGameState & gameType .~ Just HomeGame
+  NewGame gs -> NewGame (gs & gameType ?~ HomeGame)
+  _ -> NewGame $ newGameState & gameType ?~ HomeGame
 
 -- | Sets the game type to 'AwayGame'
 setAwayGame :: ProgState -> ProgState
 setAwayGame = over progMode $ \case
-  NewGame gs -> NewGame (gs & gameType .~ Just AwayGame)
-  _ -> NewGame $ newGameState & gameType .~ Just AwayGame
+  NewGame gs -> NewGame (gs & gameType ?~ AwayGame)
+  _ -> NewGame $ newGameState & gameType ?~ AwayGame

@@ -25,7 +25,7 @@ module TypesSpec (spec) where
 
 import Data.Aeson (decode, encode)
 import Data.ByteString.Lazy (ByteString)
-import Lens.Micro ((&), (.~))
+import Lens.Micro ((&), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 import Text.RawString.QQ (r)
 import Mtlstats.Types
@@ -63,9 +63,9 @@ teamPointsSpec :: Spec
 teamPointsSpec = describe "teamPoints" $ do
   let
     m t = NewGame $ newGameState
-      & gameType  .~ Just t
-      & homeScore .~ Just 1
-      & awayScore .~ Just 2
+      & gameType  ?~ t
+      & homeScore ?~ 1
+      & awayScore ?~ 2
     s t = newProgState
       & progMode .~ m t
 

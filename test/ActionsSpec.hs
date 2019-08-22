@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
-import Lens.Micro ((&), (.~), (^.))
+import Lens.Micro ((&), (.~), (?~), (^.))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, shouldBe, shouldNotBe)
 
@@ -108,7 +108,7 @@ resetYtdSpec = describe "resetYtd" $
 
 setHomeGameSpec :: Spec
 setHomeGameSpec = describe "setHomeGame" $ do
-  let m = NewGame $ newGameState & gameType .~ Just HomeGame
+  let m = NewGame $ newGameState & gameType ?~ HomeGame
 
   context "unexpected mode" $
     it "should set the game type" $ let
@@ -124,7 +124,7 @@ setHomeGameSpec = describe "setHomeGame" $ do
 
 setAwayGameSpec :: Spec
 setAwayGameSpec = describe "setAwayGame" $ do
-  let m = NewGame $ newGameState & gameType .~ Just AwayGame
+  let m = NewGame $ newGameState & gameType ?~ AwayGame
 
   context "unexpected mode" $
     it "should set the game type" $ let
