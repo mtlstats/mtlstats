@@ -25,7 +25,7 @@ module TypesSpec (spec) where
 
 import Data.Aeson (decode, encode)
 import Data.ByteString.Lazy (ByteString)
-import Lens.Micro ((&), (.~), (?~))
+import Lens.Micro ((&), (^.), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 import Text.RawString.QQ (r)
 import Mtlstats.Types
@@ -39,6 +39,7 @@ spec = describe "Mtlstats.Types" $ do
   playerSpec
   goalieSpec
   databaseSpec
+  gameTypeLSpec
   Menu.spec
 
 pPointsSpec :: Spec
@@ -113,6 +114,41 @@ databaseSpec = describe "Database" $ do
   describe "encode" $
     it "should encode" $
       decode (encode db) `shouldBe` Just db
+
+gameTypeLSpec :: Spec
+gameTypeLSpec = describe "gameTypeL" $ do
+
+  context "getter" $ do
+
+    context "unexpected mode" $
+      it "return Nothing" $
+        MainMenu ^. gameTypeL `shouldBe` Nothing
+
+    mapM_
+      (\t -> context (show t) $
+        it ("should return " ++ show t) $ let
+          gs = newGameState & gameType ?~ t
+          m  = NewGame gs
+          in m ^. gameTypeL `shouldBe` Just t)
+      [HomeGame, AwayGame]
+
+  context "setter" $ do
+
+    context "unexpected mode" $
+      mapM_
+        (\t -> context (show t) $
+          it ("should set to " ++ show t) $ let
+            m = MainMenu & gameTypeL ?~ t
+            in m ^. gameTypeL `shouldBe` Just t)
+        [HomeGame, AwayGame]
+
+    context "expected mode" $
+      mapM_
+        (\t -> context (show t) $
+          it ("should set to " ++ show t) $ let
+            m = NewGame newGameState & gameTypeL ?~ t
+            in m ^. gameTypeL `shouldBe` Just t)
+        [HomeGame, AwayGame]
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"

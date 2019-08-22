@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE LambdaCase, OverloadedStrings, TemplateHaskell #-}
 
 module Mtlstats.Types (
   -- * Types
@@ -40,6 +40,8 @@ module Mtlstats.Types (
   gameType,
   homeScore,
   awayScore,
+  -- ** ProgMode Lenses
+  gameTypeL,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -94,7 +96,7 @@ import Data.Aeson
   , (.:)
   , (.=)
   )
-import Lens.Micro ((^.))
+import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 
 -- | Represents the program state
@@ -300,6 +302,15 @@ makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
+
+gameTypeL :: Lens' ProgMode (Maybe GameType)
+gameTypeL = lens
+  (\case
+    NewGame gs -> gs ^. gameType
+    _          -> Nothing)
+  (\m gt -> case m of
+    NewGame gs -> NewGame $ gs & gameType .~ gt
+    _          -> NewGame $ newGameState & gameType .~ gt)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
