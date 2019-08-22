@@ -36,5 +36,7 @@ draw s = do
     case s ^. progMode of
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
-      NewGame _ -> return ()
+      NewGame gs -> if null $ gs ^. gameType
+        then drawMenu gameTypeMenu
+        else undefined
   C.render
