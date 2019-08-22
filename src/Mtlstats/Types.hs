@@ -43,6 +43,7 @@ module Mtlstats.Types (
   -- ** ProgMode Lenses
   gameTypeL,
   homeScoreL,
+  awayScoreL,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -321,6 +322,15 @@ homeScoreL = lens
   (\m hs -> case m of
     NewGame gs -> NewGame $ gs & homeScore .~ hs
     _          -> NewGame $ newGameState & homeScore .~ hs)
+
+awayScoreL :: Lens' ProgMode (Maybe Int)
+awayScoreL = lens
+  (\case
+    NewGame gs -> gs ^. awayScore
+    _          -> Nothing)
+  (\m as -> case m of
+    NewGame gs -> NewGame $ gs & awayScore .~ as
+    _          -> NewGame $ newGameState & awayScore .~ as)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState

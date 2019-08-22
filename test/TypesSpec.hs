@@ -41,6 +41,7 @@ spec = describe "Mtlstats.Types" $ do
   databaseSpec
   gameTypeLSpec
   homeScoreLSpec
+  awayScoreLSpec
   Menu.spec
 
 pPointsSpec :: Spec
@@ -168,14 +169,41 @@ homeScoreLSpec = describe "homeScoreL" $ do
   context "setter" $ do
 
     context "unexpected mode" $
-      it "should set the points" $ let
+      it "should set home score" $ let
         m = MainMenu & homeScoreL ?~ 0
         in m ^. homeScoreL `shouldBe` Just 0
 
     context "expected mode" $
-      it "should set the points" $ let
+      it "should set home score" $ let
         m = NewGame newGameState & homeScoreL ?~ 0
         in m ^. homeScoreL `shouldBe` Just 0
+
+awayScoreLSpec :: Spec
+awayScoreLSpec = describe "awayScoreL" $ do
+
+  context "getter" $ do
+
+    context "unexpected mode" $
+      it "should return Nothing" $
+        MainMenu ^. awayScoreL `shouldBe` Nothing
+
+    context "expected mode" $
+      it "should return 0" $ let
+        gs = newGameState & awayScore ?~ 0
+        m  = NewGame gs
+        in m ^. awayScoreL `shouldBe` Just 0
+
+  context "setter" $ do
+
+    context "unexpected mode" $
+      it "should set the away score" $ let
+        m = MainMenu & awayScoreL ?~ 0
+        in m ^. awayScoreL `shouldBe` Just 0
+
+    context "expected mode" $
+      it "should set the away score" $ let
+        m = NewGame newGameState & awayScoreL ?~ 0
+        in m ^. awayScoreL `shouldBe` Just 0
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
