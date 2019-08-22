@@ -75,7 +75,10 @@ module Mtlstats.Types (
   newPlayerStats,
   newGoalie,
   newGoalieStats,
-  -- * Helper functions
+  -- * Helper Functions
+  -- ** ProgState Helpers
+  teamPoints,
+  -- ** Player Helpers
   pPoints
 ) where
 
@@ -371,6 +374,15 @@ newGoalieStats = GoalieStats
   , _gsLosses       = 0
   , _gsTies         = 0
   }
+
+-- | Determines the team's points
+teamPoints :: ProgState -> Maybe Int
+teamPoints s = case s ^. progMode of
+  NewGame gs -> case gs ^. gameType of
+    Just HomeGame -> gs ^. homeScore
+    Just AwayGame -> gs ^. visitorScore
+    Nothing       -> Nothing
+  _ -> Nothing
 
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int

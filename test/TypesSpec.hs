@@ -35,6 +35,7 @@ import qualified Types.MenuSpec as Menu
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
   pPointsSpec
+  teamPointsSpec
   playerSpec
   goalieSpec
   databaseSpec
@@ -57,6 +58,28 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 0,     1,       1      )
   , ( 2,     3,       5      )
   ]
+
+teamPointsSpec :: Spec
+teamPointsSpec = describe "teamPoints" $ do
+  let
+    m t = NewGame $ newGameState
+      & gameType     .~ Just t
+      & homeScore    .~ Just 1
+      & visitorScore .~ Just 2
+    s t = newProgState
+      & progMode .~ m t
+
+  context "unexpected state" $
+    it "should return Nothing" $
+      teamPoints newProgState `shouldBe` Nothing
+
+  context "HomeGame" $
+    it "should return 1" $
+      teamPoints (s HomeGame) `shouldBe` Just 1
+
+  context "AwayGame" $
+    it "should return 2" $
+      teamPoints (s AwayGame) `shouldBe` Just 2
 
 playerSpec :: Spec
 playerSpec = describe "Player" $ do
