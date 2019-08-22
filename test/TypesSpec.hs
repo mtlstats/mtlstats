@@ -63,9 +63,9 @@ teamPointsSpec :: Spec
 teamPointsSpec = describe "teamPoints" $ do
   let
     m t = NewGame $ newGameState
-      & gameType     .~ Just t
-      & homeScore    .~ Just 1
-      & visitorScore .~ Just 2
+      & gameType  .~ Just t
+      & homeScore .~ Just 1
+      & awayScore .~ Just 2
     s t = newProgState
       & progMode .~ m t
 

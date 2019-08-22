@@ -39,7 +39,7 @@ module Mtlstats.Types (
   -- ** GameState Lenses
   gameType,
   homeScore,
-  visitorScore,
+  awayScore,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -105,9 +105,9 @@ data ProgState = ProgState
 
 -- | The game state
 data GameState = GameState
-  { _gameType     :: Maybe GameType
-  , _homeScore    :: Maybe Int
-  , _visitorScore :: Maybe Int
+  { _gameType  :: Maybe GameType
+  , _homeScore :: Maybe Int
+  , _awayScore :: Maybe Int
   } deriving (Eq, Show)
 
 -- | The program mode
@@ -311,9 +311,9 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameType     = Nothing
-  , _homeScore    = Nothing
-  , _visitorScore = Nothing
+  { _gameType  = Nothing
+  , _homeScore = Nothing
+  , _awayScore = Nothing
   }
 
 -- | Constructor for a 'Database'
@@ -380,7 +380,7 @@ teamPoints :: ProgState -> Maybe Int
 teamPoints s = case s ^. progMode of
   NewGame gs -> case gs ^. gameType of
     Just HomeGame -> gs ^. homeScore
-    Just AwayGame -> gs ^. visitorScore
+    Just AwayGame -> gs ^. awayScore
     Nothing       -> Nothing
   _ -> Nothing
 
