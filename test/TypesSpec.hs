@@ -34,15 +34,26 @@ import qualified Types.MenuSpec as Menu
 
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
-  pPointsSpec
-  teamPointsSpec
   playerSpec
+  pPointsSpec
   goalieSpec
   databaseSpec
   gameTypeLSpec
   homeScoreLSpec
   awayScoreLSpec
+  teamScoreSpec
   Menu.spec
+
+playerSpec :: Spec
+playerSpec = describe "Player" $ do
+
+  describe "decode" $
+    it "should decode" $
+      decode playerJSON `shouldBe` Just player
+
+  describe "encode" $
+    it "should encode" $
+      decode (encode player) `shouldBe` Just player
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_
@@ -61,39 +72,6 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 0,     1,       1      )
   , ( 2,     3,       5      )
   ]
-
-teamPointsSpec :: Spec
-teamPointsSpec = describe "teamPoints" $ do
-  let
-    m t = NewGame $ newGameState
-      & gameType  ?~ t
-      & homeScore ?~ 1
-      & awayScore ?~ 2
-    s t = newProgState
-      & progMode .~ m t
-
-  context "unexpected state" $
-    it "should return Nothing" $
-      teamPoints newProgState `shouldBe` Nothing
-
-  context "HomeGame" $
-    it "should return 1" $
-      teamPoints (s HomeGame) `shouldBe` Just 1
-
-  context "AwayGame" $
-    it "should return 2" $
-      teamPoints (s AwayGame) `shouldBe` Just 2
-
-playerSpec :: Spec
-playerSpec = describe "Player" $ do
-
-  describe "decode" $
-    it "should decode" $
-      decode playerJSON `shouldBe` Just player
-
-  describe "encode" $
-    it "should encode" $
-      decode (encode player) `shouldBe` Just player
 
 goalieSpec :: Spec
 goalieSpec = describe "Goalie" $ do
@@ -204,6 +182,28 @@ awayScoreLSpec = describe "awayScoreL" $ do
       it "should set the away score" $ let
         m = NewGame newGameState & awayScoreL ?~ 0
         in m ^. awayScoreL `shouldBe` Just 0
+
+teamScoreSpec :: Spec
+teamScoreSpec = describe "teamScore" $ do
+  let
+    m t = NewGame $ newGameState
+      & gameType  ?~ t
+      & homeScore ?~ 1
+      & awayScore ?~ 2
+    s t = newProgState
+      & progMode .~ m t
+
+  context "unexpected state" $
+    it "should return Nothing" $
+      teamScore newProgState `shouldBe` Nothing
+
+  context "HomeGame" $
+    it "should return 1" $
+      teamScore (s HomeGame) `shouldBe` Just 1
+
+  context "AwayGame" $
+    it "should return 2" $
+      teamScore (s AwayGame) `shouldBe` Just 2
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
