@@ -24,7 +24,7 @@ module ActionsSpec (spec) where
 import Control.Monad (replicateM)
 import Lens.Micro ((&), (.~), (^.))
 import System.Random (randomRIO)
-import Test.Hspec (Spec, describe, it, shouldBe, shouldNotBe)
+import Test.Hspec (Spec, context, describe, it, shouldBe, shouldNotBe)
 
 import Mtlstats.Actions
 import Mtlstats.Types
@@ -34,6 +34,8 @@ spec = describe "Mtlstats.Actions" $ do
   startNewSeasonSpec
   startNewGameSpec
   resetYtdSpec
+  setHomeGameSpec
+  setAwayGameSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -103,6 +105,38 @@ resetYtdSpec = describe "resetYtd" $
         lt ^. gsLosses        `shouldNotBe` 0
         lt ^. gsTies          `shouldNotBe` 0) $
       s ^. database . dbGoalies
+
+setHomeGameSpec :: Spec
+setHomeGameSpec = describe "setHomeGame" $ do
+  let m = NewGame $ newGameState & gameType .~ Just HomeGame
+
+  context "unexpected mode" $
+    it "should set the game type" $ let
+      s = setHomeGame newProgState
+      in s ^. progMode `shouldBe` m
+
+  context "NewGame mode" $
+    it "should set the game type" $ let
+      s = newProgState
+        & progMode .~ NewGame newGameState
+        & setHomeGame
+      in s ^. progMode `shouldBe` m
+
+setAwayGameSpec :: Spec
+setAwayGameSpec = describe "setAwayGame" $ do
+  let m = NewGame $ newGameState & gameType .~ Just AwayGame
+
+  context "unexpected mode" $
+    it "should set the game type" $ let
+      s = setAwayGame newProgState
+      in s ^. progMode `shouldBe` m
+
+  context "NewGame mode" $
+    it "should set the game type" $ let
+      s = newProgState
+        & progMode .~ NewGame newGameState
+        & setAwayGame
+      in s ^. progMode `shouldBe` m
 
 makePlayer :: IO Player
 makePlayer = Player

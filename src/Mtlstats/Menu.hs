@@ -25,11 +25,12 @@ module Mtlstats.Menu (
   menuHandler,
   -- * Menus
   mainMenu,
-  newSeasonMenu
+  newSeasonMenu,
+  gameTypeMenu
 ) where
 
 import Control.Monad.Trans.State (StateT, modify)
-import Lens.Micro ((^.))
+import Lens.Micro ((^.), (.~))
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -66,4 +67,13 @@ newSeasonMenu = Menu "*** SEASON TYPE ***" ()
     modify $ resetYtd . startNewGame
   , MenuItem '2' "Playoffs" $
     modify startNewGame
+  ]
+
+-- | The game type menu (home/away)
+gameTypeMenu :: Menu ()
+gameTypeMenu = Menu "*** GAME TYPE ***" ()
+  [ MenuItem '1' "Home Game" $
+    modify setHomeGame
+  , MenuItem '2' "Away Game" $
+    modify setAwayGame
   ]

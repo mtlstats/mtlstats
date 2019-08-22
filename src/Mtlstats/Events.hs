@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Events (handleEvent) where
 
 import Control.Monad.Trans.State (StateT, gets, modify)
-import Lens.Micro ((.~))
+import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
@@ -38,6 +38,8 @@ handleEvent
 handleEvent e = do
   m <- gets $ view progMode
   case m of
-    MainMenu  -> menuHandler mainMenu e
-    NewSeason -> menuHandler newSeasonMenu e >> return True
-    NewGame _ -> return True
+    MainMenu   -> menuHandler mainMenu e
+    NewSeason  -> menuHandler newSeasonMenu e >> return True
+    NewGame gs -> if null $ gs ^. gameType
+      then menuHandler gameTypeMenu e >> return True
+      else undefined
