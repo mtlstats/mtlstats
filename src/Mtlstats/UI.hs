@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.UI (draw) where
 
+import Control.Monad (void)
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
@@ -30,8 +31,9 @@ import Mtlstats.Types
 -- | Drawing function
 draw :: ProgState -> C.Curses ()
 draw s = do
+  void $ C.setCursorMode C.CursorInvisible
   w <- C.defaultWindow
-  C.updateWindow w $ do
+  cm <- C.updateWindow w $ do
     C.clear
     case s ^. progMode of
       MainMenu  -> drawMenu mainMenu
@@ -40,3 +42,4 @@ draw s = do
         | null $ gs ^. gameType -> drawMenu gameTypeMenu
         | otherwise             ->undefined
   C.render
+  void $ C.setCursorMode cm
