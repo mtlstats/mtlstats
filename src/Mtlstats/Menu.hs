@@ -48,6 +48,7 @@ menuHandler m (C.EventCharacter c) =
     []  -> return $ m ^. menuDefault
 menuHandler m _ = return $ m ^. menuDefault
 
+-- | The main menu
 mainMenu :: Menu Bool
 mainMenu = Menu "*** MAIN MENU ***" True
   [ MenuItem '1' "New Season" $
@@ -58,6 +59,7 @@ mainMenu = Menu "*** MAIN MENU ***" True
     return False
   ]
 
+-- | The new season menu
 newSeasonMenu :: Menu ()
 newSeasonMenu = Menu "*** SEASON TYPE ***" ()
   [ MenuItem '1' "Regular Season" $
