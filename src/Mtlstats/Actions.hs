@@ -41,4 +41,6 @@ resetYtd
 
 -- | Starts a new game
 startNewGame :: ProgState -> ProgState
-startNewGame = undefined
+startNewGame
+  = (progMode .~ NewGame newGameState)
+  . (database . dbGames .~ 0)

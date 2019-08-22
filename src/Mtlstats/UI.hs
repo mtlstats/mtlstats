@@ -36,8 +36,5 @@ draw s = do
     case s ^. progMode of
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
-      NewGame   -> newGame
+      NewGame _ -> return ()
   C.render
-
-newGame :: C.Update ()
-newGame = return ()

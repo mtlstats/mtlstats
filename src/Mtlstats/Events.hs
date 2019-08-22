@@ -40,7 +40,4 @@ handleEvent e = do
   case m of
     MainMenu  -> menuHandler mainMenu e
     NewSeason -> menuHandler newSeasonMenu e >> return True
-    NewGame   -> newGame e >> return True
-
-newGame :: C.Event -> StateT ProgState C.Curses ()
-newGame = undefined
+    NewGame _ -> return True

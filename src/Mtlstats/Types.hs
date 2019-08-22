@@ -24,7 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Types (
   -- * Types
   ProgState (..),
+  GameState (..),
   ProgMode (..),
+  GameType (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -34,6 +36,10 @@ module Mtlstats.Types (
   -- ** ProgState Lenses
   database,
   progMode,
+  -- ** GameState Lenses
+  gameType,
+  homeScore,
+  visitorScore,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -63,6 +69,7 @@ module Mtlstats.Types (
   gsTies,
   -- * Constructors
   newProgState,
+  newGameState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -93,11 +100,24 @@ data ProgState = ProgState
   , _progMode :: ProgMode
   } deriving (Eq, Show)
 
+-- | The game state
+data GameState = GameState
+  { _gameType     :: Maybe GameType
+  , _homeScore    :: Maybe Int
+  , _visitorScore :: Maybe Int
+  } deriving (Eq, Show)
+
 -- | The program mode
 data ProgMode
   = MainMenu
   | NewSeason
-  | NewGame
+  | NewGame GameState
+  deriving (Eq, Show)
+
+-- | The type of game
+data GameType
+  = HomeGame
+  | AwayGame
   deriving (Eq, Show)
 
 -- | Represents the database
@@ -271,17 +291,26 @@ instance ToJSON GoalieStats where
       "ties"          .= t
 
 makeLenses ''ProgState
+makeLenses ''GameState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
 
--- | Constructor for a new 'ProgState'
+-- | Constructor for a 'ProgState'
 newProgState :: ProgState
 newProgState = ProgState
   { _database = newDatabase
   , _progMode = MainMenu
+  }
+
+-- | Constructor for a 'GameState'
+newGameState :: GameState
+newGameState = GameState
+  { _gameType     = Nothing
+  , _homeScore    = Nothing
+  , _visitorScore = Nothing
   }
 
 -- | Constructor for a 'Database'

@@ -49,7 +49,17 @@ startNewSeasonSpec = describe "startNewSeason" $ do
     s ^. database . dbGames `shouldBe` 0
 
 startNewGameSpec :: Spec
-startNewGameSpec = describe "startGame" $ return ()
+startNewGameSpec = describe "startNewGame" $ do
+  let
+    s = newProgState
+      & database . dbGames .~ 1
+      & startNewGame
+
+  it "should set the number of games to 0" $
+    s ^. database . dbGames `shouldBe` 0
+
+  it "should set the mode to NewGame" $
+    s ^. progMode `shouldBe` NewGame newGameState
 
 resetYtdSpec :: Spec
 resetYtdSpec = describe "resetYtd" $
