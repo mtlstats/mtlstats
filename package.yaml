@@ -1,7 +1,7 @@
 name:                mtlstats
 version:             0.0.0
 github:              "mtlstats/mtlstats"
-license:             BSD3
+license:             GPL-3
 author:              "Jonathan Lamothe"
 maintainer:          "jlamothe1980@gmail.com"
 copyright:           "Rhéal Lamothe"
@@ -22,8 +22,12 @@ description:         Please see the README on GitHub at <https://github.com/jlam
 dependencies:
 - base >= 4.7 && < 5
 - aeson >= 1.4.4.0 && < 1.5
+- extra >= 1.6.17 && < 1.7
 - microlens-th >= 0.4.2.3 && < 0.5
+- ncurses >= 0.2.16 && < 0.3
+- random >= 1.1 && < 1.2
 - raw-strings-qq >= 1.1 && < 1.2
+- transformers >= 0.5.6.2 && < 0.6
 - bytestring
 - microlens
 
@@ -31,7 +35,7 @@ library:
   source-dirs: src
 
 executables:
-  mtlstats-exe:
+  mtlstats:
     main:                Main.hs
     source-dirs:         app
     ghc-options:

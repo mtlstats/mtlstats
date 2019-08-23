@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,12 +19,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats.UI (draw) where
 
-import qualified ActionsSpec as Actions
-import qualified TypesSpec as Types
+import Lens.Micro ((^.))
+import qualified UI.NCurses as C
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
+import Mtlstats.Menu
+import Mtlstats.Types
+
+-- | Drawing function
+draw :: ProgState -> C.Curses ()
+draw s = do
+  w <- C.defaultWindow
+  C.updateWindow w $ do
+    C.clear
+    case s ^. progMode of
+      MainMenu  -> drawMenu mainMenu
+      NewSeason -> drawMenu newSeasonMenu
+      NewGame gs
+        | null $ gs ^. gameType -> drawMenu gameTypeMenu
+        | otherwise             ->undefined
+  C.render

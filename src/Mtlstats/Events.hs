@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,12 +19,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+{-# LANGUAGE LambdaCase #-}
 
-import qualified ActionsSpec as Actions
-import qualified TypesSpec as Types
+module Mtlstats.Events (handleEvent) where
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
+import Control.Monad.Trans.State (gets, modify)
+import Lens.Micro ((^.), (.~))
+import Lens.Micro.Extras (view)
+import qualified UI.NCurses as C
+
+import Mtlstats.Actions
+import Mtlstats.Menu
+import Mtlstats.Types
+
+-- | Event handler
+handleEvent
+  :: C.Event
+  -- ^ The event being handled
+  -> Action Bool
+handleEvent e = gets (view progMode) >>= \case
+  MainMenu  -> menuHandler mainMenu e
+  NewSeason -> menuHandler newSeasonMenu e >> return True
+  NewGame gs
+    | null $ gs ^. gameType ->
+      menuHandler gameTypeMenu e >> return True
+    | otherwise -> undefined

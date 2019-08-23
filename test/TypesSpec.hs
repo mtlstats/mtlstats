@@ -1,19 +1,59 @@
+{-
+
+mtlstats
+Copyright (C) 2019 Rhéal Lamothe
+<rheal.lamothe@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+-}
+
 {-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
 
 module TypesSpec (spec) where
 
 import Data.Aeson (decode, encode)
 import Data.ByteString.Lazy (ByteString)
-import Lens.Micro ((&), (.~))
+import Lens.Micro ((&), (^.), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 import Text.RawString.QQ (r)
 import Mtlstats.Types
 
+import qualified Types.MenuSpec as Menu
+
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
-  pPointsSpec
   playerSpec
+  pPointsSpec
   goalieSpec
+  databaseSpec
+  gameTypeLSpec
+  homeScoreLSpec
+  awayScoreLSpec
+  teamScoreSpec
+  Menu.spec
+
+playerSpec :: Spec
+playerSpec = describe "Player" $ do
+
+  describe "decode" $
+    it "should decode" $
+      decode playerJSON `shouldBe` Just player
+
+  describe "encode" $
+    it "should encode" $
+      decode (encode player) `shouldBe` Just player
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_
@@ -33,17 +73,6 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 2,     3,       5      )
   ]
 
-playerSpec :: Spec
-playerSpec = describe "Player" $ do
-
-  describe "decode" $
-    it "should decode" $
-      decode playerJSON `shouldBe` Just player
-
-  describe "encode" $
-    it "should encode" $
-      decode (encode player) `shouldBe` Just player
-
 goalieSpec :: Spec
 goalieSpec = describe "Goalie" $ do
 
@@ -54,6 +83,127 @@ goalieSpec = describe "Goalie" $ do
   describe "encode" $
     it "should encode" $
       decode (encode goalie) `shouldBe` Just goalie
+
+databaseSpec :: Spec
+databaseSpec = describe "Database" $ do
+
+  describe "decode" $
+    it "should decode" $
+      decode dbJSON `shouldBe` Just db
+
+  describe "encode" $
+    it "should encode" $
+      decode (encode db) `shouldBe` Just db
+
+gameTypeLSpec :: Spec
+gameTypeLSpec = describe "gameTypeL" $ do
+
+  context "getter" $ do
+
+    context "unexpected mode" $
+      it "should return Nothing" $
+        MainMenu ^. gameTypeL `shouldBe` Nothing
+
+    mapM_
+      (\t -> context (show t) $
+        it ("should return " ++ show t) $ let
+          gs = newGameState & gameType ?~ t
+          m  = NewGame gs
+          in m ^. gameTypeL `shouldBe` Just t)
+      [HomeGame, AwayGame]
+
+  context "setter" $ do
+
+    context "unexpected mode" $
+      mapM_
+        (\t -> context (show t) $
+          it ("should set to " ++ show t) $ let
+            m = MainMenu & gameTypeL ?~ t
+            in m ^. gameTypeL `shouldBe` Just t)
+        [HomeGame, AwayGame]
+
+    context "expected mode" $
+      mapM_
+        (\t -> context (show t) $
+          it ("should set to " ++ show t) $ let
+            m = NewGame newGameState & gameTypeL ?~ t
+            in m ^. gameTypeL `shouldBe` Just t)
+        [HomeGame, AwayGame]
+
+homeScoreLSpec = describe "homeScoreL" $ do
+
+  context "getter" $ do
+
+    context "unexpected mode" $
+      it "should return Nothing" $
+        MainMenu ^. homeScoreL `shouldBe` Nothing
+
+    context "expected mode" $
+      it "should return 0" $ let
+        gs = newGameState & homeScore ?~ 0
+        m  = NewGame gs
+        in m ^. homeScoreL `shouldBe` Just 0
+
+  context "setter" $ do
+
+    context "unexpected mode" $
+      it "should set home score" $ let
+        m = MainMenu & homeScoreL ?~ 0
+        in m ^. homeScoreL `shouldBe` Just 0
+
+    context "expected mode" $
+      it "should set home score" $ let
+        m = NewGame newGameState & homeScoreL ?~ 0
+        in m ^. homeScoreL `shouldBe` Just 0
+
+awayScoreLSpec :: Spec
+awayScoreLSpec = describe "awayScoreL" $ do
+
+  context "getter" $ do
+
+    context "unexpected mode" $
+      it "should return Nothing" $
+        MainMenu ^. awayScoreL `shouldBe` Nothing
+
+    context "expected mode" $
+      it "should return 0" $ let
+        gs = newGameState & awayScore ?~ 0
+        m  = NewGame gs
+        in m ^. awayScoreL `shouldBe` Just 0
+
+  context "setter" $ do
+
+    context "unexpected mode" $
+      it "should set the away score" $ let
+        m = MainMenu & awayScoreL ?~ 0
+        in m ^. awayScoreL `shouldBe` Just 0
+
+    context "expected mode" $
+      it "should set the away score" $ let
+        m = NewGame newGameState & awayScoreL ?~ 0
+        in m ^. awayScoreL `shouldBe` Just 0
+
+teamScoreSpec :: Spec
+teamScoreSpec = describe "teamScore" $ do
+  let
+    m t = NewGame $ newGameState
+      & gameType  ?~ t
+      & homeScore ?~ 1
+      & awayScore ?~ 2
+    s t = newProgState
+      & progMode .~ m t
+
+  context "unexpected state" $
+    it "should return Nothing" $
+      teamScore newProgState `shouldBe` Nothing
+
+  context "HomeGame" $
+    it "should return 1" $
+      teamScore (s HomeGame) `shouldBe` Just 1
+
+  context "AwayGame" $
+    it "should return 2" $
+      teamScore (s AwayGame) `shouldBe` Just 2
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
@@ -80,6 +230,12 @@ goalie = newGoalie 1 "Joe"
   & gLifetime . gsWins         .~ 13
   & gLifetime . gsLosses       .~ 14
   & gLifetime . gsTies         .~ 15
+
+db :: Database
+db = newDatabase
+  & dbPlayers .~ [player]
+  & dbGoalies .~ [goalie]
+  & dbGames   .~ 1
 
 playerJSON :: ByteString
 playerJSON = [r|
@@ -120,4 +276,13 @@ goalieJSON = [r|
     , "losses": 14
     , "ties": 15
     }
+  }|]
+
+dbJSON :: ByteString
+dbJSON = [r|
+  { "players":
+    [ |] <> playerJSON <> [r| ]
+  , "goalies":
+    [ |] <> goalieJSON <> [r| ]
+  , "games": 1
   }|]

@@ -19,12 +19,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Types.MenuSpec (spec) where
 
-import qualified ActionsSpec as Actions
-import qualified TypesSpec as Types
+import Test.Hspec (Spec, describe, it, shouldBe)
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
+import Mtlstats.Types.Menu
+
+spec :: Spec
+spec = describe "Mtlstats.Types.Menu"
+  menuSpec
+
+menuSpec :: Spec
+menuSpec = describe "Menu"
+  showSpec
+
+showSpec :: Spec
+showSpec = describe "show" $
+  it "should display correctly" $ let
+    menu = Menu "Foo" ()
+      [ MenuItem '1' "Item 1" $ return ()
+      , MenuItem '2' "Item 2" $ return ()
+      ]
+    expected =
+      "Foo\n\
+      \1) Item 1\n\
+      \2) Item 2\n"
+    in show menu `shouldBe` expected

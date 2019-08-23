@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,12 +19,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats.Actions
+  ( startNewSeason
+  , resetYtd
+  , startNewGame
+  ) where
 
-import qualified ActionsSpec as Actions
-import qualified TypesSpec as Types
+import Lens.Micro (over, (&), (.~), (?~), (%~))
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
+import Mtlstats.Types
+
+-- | Starts a new season
+startNewSeason :: ProgState -> ProgState
+startNewSeason = (progMode .~ NewSeason) . (database . dbGames .~ 0)
+
+-- | Resets all players year-to-date stats
+resetYtd :: ProgState -> ProgState
+resetYtd
+  = (database . dbPlayers %~ map (pYtd .~ newPlayerStats))
+  . (database . dbGoalies %~ map (gYtd .~ newGoalieStats))
+
+-- | Starts a new game
+startNewGame :: ProgState -> ProgState
+startNewGame
+  = (progMode .~ NewGame newGameState)
+  . (database . dbGames %~ succ)

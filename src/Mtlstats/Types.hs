@@ -1,12 +1,54 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{- |
+
+mtlstats
+Copyright (C) 2019 Rhéal Lamothe
+<rheal.lamothe@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+-}
+
+{-# LANGUAGE LambdaCase, OverloadedStrings, TemplateHaskell #-}
 
 module Mtlstats.Types (
   -- * Types
+  Action,
+  ProgState (..),
+  GameState (..),
+  ProgMode (..),
+  GameType (..),
+  Database (..),
   Player (..),
   PlayerStats (..),
   Goalie (..),
   GoalieStats (..),
   -- * Lenses
+  -- ** ProgState Lenses
+  database,
+  progMode,
+  -- ** GameState Lenses
+  gameType,
+  homeScore,
+  awayScore,
+  -- ** ProgMode Lenses
+  gameTypeL,
+  homeScoreL,
+  awayScoreL,
+  -- ** Database Lenses
+  dbPlayers,
+  dbGoalies,
+  dbGames,
   -- ** Player Lenses
   pNumber,
   pName,
@@ -31,14 +73,21 @@ module Mtlstats.Types (
   gsLosses,
   gsTies,
   -- * Constructors
+  newProgState,
+  newGameState,
+  newDatabase,
   newPlayer,
   newPlayerStats,
   newGoalie,
   newGoalieStats,
-  -- * Helper functions
+  -- * Helper Functions
+  -- ** ProgState Helpers
+  teamScore,
+  -- ** Player Helpers
   pPoints
 ) where
 
+import Control.Monad.Trans.State (StateT)
 import Data.Aeson
   ( FromJSON
   , ToJSON
@@ -51,8 +100,70 @@ import Data.Aeson
   , (.:)
   , (.=)
   )
-import Lens.Micro ((^.))
+import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
+import UI.NCurses (Curses)
+
+-- | Action which maintains program state
+type Action a = StateT ProgState Curses a
+
+-- | Represents the program state
+data ProgState = ProgState
+  { _database :: Database
+  -- ^ The data to be saved
+  , _progMode :: ProgMode
+  -- ^ The program's mode
+  } deriving (Eq, Show)
+
+-- | The game state
+data GameState = GameState
+  { _gameType  :: Maybe GameType
+  -- ^ The type of game (home/away)
+  , _homeScore :: Maybe Int
+  -- ^ The home team's score
+  , _awayScore :: Maybe Int
+  -- ^ The away team's score
+  } deriving (Eq, Show)
+
+-- | The program mode
+data ProgMode
+  = MainMenu
+  | NewSeason
+  | NewGame GameState
+  deriving (Eq, Show)
+
+-- | The type of game
+data GameType
+  = HomeGame
+  | AwayGame
+  deriving (Eq, Show)
+
+-- | Represents the database
+data Database = Database
+  { _dbPlayers :: [Player]
+  -- ^ The list of players
+  , _dbGoalies :: [Goalie]
+  -- ^ The list of goalies
+  , _dbGames   :: Int
+  -- ^ The number of games recorded
+  } deriving (Eq, Show)
+
+instance FromJSON Database where
+  parseJSON = withObject "Database" $ \v -> Database
+    <$> v .: "players"
+    <*> v .: "goalies"
+    <*> v .: "games"
+
+instance ToJSON Database where
+  toJSON (Database players goalies games) = object
+    [ "players" .= players
+    , "goalies" .= goalies
+    , "games"   .= games
+    ]
+  toEncoding (Database players goalies games) = pairs $
+    "players" .= players <>
+    "goalies" .= goalies <>
+    "games"   .= games
 
 -- | Represents a (non-goalie) player
 data Player = Player
@@ -197,10 +308,63 @@ instance ToJSON GoalieStats where
       "losses"        .= l  <>
       "ties"          .= t
 
+makeLenses ''ProgState
+makeLenses ''GameState
+makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
+
+gameTypeL :: Lens' ProgMode (Maybe GameType)
+gameTypeL = lens
+  (\case
+    NewGame gs -> gs ^. gameType
+    _          -> Nothing)
+  (\m gt -> case m of
+    NewGame gs -> NewGame $ gs & gameType .~ gt
+    _          -> NewGame $ newGameState & gameType .~ gt)
+
+homeScoreL :: Lens' ProgMode (Maybe Int)
+homeScoreL = lens
+  (\case
+    NewGame gs -> gs ^. homeScore
+    _          -> Nothing)
+  (\m hs -> case m of
+    NewGame gs -> NewGame $ gs & homeScore .~ hs
+    _          -> NewGame $ newGameState & homeScore .~ hs)
+
+awayScoreL :: Lens' ProgMode (Maybe Int)
+awayScoreL = lens
+  (\case
+    NewGame gs -> gs ^. awayScore
+    _          -> Nothing)
+  (\m as -> case m of
+    NewGame gs -> NewGame $ gs & awayScore .~ as
+    _          -> NewGame $ newGameState & awayScore .~ as)
+
+-- | Constructor for a 'ProgState'
+newProgState :: ProgState
+newProgState = ProgState
+  { _database = newDatabase
+  , _progMode = MainMenu
+  }
+
+-- | Constructor for a 'GameState'
+newGameState :: GameState
+newGameState = GameState
+  { _gameType  = Nothing
+  , _homeScore = Nothing
+  , _awayScore = Nothing
+  }
+
+-- | Constructor for a 'Database'
+newDatabase :: Database
+newDatabase = Database
+  { _dbPlayers = []
+  , _dbGoalies = []
+  , _dbGames   = 0
+  }
 
 -- | Constructor for a 'Player'
 newPlayer
@@ -252,6 +416,13 @@ newGoalieStats = GoalieStats
   , _gsLosses       = 0
   , _gsTies         = 0
   }
+
+-- | Determines the team's points
+teamScore :: ProgState -> Maybe Int
+teamScore s = case s ^. progMode . gameTypeL of
+  Just HomeGame -> s ^. progMode . homeScoreL
+  Just AwayGame -> s ^. progMode . awayScoreL
+  Nothing       -> Nothing
 
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int

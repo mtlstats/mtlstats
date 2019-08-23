@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,12 +19,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats (initState, mainLoop) where
 
-import qualified ActionsSpec as Actions
-import qualified TypesSpec as Types
+import Control.Monad (void)
+import Control.Monad.Extra (whenM)
+import Control.Monad.Trans.Class (lift)
+import Control.Monad.Trans.State (get)
+import Data.Maybe (fromJust)
+import qualified UI.NCurses as C
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
+import Mtlstats.Events
+import Mtlstats.Types
+import Mtlstats.UI
+
+-- | Initializes the progran
+initState :: C.Curses ProgState
+initState = do
+  C.setEcho False
+  void $ C.setCursorMode C.CursorInvisible
+  return newProgState
+
+-- | Main program loop
+mainLoop :: Action ()
+mainLoop = do
+  get >>= lift . draw
+  w <- lift C.defaultWindow
+  whenM (lift (fromJust <$> C.getEvent w Nothing) >>= handleEvent)
+    mainLoop
