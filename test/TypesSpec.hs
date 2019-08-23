@@ -101,7 +101,7 @@ gameTypeLSpec = describe "gameTypeL" $ do
   context "getter" $ do
 
     context "unexpected mode" $
-      it "return Nothing" $
+      it "should return Nothing" $
         MainMenu ^. gameTypeL `shouldBe` Nothing
 
     mapM_
