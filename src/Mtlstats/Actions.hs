@@ -47,7 +47,7 @@ resetYtd
 startNewGame :: ProgState -> ProgState
 startNewGame
   = (progMode .~ NewGame newGameState)
-  . (database . dbGames .~ 0)
+  . (database . dbGames %~ succ)
 
 -- | Sets the game type to 'HomeGame'
 setHomeGame :: ProgState -> ProgState
