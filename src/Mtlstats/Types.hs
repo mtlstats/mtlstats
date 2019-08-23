@@ -143,7 +143,7 @@ data Database = Database
   { _dbPlayers :: [Player]
   -- ^ The list of players
   , _dbGoalies :: [Goalie]
-  -- ^ The lidt of goalies
+  -- ^ The list of goalies
   , _dbGames   :: Int
   -- ^ The number of games recorded
   } deriving (Eq, Show)
