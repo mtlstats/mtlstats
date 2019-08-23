@@ -24,7 +24,7 @@ module Mtlstats (initState, mainLoop) where
 import Control.Monad (void)
 import Control.Monad.Extra (whenM)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.State (StateT, get)
+import Control.Monad.Trans.State (get)
 import Data.Maybe (fromJust)
 import qualified UI.NCurses as C
 
@@ -40,7 +40,7 @@ initState = do
   return newProgState
 
 -- | Main program loop
-mainLoop :: StateT ProgState C.Curses ()
+mainLoop :: Action ()
 mainLoop = do
   get >>= lift . draw
   w <- lift C.defaultWindow

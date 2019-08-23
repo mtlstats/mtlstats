@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Types (
   -- * Types
+  Action,
   ProgState (..),
   GameState (..),
   ProgMode (..),
@@ -86,6 +87,7 @@ module Mtlstats.Types (
   pPoints
 ) where
 
+import Control.Monad.Trans.State (StateT)
 import Data.Aeson
   ( FromJSON
   , ToJSON
@@ -100,6 +102,10 @@ import Data.Aeson
   )
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
+import UI.NCurses (Curses)
+
+-- | Action which maintains program state
+type Action a = StateT ProgState Curses a
 
 -- | Represents the program state
 data ProgState = ProgState

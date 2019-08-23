@@ -29,7 +29,7 @@ module Mtlstats.Menu (
   gameTypeMenu
 ) where
 
-import Control.Monad.Trans.State (StateT, modify)
+import Control.Monad.Trans.State (modify)
 import Lens.Micro ((^.), (.~))
 import qualified UI.NCurses as C
 
@@ -42,7 +42,7 @@ drawMenu :: Menu a -> C.Update ()
 drawMenu = C.drawString . show
 
 -- | The event handler for a 'Menu'
-menuHandler :: Menu a -> C.Event -> StateT ProgState C.Curses a
+menuHandler :: Menu a -> C.Event -> Action a
 menuHandler m (C.EventCharacter c) =
   case filter (\i -> i ^. miKey == c) $ m ^. menuItems of
     i:_ -> i ^. miAction

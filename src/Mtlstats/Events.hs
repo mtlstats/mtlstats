@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Events (handleEvent) where
 
-import Control.Monad.Trans.State (StateT, gets, modify)
+import Control.Monad.Trans.State (gets, modify)
 import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
@@ -34,7 +34,7 @@ import Mtlstats.Types
 handleEvent
   :: C.Event
   -- ^ The even being handled
-  -> StateT ProgState C.Curses Bool
+  -> Action Bool
 handleEvent e = do
   m <- gets $ view progMode
   case m of

@@ -36,7 +36,6 @@ module Mtlstats.Types.Menu (
   miAction,
 ) where
 
-import Control.Monad.Trans.State (StateT)
 import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
 import qualified UI.NCurses as C
@@ -59,7 +58,7 @@ data MenuItem a = MenuItem
   -- ^ The key that selects the menu item
   , _miDescription :: String
   -- ^ The description of the menu item
-  , _miAction      :: StateT ProgState C.Curses a
+  , _miAction      :: Action a
   -- ^ The action to be performed when selected
   }
 
