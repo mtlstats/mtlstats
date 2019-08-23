@@ -33,7 +33,7 @@ import Mtlstats.Types
 -- | Event handler
 handleEvent
   :: C.Event
-  -- ^ The even being handled
+  -- ^ The event being handled
   -> Action Bool
 handleEvent e = do
   m <- gets $ view progMode
