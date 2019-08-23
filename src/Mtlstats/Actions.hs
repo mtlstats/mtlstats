@@ -19,14 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE LambdaCase #-}
-
 module Mtlstats.Actions
   ( startNewSeason
   , resetYtd
   , startNewGame
-  , setHomeGame
-  , setAwayGame
   ) where
 
 import Lens.Micro (over, (&), (.~), (?~), (%~))
@@ -48,15 +44,3 @@ startNewGame :: ProgState -> ProgState
 startNewGame
   = (progMode .~ NewGame newGameState)
   . (database . dbGames %~ succ)
-
--- | Sets the game type to 'HomeGame'
-setHomeGame :: ProgState -> ProgState
-setHomeGame = over progMode $ \case
-  NewGame gs -> NewGame (gs & gameType ?~ HomeGame)
-  _ -> NewGame $ newGameState & gameType ?~ HomeGame
-
--- | Sets the game type to 'AwayGame'
-setAwayGame :: ProgState -> ProgState
-setAwayGame = over progMode $ \case
-  NewGame gs -> NewGame (gs & gameType ?~ AwayGame)
-  _ -> NewGame $ newGameState & gameType ?~ AwayGame
