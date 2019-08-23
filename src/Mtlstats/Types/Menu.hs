@@ -47,7 +47,7 @@ data Menu a = Menu
   { _menuTitle   :: String
   -- ^ The menu title
   , _menuDefault :: a
-  -- ^ The default value
+  -- ^ The value to return on incorrect selection or other event
   , _menuItems   :: [MenuItem a]
   -- ^ The list of items in the menu
   }
