@@ -110,14 +110,19 @@ type Action a = StateT ProgState Curses a
 -- | Represents the program state
 data ProgState = ProgState
   { _database :: Database
+  -- ^ The data to be saved
   , _progMode :: ProgMode
+  -- ^ The program's mode
   } deriving (Eq, Show)
 
 -- | The game state
 data GameState = GameState
   { _gameType  :: Maybe GameType
+  -- ^ The type of game (home/away)
   , _homeScore :: Maybe Int
+  -- ^ The home team's score
   , _awayScore :: Maybe Int
+  -- ^ The away team's score
   } deriving (Eq, Show)
 
 -- | The program mode
