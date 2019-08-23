@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Events (handleEvent) where
 
 import Control.Monad.Trans.State (gets, modify)
@@ -35,11 +37,10 @@ handleEvent
   :: C.Event
   -- ^ The event being handled
   -> Action Bool
-handleEvent e = do
-  m <- gets $ view progMode
-  case m of
-    MainMenu   -> menuHandler mainMenu e
-    NewSeason  -> menuHandler newSeasonMenu e >> return True
-    NewGame gs -> if null $ gs ^. gameType
-      then menuHandler gameTypeMenu e >> return True
-      else undefined
+handleEvent e = gets (view progMode) >>= \case
+  MainMenu  -> menuHandler mainMenu e
+  NewSeason -> menuHandler newSeasonMenu e >> return True
+  NewGame gs
+    | null $ gs ^. gameType ->
+      menuHandler gameTypeMenu e >> return True
+    | otherwise -> undefined
