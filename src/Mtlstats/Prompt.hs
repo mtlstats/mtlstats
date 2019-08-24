@@ -23,6 +23,7 @@ module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
   promptHandler,
+  numPrompt
 ) where
 
 import Control.Monad (when)
