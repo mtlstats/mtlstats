@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Actions
   ( startNewSeason
   , resetYtd
@@ -49,8 +51,10 @@ startNewGame
 
 -- | Adds a character to the input buffer
 addChar :: Char -> ProgState -> ProgState
-addChar = undefined
+addChar c = inputBuffer %~ (++[c])
 
 -- | Removes a character from the input buffer (if possible)
 removeChar :: ProgState -> ProgState
-removeChar = undefined
+removeChar = inputBuffer %~ \case
+  ""  -> ""
+  str -> init str
