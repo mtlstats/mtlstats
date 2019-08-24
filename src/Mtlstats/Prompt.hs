@@ -23,7 +23,9 @@ module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
   promptHandler,
-  numPrompt
+  numPrompt,
+  -- * Individual prompts
+  homeScorePrompt
 ) where
 
 import Control.Monad (when)
@@ -73,3 +75,7 @@ numPrompt pStr act = Prompt
   , promptAction      = \inStr -> forM_ (readMaybe inStr) act
   , promptFunctionKey = const $ return ()
   }
+
+homeScorePrompt :: Prompt
+homeScorePrompt = numPrompt "Home score: " $
+  modify . (progMode . homeScoreL ?~)

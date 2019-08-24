@@ -38,6 +38,7 @@ module Mtlstats.Types (
   -- ** ProgState Lenses
   database,
   progMode,
+  inputBuffer,
   -- ** GameState Lenses
   gameType,
   homeScore,
@@ -110,10 +111,12 @@ type Action a = StateT ProgState Curses a
 
 -- | Represents the program state
 data ProgState = ProgState
-  { _database :: Database
+  { _database    :: Database
   -- ^ The data to be saved
-  , _progMode :: ProgMode
+  , _progMode    :: ProgMode
   -- ^ The program's mode
+  , _inputBuffer :: String
+  -- ^ Buffer for user input
   } deriving (Eq, Show)
 
 -- | The game state
@@ -359,8 +362,9 @@ awayScoreL = lens
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
 newProgState = ProgState
-  { _database = newDatabase
-  , _progMode = MainMenu
+  { _database    = newDatabase
+  , _progMode    = MainMenu
+  , _inputBuffer = ""
   }
 
 -- | Constructor for a 'GameState'

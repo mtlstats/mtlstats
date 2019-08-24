@@ -26,6 +26,7 @@ import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
 import Mtlstats.Menu
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Drawing function
@@ -39,7 +40,8 @@ draw s = do
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
       NewGame gs
-        | null $ gs ^. gameType -> drawMenu gameTypeMenu
-        | otherwise             ->undefined
+        | null $ gs ^. gameType  -> drawMenu gameTypeMenu
+        | null $ gs ^. homeScore -> drawPrompt homeScorePrompt s
+        | otherwise              -> undefined
   C.render
   void $ C.setCursorMode cm
