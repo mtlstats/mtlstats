@@ -33,6 +33,7 @@ module Mtlstats.Types (
   PlayerStats (..),
   Goalie (..),
   GoalieStats (..),
+  Prompt (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
@@ -102,7 +103,7 @@ import Data.Aeson
   )
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
-import UI.NCurses (Curses)
+import UI.NCurses (Curses, Update)
 
 -- | Action which maintains program state
 type Action a = StateT ProgState Curses a
@@ -307,6 +308,18 @@ instance ToJSON GoalieStats where
       "wins"          .= w  <>
       "losses"        .= l  <>
       "ties"          .= t
+
+-- | Defines a user prompt
+data Prompt = Prompt
+  { promptDrawer      :: ProgState -> Update ()
+  -- ^ Draws the prompt to thr screen
+  , promptCharCheck   :: Char -> Bool
+  -- ^ Determines whether or not the character is valid
+  , promptAction      :: String -> Action ()
+  -- ^ Action to perform when the value is entered
+  , promptFunctionKey :: Integer -> Action ()
+  -- ^ Action to perform when a function key is pressed
+  }
 
 makeLenses ''ProgState
 makeLenses ''GameState
