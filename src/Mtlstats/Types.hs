@@ -33,10 +33,12 @@ module Mtlstats.Types (
   PlayerStats (..),
   Goalie (..),
   GoalieStats (..),
+  Prompt (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
   progMode,
+  inputBuffer,
   -- ** GameState Lenses
   gameType,
   homeScore,
@@ -102,17 +104,19 @@ import Data.Aeson
   )
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
-import UI.NCurses (Curses)
+import UI.NCurses (Curses, Update)
 
 -- | Action which maintains program state
 type Action a = StateT ProgState Curses a
 
 -- | Represents the program state
 data ProgState = ProgState
-  { _database :: Database
+  { _database    :: Database
   -- ^ The data to be saved
-  , _progMode :: ProgMode
+  , _progMode    :: ProgMode
   -- ^ The program's mode
+  , _inputBuffer :: String
+  -- ^ Buffer for user input
   } deriving (Eq, Show)
 
 -- | The game state
@@ -308,6 +312,18 @@ instance ToJSON GoalieStats where
       "losses"        .= l  <>
       "ties"          .= t
 
+-- | Defines a user prompt
+data Prompt = Prompt
+  { promptDrawer      :: ProgState -> Update ()
+  -- ^ Draws the prompt to thr screen
+  , promptCharCheck   :: Char -> Bool
+  -- ^ Determines whether or not the character is valid
+  , promptAction      :: String -> Action ()
+  -- ^ Action to perform when the value is entered
+  , promptFunctionKey :: Integer -> Action ()
+  -- ^ Action to perform when a function key is pressed
+  }
+
 makeLenses ''ProgState
 makeLenses ''GameState
 makeLenses ''Database
@@ -346,8 +362,9 @@ awayScoreL = lens
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
 newProgState = ProgState
-  { _database = newDatabase
-  , _progMode = MainMenu
+  { _database    = newDatabase
+  , _progMode    = MainMenu
+  , _inputBuffer = ""
   }
 
 -- | Constructor for a 'GameState'

@@ -30,6 +30,7 @@ import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import Mtlstats.Menu
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Event handler
@@ -41,6 +42,10 @@ handleEvent e = gets (view progMode) >>= \case
   MainMenu  -> menuHandler mainMenu e
   NewSeason -> menuHandler newSeasonMenu e >> return True
   NewGame gs
-    | null $ gs ^. gameType ->
-      menuHandler gameTypeMenu e >> return True
+    | null $ gs ^. gameType -> do
+      menuHandler gameTypeMenu e
+      return True
+    | null $ gs ^. homeScore -> do
+      promptHandler homeScorePrompt e
+      return True
     | otherwise -> undefined

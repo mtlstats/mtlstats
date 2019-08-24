@@ -38,8 +38,10 @@ import Mtlstats.Types
 import Mtlstats.Types.Menu
 
 -- | The draw function for a 'Menu'
-drawMenu :: Menu a -> C.Update ()
-drawMenu = C.drawString . show
+drawMenu :: Menu a -> C.Update C.CursorMode
+drawMenu m = do
+  C.drawString $ show m
+  return C.CursorInvisible
 
 -- | The event handler for a 'Menu'
 menuHandler :: Menu a -> C.Event -> Action a

@@ -21,22 +21,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.UI (draw) where
 
+import Control.Monad (void)
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
 import Mtlstats.Menu
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Drawing function
 draw :: ProgState -> C.Curses ()
 draw s = do
+  void $ C.setCursorMode C.CursorInvisible
   w <- C.defaultWindow
-  C.updateWindow w $ do
+  cm <- C.updateWindow w $ do
     C.clear
     case s ^. progMode of
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
       NewGame gs
-        | null $ gs ^. gameType -> drawMenu gameTypeMenu
-        | otherwise             ->undefined
+        | null $ gs ^. gameType  -> drawMenu gameTypeMenu
+        | null $ gs ^. homeScore -> drawPrompt homeScorePrompt s
+        | otherwise              -> undefined
   C.render
+  void $ C.setCursorMode cm

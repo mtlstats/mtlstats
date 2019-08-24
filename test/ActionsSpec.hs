@@ -34,6 +34,8 @@ spec = describe "Mtlstats.Actions" $ do
   startNewSeasonSpec
   startNewGameSpec
   resetYtdSpec
+  addCharSpec
+  removeCharSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -100,6 +102,29 @@ resetYtdSpec = describe "resetYtd" $
         lt ^. gsLosses        `shouldNotBe` 0
         lt ^. gsTies          `shouldNotBe` 0) $
       s ^. database . dbGoalies
+
+addCharSpec :: Spec
+addCharSpec = describe "addChar" $
+  it "should add the character to the input buffer" $ let
+    s = newProgState
+      & inputBuffer .~ "foo"
+      & addChar 'd'
+  in s ^. inputBuffer `shouldBe` "food"
+
+removeCharSpec :: Spec
+removeCharSpec = describe "removeChar" $ do
+
+  context "empty" $
+    it "should remove the character from the input buffer" $ let
+      s = removeChar newProgState
+      in s ^. inputBuffer `shouldBe` ""
+
+  context "not empty" $
+    it "should remove the character from the input buffer" $ let
+      s = newProgState
+        & inputBuffer .~ "foo"
+        & removeChar
+      in s ^. inputBuffer `shouldBe` "fo"
 
 makePlayer :: IO Player
 makePlayer = Player

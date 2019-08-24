@@ -19,10 +19,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Actions
   ( startNewSeason
   , resetYtd
   , startNewGame
+  , addChar
+  , removeChar
   ) where
 
 import Lens.Micro (over, (&), (.~), (?~), (%~))
@@ -44,3 +48,13 @@ startNewGame :: ProgState -> ProgState
 startNewGame
   = (progMode .~ NewGame newGameState)
   . (database . dbGames %~ succ)
+
+-- | Adds a character to the input buffer
+addChar :: Char -> ProgState -> ProgState
+addChar c = inputBuffer %~ (++[c])
+
+-- | Removes a character from the input buffer (if possible)
+removeChar :: ProgState -> ProgState
+removeChar = inputBuffer %~ \case
+  ""  -> ""
+  str -> init str
