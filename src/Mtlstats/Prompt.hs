@@ -26,6 +26,7 @@ module Mtlstats.Prompt (
   strPrompt,
   numPrompt,
   -- * Individual prompts
+  otherTeamPrompt,
   homeScorePrompt,
   awayScorePrompt
 ) where
@@ -91,6 +92,10 @@ numPrompt pStr act = Prompt
   , promptAction      = \inStr -> forM_ (readMaybe inStr) act
   , promptFunctionKey = const $ return ()
   }
+
+otherTeamPrompt :: Prompt
+otherTeamPrompt = strPrompt "Other team: " $
+  modify . (progMode . otherTeamL .~)
 
 homeScorePrompt :: Prompt
 homeScorePrompt = numPrompt "Home score: " $

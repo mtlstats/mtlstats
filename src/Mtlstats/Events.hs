@@ -45,6 +45,9 @@ handleEvent e = gets (view progMode) >>= \case
     | null $ gs ^. gameType -> do
       menuHandler gameTypeMenu e
       return True
+    | null $ gs ^. otherTeam -> do
+      promptHandler otherTeamPrompt e
+      return True
     | null $ gs ^. homeScore -> do
       promptHandler homeScorePrompt e
       return True

@@ -41,6 +41,7 @@ draw s = do
       NewSeason -> drawMenu newSeasonMenu
       NewGame gs
         | null $ gs ^. gameType  -> drawMenu gameTypeMenu
+        | null $ gs ^. otherTeam -> drawPrompt otherTeamPrompt s
         | null $ gs ^. homeScore -> drawPrompt homeScorePrompt s
         | null $ gs ^. awayScore -> drawPrompt awayScorePrompt s
         | otherwise              -> undefined
