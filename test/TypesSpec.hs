@@ -39,6 +39,7 @@ spec = describe "Mtlstats.Types" $ do
   goalieSpec
   databaseSpec
   gameTypeLSpec
+  otherTeamLSpec
   homeScoreLSpec
   awayScoreLSpec
   teamScoreSpec
@@ -129,6 +130,32 @@ gameTypeLSpec = describe "gameTypeL" $ do
             m = NewGame newGameState & gameTypeL ?~ t
             in m ^. gameTypeL `shouldBe` Just t)
         [HomeGame, AwayGame]
+
+otherTeamLSpec :: Spec
+otherTeamLSpec = describe "otherTeamL" $ do
+
+  context "getter" $ do
+
+    context "unexpected mode" $
+      it "should return an empty string" $
+        MainMenu ^. otherTeamL `shouldBe` ""
+
+    context "expected mode" $
+      it "should return \"foo\"" $ let
+        m = NewGame $ newGameState & otherTeam .~ "foo"
+        in m ^. otherTeamL `shouldBe` "foo"
+
+  context "setter" $ do
+
+    context "unexpected mode" $
+      it "should set the value" $ let
+        m = MainMenu & otherTeamL .~ "foo"
+        in m ^. otherTeamL `shouldBe` "foo"
+
+    context "expected mode" $
+      it "should set the value" $ let
+        m = NewGame newGameState & otherTeamL .~ "foo"
+        in m ^. otherTeamL `shouldBe` "foo"
 
 homeScoreLSpec :: Spec
 homeScoreLSpec = describe "homeScoreL" $ do

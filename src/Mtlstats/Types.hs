@@ -41,10 +41,12 @@ module Mtlstats.Types (
   inputBuffer,
   -- ** GameState Lenses
   gameType,
+  otherTeam,
   homeScore,
   awayScore,
   -- ** ProgMode Lenses
   gameTypeL,
+  otherTeamL,
   homeScoreL,
   awayScoreL,
   -- ** Database Lenses
@@ -123,6 +125,8 @@ data ProgState = ProgState
 data GameState = GameState
   { _gameType  :: Maybe GameType
   -- ^ The type of game (home/away)
+  , _otherTeam :: String
+  -- ^ The name of the other team
   , _homeScore :: Maybe Int
   -- ^ The home team's score
   , _awayScore :: Maybe Int
@@ -341,6 +345,15 @@ gameTypeL = lens
     NewGame gs -> NewGame $ gs & gameType .~ gt
     _          -> NewGame $ newGameState & gameType .~ gt)
 
+otherTeamL :: Lens' ProgMode String
+otherTeamL = lens
+  (\case
+    NewGame gs -> gs ^. otherTeam
+    _          -> "")
+  (\m ot -> case m of
+    NewGame gs -> NewGame $ gs & otherTeam .~ ot
+    _          -> NewGame $ newGameState & otherTeam .~ ot)
+
 homeScoreL :: Lens' ProgMode (Maybe Int)
 homeScoreL = lens
   (\case
@@ -371,6 +384,7 @@ newProgState = ProgState
 newGameState :: GameState
 newGameState = GameState
   { _gameType  = Nothing
+  , _otherTeam = ""
   , _homeScore = Nothing
   , _awayScore = Nothing
   }
