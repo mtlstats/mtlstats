@@ -42,6 +42,7 @@ draw s = do
       NewGame gs
         | null $ gs ^. gameType  -> drawMenu gameTypeMenu
         | null $ gs ^. homeScore -> drawPrompt homeScorePrompt s
+        | null $ gs ^. awayScore -> drawPrompt awayScorePrompt s
         | otherwise              -> undefined
   C.render
   void $ C.setCursorMode cm

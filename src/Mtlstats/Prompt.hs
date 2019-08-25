@@ -25,7 +25,8 @@ module Mtlstats.Prompt (
   promptHandler,
   numPrompt,
   -- * Individual prompts
-  homeScorePrompt
+  homeScorePrompt,
+  awayScorePrompt
 ) where
 
 import Control.Monad (when)
@@ -79,3 +80,7 @@ numPrompt pStr act = Prompt
 homeScorePrompt :: Prompt
 homeScorePrompt = numPrompt "Home score: " $
   modify . (progMode . homeScoreL ?~)
+
+awayScorePrompt :: Prompt
+awayScorePrompt = numPrompt "Away score: " $
+  modify . (progMode . awayScoreL ?~)
