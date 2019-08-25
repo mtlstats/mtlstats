@@ -23,6 +23,7 @@ module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
   promptHandler,
+  strPrompt,
   numPrompt,
   -- * Individual prompts
   homeScorePrompt,
@@ -63,6 +64,20 @@ promptHandler p (C.EventSpecialKey (C.KeyFunction k)) =
   promptFunctionKey p k
 promptHandler _ _ = return ()
 
+-- | Builds a string prompt
+strPrompt
+  :: String
+  -- ^ The prompt string
+  -> (String -> Action ())
+  -- ^ The callback function for the result
+  -> Prompt
+strPrompt pStr act = Prompt
+  { promptDrawer      = drawSimplePrompt pStr
+  , promptCharCheck   = const True
+  , promptAction      = act
+  , promptFunctionKey = const $ return ()
+  }
+
 -- | Builds a numeric prompt
 numPrompt
   :: String
@@ -71,7 +86,7 @@ numPrompt
   -- ^ The callback function for the result
   -> Prompt
 numPrompt pStr act = Prompt
-  { promptDrawer      = \s -> C.drawString $ pStr ++ s ^. inputBuffer
+  { promptDrawer      = drawSimplePrompt pStr
   , promptCharCheck   = isDigit
   , promptAction      = \inStr -> forM_ (readMaybe inStr) act
   , promptFunctionKey = const $ return ()
@@ -84,3 +99,6 @@ homeScorePrompt = numPrompt "Home score: " $
 awayScorePrompt :: Prompt
 awayScorePrompt = numPrompt "Away score: " $
   modify . (progMode . awayScoreL ?~)
+
+drawSimplePrompt :: String -> ProgState -> C.Update ()
+drawSimplePrompt pStr s = C.drawString $ pStr ++ s ^. inputBuffer
