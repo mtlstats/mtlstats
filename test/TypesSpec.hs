@@ -130,6 +130,7 @@ gameTypeLSpec = describe "gameTypeL" $ do
             in m ^. gameTypeL `shouldBe` Just t)
         [HomeGame, AwayGame]
 
+homeScoreLSpec :: Spec
 homeScoreLSpec = describe "homeScoreL" $ do
 
   context "getter" $ do
