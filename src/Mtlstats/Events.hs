@@ -48,4 +48,7 @@ handleEvent e = gets (view progMode) >>= \case
     | null $ gs ^. homeScore -> do
       promptHandler homeScorePrompt e
       return True
+    | null $ gs ^. awayScore -> do
+      promptHandler awayScorePrompt e
+      return True
     | otherwise -> undefined
