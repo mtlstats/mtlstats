@@ -33,6 +33,7 @@ module Mtlstats.Types (
   PlayerStats (..),
   Goalie (..),
   GoalieStats (..),
+  GameStats (..),
   Prompt (..),
   -- * Lenses
   -- ** ProgState Lenses
@@ -76,6 +77,10 @@ module Mtlstats.Types (
   gsWins,
   gsLosses,
   gsTies,
+  -- ** GameStats Lenses
+  gmsWins,
+  gmsLosses,
+  gmsOvertime,
   -- * Constructors
   newProgState,
   newGameState,
@@ -84,6 +89,7 @@ module Mtlstats.Types (
   newPlayerStats,
   newGoalie,
   newGoalieStats,
+  newGameStats,
   -- * Helper Functions
   -- ** ProgState Helpers
   teamScore,
@@ -316,6 +322,33 @@ instance ToJSON GoalieStats where
       "losses"        .= l  <>
       "ties"          .= t
 
+-- | Game statistics
+data GameStats = GameStats
+  { _gmsWins     :: Int
+  -- ^ Games won
+  , _gmsLosses   :: Int
+  -- ^ Games lost
+  , _gmsOvertime :: Int
+  -- ^ Games lost in overtime
+  } deriving (Eq, Show)
+
+instance FromJSON GameStats where
+  parseJSON = withObject "GameStats" $ \v -> GameStats
+    <$> v .: "wins"
+    <*> v .: "losses"
+    <*> v .: "overtime"
+
+instance ToJSON GameStats where
+  toJSON (GameStats w l ot) = object
+    [ "wins"     .= w
+    , "losses"   .= l
+    , "overtime" .= ot
+    ]
+  toEncoding (GameStats w l ot) = pairs $
+    "wins"     .= w  <>
+    "losses"   .= l  <>
+    "overtime" .= ot
+
 -- | Defines a user prompt
 data Prompt = Prompt
   { promptDrawer      :: ProgState -> Update ()
@@ -335,6 +368,7 @@ makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
+makeLenses ''GameStats
 
 gameTypeL :: Lens' ProgMode (Maybe GameType)
 gameTypeL = lens
@@ -446,6 +480,14 @@ newGoalieStats = GoalieStats
   , _gsWins         = 0
   , _gsLosses       = 0
   , _gsTies         = 0
+  }
+
+-- | Constructor for a 'GameStats' value
+newGameStats :: GameStats
+newGameStats = GameStats
+  { _gmsWins     = 0
+  , _gmsLosses   = 0
+  , _gmsOvertime = 0
   }
 
 -- | Determines the team's points

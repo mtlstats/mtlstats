@@ -38,6 +38,7 @@ spec :: Spec
 spec = describe "Mtlstats.Types" $ do
   playerSpec
   goalieSpec
+  gameStatsSpec
   databaseSpec
   pPointsSpec
   gameTypeLSpec
@@ -52,6 +53,10 @@ playerSpec = describe "Player" $ jsonSpec player playerJSON
 
 goalieSpec :: Spec
 goalieSpec = describe "Goalie" $ jsonSpec goalie goalieJSON
+
+gameStatsSpec :: Spec
+gameStatsSpec = describe "GameStats" $
+  jsonSpec (gameStats 1) (gameStatsJSON 1)
 
 databaseSpec :: Spec
 databaseSpec = describe "Database" $ jsonSpec db dbJSON
@@ -289,6 +294,20 @@ goalieStatsJSON n = Object $ HM.fromList
   , ( "wins",          toJSON $ n + 4 )
   , ( "losses",        toJSON $ n + 5 )
   , ( "ties",          toJSON $ n + 6 )
+  ]
+
+gameStats :: Int -> GameStats
+gameStats n = GameStats
+  { _gmsWins     = n
+  , _gmsLosses   = n + 1
+  , _gmsOvertime = n + 2
+  }
+
+gameStatsJSON :: Int -> Value
+gameStatsJSON n = Object $ HM.fromList
+  [ ( "wins",     toJSON n       )
+  , ( "losses",   toJSON $ n + 1 )
+  , ( "overtime", toJSON $ n + 2 )
   ]
 
 db :: Database
