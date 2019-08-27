@@ -312,13 +312,17 @@ gameStatsJSON n = Object $ HM.fromList
 
 db :: Database
 db = newDatabase
-  & dbPlayers .~ [player]
-  & dbGoalies .~ [goalie]
-  & dbGames   .~ 1
+  & dbPlayers       .~ [player]
+  & dbGoalies       .~ [goalie]
+  & dbGames         .~ 1
+  & dbHomeGameStats .~ gameStats 1
+  & dbAwayGameStats .~ gameStats 2
 
 dbJSON :: Value
 dbJSON = Object $ HM.fromList
-  [ ( "players", toJSON [playerJSON] )
-  , ( "goalies", toJSON [goalieJSON] )
-  , ( "games",   toJSON (1 :: Int)   )
+  [ ( "players",         toJSON [playerJSON] )
+  , ( "goalies",         toJSON [goalieJSON] )
+  , ( "games",           toJSON (1 :: Int)   )
+  , ( "home_game_stats", gameStatsJSON 1     )
+  , ( "away_game_stats", gameStatsJSON 2     )
   ]

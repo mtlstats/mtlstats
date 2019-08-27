@@ -54,6 +54,8 @@ module Mtlstats.Types (
   dbPlayers,
   dbGoalies,
   dbGames,
+  dbHomeGameStats,
+  dbAwayGameStats,
   -- ** Player Lenses
   pNumber,
   pName,
@@ -154,12 +156,16 @@ data GameType
 
 -- | Represents the database
 data Database = Database
-  { _dbPlayers :: [Player]
+  { _dbPlayers       :: [Player]
   -- ^ The list of players
-  , _dbGoalies :: [Goalie]
+  , _dbGoalies       :: [Goalie]
   -- ^ The list of goalies
-  , _dbGames   :: Int
+  , _dbGames         :: Int
   -- ^ The number of games recorded
+  , _dbHomeGameStats :: GameStats
+  -- ^ Statistics for home games
+  , _dbAwayGameStats :: GameStats
+  -- ^ Statistics for away games
   } deriving (Eq, Show)
 
 instance FromJSON Database where
@@ -167,17 +173,23 @@ instance FromJSON Database where
     <$> v .: "players"
     <*> v .: "goalies"
     <*> v .: "games"
+    <*> v .: "home_game_stats"
+    <*> v .: "away_game_stats"
 
 instance ToJSON Database where
-  toJSON (Database players goalies games) = object
-    [ "players" .= players
-    , "goalies" .= goalies
-    , "games"   .= games
+  toJSON (Database players goalies games hgs ags) = object
+    [ "players"         .= players
+    , "goalies"         .= goalies
+    , "games"           .= games
+    , "home_game_stats" .= hgs
+    , "away_game_stats" .= ags
     ]
-  toEncoding (Database players goalies games) = pairs $
-    "players" .= players <>
-    "goalies" .= goalies <>
-    "games"   .= games
+  toEncoding (Database players goalies games hgs ags) = pairs $
+    "players"         .= players <>
+    "goalies"         .= goalies <>
+    "games"           .= games   <>
+    "home_game_stats" .= hgs     <>
+    "away_game_stats" .= ags
 
 -- | Represents a (non-goalie) player
 data Player = Player
@@ -426,9 +438,11 @@ newGameState = GameState
 -- | Constructor for a 'Database'
 newDatabase :: Database
 newDatabase = Database
-  { _dbPlayers = []
-  , _dbGoalies = []
-  , _dbGames   = 0
+  { _dbPlayers       = []
+  , _dbGoalies       = []
+  , _dbGames         = 0
+  , _dbHomeGameStats = newGameStats
+  , _dbAwayGameStats = newGameStats
   }
 
 -- | Constructor for a 'Player'
