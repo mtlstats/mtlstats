@@ -40,16 +40,16 @@ module Mtlstats.Types (
   database,
   progMode,
   inputBuffer,
-  -- ** GameState Lenses
-  gameType,
-  otherTeam,
-  homeScore,
-  awayScore,
   -- ** ProgMode Lenses
   gameTypeL,
   otherTeamL,
   homeScoreL,
   awayScoreL,
+  -- ** GameState Lenses
+  gameType,
+  otherTeam,
+  homeScore,
+  awayScore,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
