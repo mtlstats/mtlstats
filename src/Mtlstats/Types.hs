@@ -93,7 +93,7 @@ module Mtlstats.Types (
   newGoalieStats,
   newGameStats,
   -- * Helper Functions
-  -- ** ProgState Helpers
+  -- ** GameState Helpers
   teamScore,
   -- ** Player Helpers
   pPoints
@@ -504,11 +504,11 @@ newGameStats = GameStats
   , _gmsOvertime = 0
   }
 
--- | Determines the team's points
-teamScore :: ProgState -> Maybe Int
-teamScore s = case s ^. progMode . gameTypeL of
-  Just HomeGame -> s ^. progMode . homeScoreL
-  Just AwayGame -> s ^. progMode . awayScoreL
+-- | Determines the team's score
+teamScore :: GameState -> Maybe Int
+teamScore s = case s ^. gameType of
+  Just HomeGame -> s ^. homeScore
+  Just AwayGame -> s ^. awayScore
   Nothing       -> Nothing
 
 -- | Calculates a player's points

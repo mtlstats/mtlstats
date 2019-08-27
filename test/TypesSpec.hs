@@ -197,16 +197,14 @@ awayScoreLSpec = describe "awayScoreL" $ do
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
   let
-    m t = NewGame $ newGameState
+    s t = newGameState
       & gameType  ?~ t
       & homeScore ?~ 1
       & awayScore ?~ 2
-    s t = newProgState
-      & progMode .~ m t
 
-  context "unexpected state" $
+  context "unknown game type" $
     it "should return Nothing" $
-      teamScore newProgState `shouldBe` Nothing
+      teamScore newGameState `shouldBe` Nothing
 
   context "HomeGame" $
     it "should return 1" $
