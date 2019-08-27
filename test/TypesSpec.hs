@@ -19,15 +19,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module TypesSpec (spec) where
 
-import Data.Aeson (decode, encode)
+import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
+import Data.Aeson.Types (Value (Object))
 import Data.ByteString.Lazy (ByteString)
+import qualified Data.HashMap.Strict as HM
 import Lens.Micro ((&), (^.), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
-import Text.RawString.QQ (r)
+
 import Mtlstats.Types
 
 import qualified Types.MenuSpec as Menu
@@ -35,9 +37,9 @@ import qualified Types.MenuSpec as Menu
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
   playerSpec
-  pPointsSpec
   goalieSpec
   databaseSpec
+  pPointsSpec
   gameTypeLSpec
   otherTeamLSpec
   homeScoreLSpec
@@ -46,15 +48,13 @@ spec = describe "Mtlstats.Types" $ do
   Menu.spec
 
 playerSpec :: Spec
-playerSpec = describe "Player" $ do
+playerSpec = describe "Player" $ jsonSpec player playerJSON
 
-  describe "decode" $
-    it "should decode" $
-      decode playerJSON `shouldBe` Just player
+goalieSpec :: Spec
+goalieSpec = describe "Goalie" $ jsonSpec goalie goalieJSON
 
-  describe "encode" $
-    it "should encode" $
-      decode (encode player) `shouldBe` Just player
+databaseSpec :: Spec
+databaseSpec = describe "Database" $ jsonSpec db dbJSON
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_
@@ -73,28 +73,6 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 0,     1,       1      )
   , ( 2,     3,       5      )
   ]
-
-goalieSpec :: Spec
-goalieSpec = describe "Goalie" $ do
-
-  describe "decode" $
-    it "should decode" $
-      decode goalieJSON `shouldBe` Just goalie
-
-  describe "encode" $
-    it "should encode" $
-      decode (encode goalie) `shouldBe` Just goalie
-
-databaseSpec :: Spec
-databaseSpec = describe "Database" $ do
-
-  describe "decode" $
-    it "should decode" $
-      decode dbJSON `shouldBe` Just db
-
-  describe "encode" $
-    it "should encode" $
-      decode (encode db) `shouldBe` Just db
 
 gameTypeLSpec :: Spec
 gameTypeLSpec = describe "gameTypeL" $ do
@@ -233,31 +211,85 @@ teamScoreSpec = describe "teamScore" $ do
     it "should return 2" $
       teamScore (s AwayGame) `shouldBe` Just 2
 
+jsonSpec
+  :: (Eq a, Show a, FromJSON a, ToJSON a)
+  => a
+  -> Value
+  -> Spec
+jsonSpec x j = do
+
+  describe "decode" $
+    it "should decode" $
+      decode (encode j) `shouldBe` Just x
+
+  describe "toJSON" $
+    it "should encode" $
+      decode (encode $ toJSON x) `shouldBe` Just x
+
+  describe "toEncoding" $
+    it "should encode" $
+      decode (encode x) `shouldBe` Just x
+
 player :: Player
 player = newPlayer 1 "Joe" "centre"
-  & pYtd . psGoals        .~ 2
-  & pYtd . psAssists      .~ 3
-  & pYtd . psPMin         .~ 4
-  & pLifetime . psGoals   .~ 5
-  & pLifetime . psAssists .~ 6
-  & pLifetime . psPMin    .~ 7
+  & pYtd      .~ playerStats 1
+  & pLifetime .~ playerStats 2
+
+playerJSON :: Value
+playerJSON = Object $ HM.fromList
+  [ ( "number",   toJSON (1 :: Int)           )
+  , ( "name",     toJSON ("Joe" :: String)    )
+  , ( "position", toJSON ("centre" :: String) )
+  , ( "ytd",      playerStatsJSON 1           )
+  , ( "lifetime", playerStatsJSON 2           )
+  ]
+
+playerStats :: Int -> PlayerStats
+playerStats n = newPlayerStats
+  & psGoals   .~ n
+  & psAssists .~ n + 1
+  & psPMin    .~ n + 2
+
+playerStatsJSON :: Int -> Value
+playerStatsJSON n = Object $ HM.fromList
+  [ ( "goals",        toJSON n       )
+  , ( "assists",      toJSON $ n + 1 )
+  , ( "penalty_mins", toJSON $ n + 2 )
+  ]
 
 goalie :: Goalie
 goalie = newGoalie 1 "Joe"
-  & gYtd . gsGames             .~ 2
-  & gYtd . gsMinsPlayed        .~ 3
-  & gYtd . gsGoalsAllowed      .~ 4
-  & gYtd . gsGoalsAgainst      .~ 5
-  & gYtd . gsWins              .~ 6
-  & gYtd . gsLosses            .~ 7
-  & gYtd . gsTies              .~ 8
-  & gLifetime . gsGames        .~ 9
-  & gLifetime . gsMinsPlayed   .~ 10
-  & gLifetime . gsGoalsAllowed .~ 11
-  & gLifetime . gsGoalsAgainst .~ 12
-  & gLifetime . gsWins         .~ 13
-  & gLifetime . gsLosses       .~ 14
-  & gLifetime . gsTies         .~ 15
+  & gYtd      .~ goalieStats 1
+  & gLifetime .~ goalieStats 2
+
+goalieJSON :: Value
+goalieJSON = Object $ HM.fromList
+  [ ( "number",   toJSON (1 :: Int)         )
+  , ( "name",     toJSON ("Joe" :: String ) )
+  , ( "ytd",      goalieStatsJSON 1         )
+  , ( "lifetime", goalieStatsJSON 2         )
+  ]
+
+goalieStats :: Int -> GoalieStats
+goalieStats n = newGoalieStats
+  & gsGames        .~ n
+  & gsMinsPlayed   .~ n + 1
+  & gsGoalsAllowed .~ n + 2
+  & gsGoalsAgainst .~ n + 3
+  & gsWins         .~ n + 4
+  & gsLosses       .~ n + 5
+  & gsTies         .~ n + 6
+
+goalieStatsJSON :: Int -> Value
+goalieStatsJSON n = Object $ HM.fromList
+  [ ( "games",         toJSON n       )
+  , ( "mins_played",   toJSON $ n + 1 )
+  , ( "goals_allowed", toJSON $ n + 2 )
+  , ( "goals_against", toJSON $ n + 3 )
+  , ( "wins",          toJSON $ n + 4 )
+  , ( "losses",        toJSON $ n + 5 )
+  , ( "ties",          toJSON $ n + 6 )
+  ]
 
 db :: Database
 db = newDatabase
@@ -265,52 +297,9 @@ db = newDatabase
   & dbGoalies .~ [goalie]
   & dbGames   .~ 1
 
-playerJSON :: ByteString
-playerJSON = [r|
-  { "number": 1
-  , "name": "Joe"
-  , "position": "centre"
-  , "ytd":
-    { "goals": 2
-    , "assists": 3
-    , "penalty_mins": 4
-    }
-  , "lifetime":
-    { "goals": 5
-    , "assists": 6
-    , "penalty_mins": 7
-    }
-  }|]
-
-goalieJSON :: ByteString
-goalieJSON = [r|
-  { "number": 1
-  , "name": "Joe"
-  , "ytd":
-    { "games": 2
-    , "mins_played": 3
-    , "goals_allowed": 4
-    , "goals_against": 5
-    , "wins": 6
-    , "losses": 7
-    , "ties": 8
-    }
-  , "lifetime":
-    { "games": 9
-    , "mins_played": 10
-    , "goals_allowed": 11
-    , "goals_against": 12
-    , "wins": 13
-    , "losses": 14
-    , "ties": 15
-    }
-  }|]
-
-dbJSON :: ByteString
-dbJSON = [r|
-  { "players":
-    [ |] <> playerJSON <> [r| ]
-  , "goalies":
-    [ |] <> goalieJSON <> [r| ]
-  , "games": 1
-  }|]
+dbJSON :: Value
+dbJSON = Object $ HM.fromList
+  [ ( "players", toJSON [playerJSON] )
+  , ( "goalies", toJSON [goalieJSON] )
+  , ( "games",   toJSON (1 :: Int)   )
+  ]
