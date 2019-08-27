@@ -46,6 +46,7 @@ spec = describe "Mtlstats.Types" $ do
   homeScoreLSpec
   awayScoreLSpec
   teamScoreSpec
+  otherScoreSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -213,6 +214,26 @@ teamScoreSpec = describe "teamScore" $ do
   context "AwayGame" $
     it "should return 2" $
       teamScore (s AwayGame) `shouldBe` Just 2
+
+otherScoreSpec :: Spec
+otherScoreSpec = describe "otherScore" $ do
+  let
+    s t = newGameState
+      & gameType  ?~ t
+      & homeScore ?~ 1
+      & awayScore ?~ 2
+
+  context "unknown game type" $
+    it "should return Nothing" $
+      otherScore newGameState `shouldBe` Nothing
+
+  context "HomeGame" $
+    it "should return 2" $
+      otherScore (s HomeGame) `shouldBe` Just 2
+
+  context "AwayGame" $
+    it "should return 1" $
+      otherScore (s AwayGame) `shouldBe` Just 1
 
 jsonSpec
   :: (Eq a, Show a, FromJSON a, ToJSON a)

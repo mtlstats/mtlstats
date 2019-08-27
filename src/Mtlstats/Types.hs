@@ -95,6 +95,7 @@ module Mtlstats.Types (
   -- * Helper Functions
   -- ** GameState Helpers
   teamScore,
+  otherScore,
   -- ** Player Helpers
   pPoints
 ) where
@@ -509,6 +510,13 @@ teamScore :: GameState -> Maybe Int
 teamScore s = case s ^. gameType of
   Just HomeGame -> s ^. homeScore
   Just AwayGame -> s ^. awayScore
+  Nothing       -> Nothing
+
+-- | Determines the other team's score
+otherScore :: GameState -> Maybe Int
+otherScore s = case s ^. gameType of
+  Just HomeGame -> s ^. awayScore
+  Just AwayGame -> s ^. homeScore
   Nothing       -> Nothing
 
 -- | Calculates a player's points
