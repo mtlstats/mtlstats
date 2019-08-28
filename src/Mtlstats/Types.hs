@@ -41,6 +41,7 @@ module Mtlstats.Types (
   progMode,
   inputBuffer,
   -- ** ProgMode Lenses
+  gameStateL,
   gameTypeL,
   otherTeamL,
   homeScoreL,
@@ -382,6 +383,13 @@ makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
 makeLenses ''GameStats
+
+gameStateL :: Lens' ProgMode GameState
+gameStateL = lens
+  (\case
+    NewGame gs -> gs
+    _          -> newGameState)
+  (\_ gs -> NewGame gs)
 
 gameTypeL :: Lens' ProgMode (Maybe GameType)
 gameTypeL = lens

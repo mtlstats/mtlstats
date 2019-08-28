@@ -41,6 +41,7 @@ spec = describe "Mtlstats.Types" $ do
   gameStatsSpec
   databaseSpec
   pPointsSpec
+  gameStateLSpec
   gameTypeLSpec
   otherTeamLSpec
   homeScoreLSpec
@@ -79,6 +80,19 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 0,     1,       1      )
   , ( 2,     3,       5      )
   ]
+
+gameStateLSpec :: Spec
+gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
+  -- getters
+  [ ( MainMenu,              newGameState )
+  , ( NewGame $ gs HomeGame, gs HomeGame  )
+  ]
+  -- setters
+  [ ( MainMenu,              gs HomeGame  )
+  , ( NewGame $ gs HomeGame, gs AwayGame  )
+  , ( NewGame $ gs HomeGame, newGameState )
+  ]
+  where gs t = newGameState & gameType ?~ t
 
 gameTypeLSpec :: Spec
 gameTypeLSpec = describe "gameTypeL" $ lensSpec gameTypeL
