@@ -93,6 +93,7 @@ module Mtlstats.Types (
   -- ** GameState Helpers
   teamScore,
   otherScore,
+  gameWon,
   gameTied,
   -- ** Player Helpers
   pPoints
@@ -487,6 +488,12 @@ otherScore s = case s ^. gameType of
   Just HomeGame -> s ^. awayScore
   Just AwayGame -> s ^. homeScore
   Nothing       -> Nothing
+
+-- | Checks if the game was won (returns 'False' if unknown)
+gameWon :: GameState -> Bool
+gameWon gs = case (,) <$> teamScore gs <*> otherScore gs of
+  Just (team, other) -> team > other
+  Nothing            -> False
 
 -- | Checks if the game has tied (retuns 'False' if unknown)
 gameTied :: GameState -> Bool

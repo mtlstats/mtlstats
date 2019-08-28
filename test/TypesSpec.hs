@@ -43,6 +43,7 @@ spec = describe "Mtlstats.Types" $ do
   gameStateLSpec
   teamScoreSpec
   otherScoreSpec
+  gameWonSpec
   gameTiedSpec
   pPointsSpec
   Menu.spec
@@ -242,6 +243,34 @@ dbJSON = Object $ HM.fromList
   , ( "games",           toJSON (1 :: Int)   )
   , ( "home_game_stats", gameStatsJSON 1     )
   , ( "away_game_stats", gameStatsJSON 2     )
+  ]
+
+gameWonSpec :: Spec
+gameWonSpec = describe "gameWon" $ mapM_
+  (\(t, h, a, expected) -> let
+    desc = "game type: " ++ show t ++
+      ", home score: " ++ show h ++
+      ", away score: " ++ show a
+    gs = newGameState
+      & gameType  .~ t
+      & homeScore .~ h
+      & awayScore .~ a
+    in context desc $
+      it ("should be " ++ show expected) $
+        gameWon gs `shouldBe` expected)
+  --  gameType,      homeScore, awayScore, expected
+  [ ( Just HomeGame, Just 1,    Just 1,    False    )
+  , ( Just HomeGame, Just 1,    Just 2,    False    )
+  , ( Just HomeGame, Just 2,    Just 1,    True     )
+  , ( Just AwayGame, Just 1,    Just 1,    False    )
+  , ( Just AwayGame, Just 1,    Just 2,    True     )
+  , ( Just AwayGame, Just 2,    Just 1,    False    )
+  , ( Nothing,       Just 1,    Just 2,    False    )
+  , ( Just HomeGame, Nothing,   Just 1,    False    )
+  , ( Just AwayGame, Nothing,   Just 1,    False    )
+  , ( Just HomeGame, Just 1,    Nothing,   False    )
+  , ( Just AwayGame, Just 1,    Nothing,   False    )
+  , ( Nothing,       Nothing,   Nothing,   False    )
   ]
 
 gameTiedSpec = describe "gameTied" $ mapM_
