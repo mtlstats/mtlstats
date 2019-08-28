@@ -93,6 +93,7 @@ module Mtlstats.Types (
   -- ** GameState Helpers
   teamScore,
   otherScore,
+  gameTied,
   -- ** Player Helpers
   pPoints
 ) where
@@ -486,6 +487,12 @@ otherScore s = case s ^. gameType of
   Just HomeGame -> s ^. awayScore
   Just AwayGame -> s ^. homeScore
   Nothing       -> Nothing
+
+-- | Checks if the game has tied (retuns 'False' if unknown)
+gameTied :: GameState -> Bool
+gameTied gs = case (,) <$> gs^.homeScore <*> gs^.awayScore of
+  Just (home, away) -> home == away
+  Nothing           -> False
 
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int
