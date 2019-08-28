@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
 module TypesSpec (spec) where
 
@@ -27,7 +27,7 @@ import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.HashMap.Strict as HM
-import Lens.Micro ((&), (^.), (.~), (?~))
+import Lens.Micro (Lens', (&), (^.), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Types
@@ -81,119 +81,51 @@ pPointsSpec = describe "pPoints" $ mapM_
   ]
 
 gameTypeLSpec :: Spec
-gameTypeLSpec = describe "gameTypeL" $ do
-
-  context "getter" $ do
-
-    context "unexpected mode" $
-      it "should return Nothing" $
-        MainMenu ^. gameTypeL `shouldBe` Nothing
-
-    mapM_
-      (\t -> context (show t) $
-        it ("should return " ++ show t) $ let
-          gs = newGameState & gameType ?~ t
-          m  = NewGame gs
-          in m ^. gameTypeL `shouldBe` Just t)
-      [HomeGame, AwayGame]
-
-  context "setter" $ do
-
-    context "unexpected mode" $
-      mapM_
-        (\t -> context (show t) $
-          it ("should set to " ++ show t) $ let
-            m = MainMenu & gameTypeL ?~ t
-            in m ^. gameTypeL `shouldBe` Just t)
-        [HomeGame, AwayGame]
-
-    context "expected mode" $
-      mapM_
-        (\t -> context (show t) $
-          it ("should set to " ++ show t) $ let
-            m = NewGame newGameState & gameTypeL ?~ t
-            in m ^. gameTypeL `shouldBe` Just t)
-        [HomeGame, AwayGame]
+gameTypeLSpec = describe "gameTypeL" $ lensSpec gameTypeL
+  [ ( MainMenu,   Nothing       )
+  , ( m HomeGame, Just HomeGame )
+  , ( m AwayGame, Just AwayGame )
+  ]
+  [ ( MainMenu,   Just HomeGame )
+  , ( MainMenu,   Just AwayGame )
+  , ( m HomeGame, Just AwayGame )
+  , ( m AwayGame, Just HomeGame )
+  , ( m HomeGame, Nothing       )
+  ]
+  where m t = NewGame $ newGameState & gameType ?~ t
 
 otherTeamLSpec :: Spec
-otherTeamLSpec = describe "otherTeamL" $ do
-
-  context "getter" $ do
-
-    context "unexpected mode" $
-      it "should return an empty string" $
-        MainMenu ^. otherTeamL `shouldBe` ""
-
-    context "expected mode" $
-      it "should return \"foo\"" $ let
-        m = NewGame $ newGameState & otherTeam .~ "foo"
-        in m ^. otherTeamL `shouldBe` "foo"
-
-  context "setter" $ do
-
-    context "unexpected mode" $
-      it "should set the value" $ let
-        m = MainMenu & otherTeamL .~ "foo"
-        in m ^. otherTeamL `shouldBe` "foo"
-
-    context "expected mode" $
-      it "should set the value" $ let
-        m = NewGame newGameState & otherTeamL .~ "foo"
-        in m ^. otherTeamL `shouldBe` "foo"
+otherTeamLSpec = describe "otherTeamL" $ lensSpec otherTeamL
+  [ ( MainMenu, ""    )
+  , ( m "foo",  "foo" )
+  ]
+  [ ( MainMenu, "foo" )
+  , ( m "foo",  "bar" )
+  , ( m "foo",  ""    )
+  ]
+  where m t = NewGame $ newGameState & otherTeam .~ t
 
 homeScoreLSpec :: Spec
-homeScoreLSpec = describe "homeScoreL" $ do
-
-  context "getter" $ do
-
-    context "unexpected mode" $
-      it "should return Nothing" $
-        MainMenu ^. homeScoreL `shouldBe` Nothing
-
-    context "expected mode" $
-      it "should return 0" $ let
-        gs = newGameState & homeScore ?~ 0
-        m  = NewGame gs
-        in m ^. homeScoreL `shouldBe` Just 0
-
-  context "setter" $ do
-
-    context "unexpected mode" $
-      it "should set home score" $ let
-        m = MainMenu & homeScoreL ?~ 0
-        in m ^. homeScoreL `shouldBe` Just 0
-
-    context "expected mode" $
-      it "should set home score" $ let
-        m = NewGame newGameState & homeScoreL ?~ 0
-        in m ^. homeScoreL `shouldBe` Just 0
+homeScoreLSpec = describe "homeScoreL" $ lensSpec homeScoreL
+  [ ( MainMenu, Nothing )
+  , ( m 1,      Just 1  )
+  ]
+  [ ( MainMenu, Just 1  )
+  , ( m 1,      Just 2  )
+  , ( m 1,      Nothing )
+  ]
+  where m s = NewGame $ newGameState & homeScore ?~ s
 
 awayScoreLSpec :: Spec
-awayScoreLSpec = describe "awayScoreL" $ do
-
-  context "getter" $ do
-
-    context "unexpected mode" $
-      it "should return Nothing" $
-        MainMenu ^. awayScoreL `shouldBe` Nothing
-
-    context "expected mode" $
-      it "should return 0" $ let
-        gs = newGameState & awayScore ?~ 0
-        m  = NewGame gs
-        in m ^. awayScoreL `shouldBe` Just 0
-
-  context "setter" $ do
-
-    context "unexpected mode" $
-      it "should set the away score" $ let
-        m = MainMenu & awayScoreL ?~ 0
-        in m ^. awayScoreL `shouldBe` Just 0
-
-    context "expected mode" $
-      it "should set the away score" $ let
-        m = NewGame newGameState & awayScoreL ?~ 0
-        in m ^. awayScoreL `shouldBe` Just 0
+awayScoreLSpec = describe "awayScoreL" $ lensSpec awayScoreL
+  [ ( MainMenu, Nothing )
+  , ( m 1,      Just 1  )
+  ]
+  [ ( MainMenu, Just 1  )
+  , ( m 1,      Just 2  )
+  , ( m 1,      Nothing )
+  ]
+  where m s = NewGame $ newGameState & awayScore ?~ s
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -253,6 +185,26 @@ jsonSpec x j = do
   describe "toEncoding" $
     it "should encode" $
       decode (encode x) `shouldBe` Just x
+
+lensSpec
+  :: (Eq a, Show s, Show a)
+  => Lens' s a
+  -> [(s, a)]
+  -> [(s, a)]
+  -> Spec
+lensSpec l gs ss = do
+
+  context "getters" $ mapM_
+    (\(s, x) -> context (show s) $
+      it ("should be " ++ show x) $
+        s ^. l `shouldBe` x)
+    gs
+
+  context "setters" $ mapM_
+    (\(s, x) -> context (show s) $
+      it ("should set to " ++ show x) $
+        (s & l .~ x) ^. l `shouldBe` x)
+    ss
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
