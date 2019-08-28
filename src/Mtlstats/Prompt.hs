@@ -95,15 +95,15 @@ numPrompt pStr act = Prompt
 
 otherTeamPrompt :: Prompt
 otherTeamPrompt = strPrompt "Other team: " $
-  modify . (progMode . otherTeamL .~)
+  modify . (progMode . gameStateL . otherTeam .~)
 
 homeScorePrompt :: Prompt
 homeScorePrompt = numPrompt "Home score: " $
-  modify . (progMode . homeScoreL ?~)
+  modify . (progMode . gameStateL . homeScore ?~)
 
 awayScorePrompt :: Prompt
 awayScorePrompt = numPrompt "Away score: " $
-  modify . (progMode . awayScoreL ?~)
+  modify . (progMode . gameStateL . awayScore ?~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s ^. inputBuffer

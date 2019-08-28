@@ -75,7 +75,7 @@ newSeasonMenu = Menu "*** SEASON TYPE ***" ()
 gameTypeMenu :: Menu ()
 gameTypeMenu = Menu "*** GAME TYPE ***" ()
   [ MenuItem '1' "Home Game" $
-    modify $ progMode . gameTypeL ?~ HomeGame
+    modify $ progMode . gameStateL . gameType ?~ HomeGame
   , MenuItem '2' "Away Game" $
-    modify $ progMode . gameTypeL ?~ AwayGame
+    modify $ progMode . gameStateL . gameType ?~ AwayGame
   ]

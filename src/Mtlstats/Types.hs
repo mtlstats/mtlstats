@@ -42,10 +42,6 @@ module Mtlstats.Types (
   inputBuffer,
   -- ** ProgMode Lenses
   gameStateL,
-  gameTypeL,
-  otherTeamL,
-  homeScoreL,
-  awayScoreL,
   -- ** GameState Lenses
   gameType,
   otherTeam,
@@ -390,42 +386,6 @@ gameStateL = lens
     NewGame gs -> gs
     _          -> newGameState)
   (\_ gs -> NewGame gs)
-
-gameTypeL :: Lens' ProgMode (Maybe GameType)
-gameTypeL = lens
-  (\case
-    NewGame gs -> gs ^. gameType
-    _          -> Nothing)
-  (\m gt -> case m of
-    NewGame gs -> NewGame $ gs & gameType .~ gt
-    _          -> NewGame $ newGameState & gameType .~ gt)
-
-otherTeamL :: Lens' ProgMode String
-otherTeamL = lens
-  (\case
-    NewGame gs -> gs ^. otherTeam
-    _          -> "")
-  (\m ot -> case m of
-    NewGame gs -> NewGame $ gs & otherTeam .~ ot
-    _          -> NewGame $ newGameState & otherTeam .~ ot)
-
-homeScoreL :: Lens' ProgMode (Maybe Int)
-homeScoreL = lens
-  (\case
-    NewGame gs -> gs ^. homeScore
-    _          -> Nothing)
-  (\m hs -> case m of
-    NewGame gs -> NewGame $ gs & homeScore .~ hs
-    _          -> NewGame $ newGameState & homeScore .~ hs)
-
-awayScoreL :: Lens' ProgMode (Maybe Int)
-awayScoreL = lens
-  (\case
-    NewGame gs -> gs ^. awayScore
-    _          -> Nothing)
-  (\m as -> case m of
-    NewGame gs -> NewGame $ gs & awayScore .~ as
-    _          -> NewGame $ newGameState & awayScore .~ as)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState

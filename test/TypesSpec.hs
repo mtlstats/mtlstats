@@ -42,10 +42,6 @@ spec = describe "Mtlstats.Types" $ do
   databaseSpec
   pPointsSpec
   gameStateLSpec
-  gameTypeLSpec
-  otherTeamLSpec
-  homeScoreLSpec
-  awayScoreLSpec
   teamScoreSpec
   otherScoreSpec
   Menu.spec
@@ -93,53 +89,6 @@ gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   , ( NewGame $ gs HomeGame, newGameState )
   ]
   where gs t = newGameState & gameType ?~ t
-
-gameTypeLSpec :: Spec
-gameTypeLSpec = describe "gameTypeL" $ lensSpec gameTypeL
-  [ ( MainMenu,   Nothing       )
-  , ( m HomeGame, Just HomeGame )
-  , ( m AwayGame, Just AwayGame )
-  ]
-  [ ( MainMenu,   Just HomeGame )
-  , ( MainMenu,   Just AwayGame )
-  , ( m HomeGame, Just AwayGame )
-  , ( m AwayGame, Just HomeGame )
-  , ( m HomeGame, Nothing       )
-  ]
-  where m t = NewGame $ newGameState & gameType ?~ t
-
-otherTeamLSpec :: Spec
-otherTeamLSpec = describe "otherTeamL" $ lensSpec otherTeamL
-  [ ( MainMenu, ""    )
-  , ( m "foo",  "foo" )
-  ]
-  [ ( MainMenu, "foo" )
-  , ( m "foo",  "bar" )
-  , ( m "foo",  ""    )
-  ]
-  where m t = NewGame $ newGameState & otherTeam .~ t
-
-homeScoreLSpec :: Spec
-homeScoreLSpec = describe "homeScoreL" $ lensSpec homeScoreL
-  [ ( MainMenu, Nothing )
-  , ( m 1,      Just 1  )
-  ]
-  [ ( MainMenu, Just 1  )
-  , ( m 1,      Just 2  )
-  , ( m 1,      Nothing )
-  ]
-  where m s = NewGame $ newGameState & homeScore ?~ s
-
-awayScoreLSpec :: Spec
-awayScoreLSpec = describe "awayScoreL" $ lensSpec awayScoreL
-  [ ( MainMenu, Nothing )
-  , ( m 1,      Just 1  )
-  ]
-  [ ( MainMenu, Just 1  )
-  , ( m 1,      Just 2  )
-  , ( m 1,      Nothing )
-  ]
-  where m s = NewGame $ newGameState & awayScore ?~ s
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
