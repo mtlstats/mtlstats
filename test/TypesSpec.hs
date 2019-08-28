@@ -40,10 +40,10 @@ spec = describe "Mtlstats.Types" $ do
   goalieSpec
   gameStatsSpec
   databaseSpec
-  pPointsSpec
   gameStateLSpec
   teamScoreSpec
   otherScoreSpec
+  pPointsSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -58,24 +58,6 @@ gameStatsSpec = describe "GameStats" $
 
 databaseSpec :: Spec
 databaseSpec = describe "Database" $ jsonSpec db dbJSON
-
-pPointsSpec :: Spec
-pPointsSpec = describe "pPoints" $ mapM_
-  (\(goals, assists, points) -> let
-    desc = "goals: " ++ show goals ++
-      ", assists: " ++ show assists
-    stats = newPlayerStats &
-      psGoals   .~ goals &
-      psAssists .~ assists
-    in context desc $
-      it ("should be " ++ show points) $
-        pPoints stats `shouldBe` points)
-  --  goals, assists, points
-  [ ( 0,     0,       0      )
-  , ( 1,     0,       1      )
-  , ( 0,     1,       1      )
-  , ( 2,     3,       5      )
-  ]
 
 gameStateLSpec :: Spec
 gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
@@ -259,4 +241,22 @@ dbJSON = Object $ HM.fromList
   , ( "games",           toJSON (1 :: Int)   )
   , ( "home_game_stats", gameStatsJSON 1     )
   , ( "away_game_stats", gameStatsJSON 2     )
+  ]
+
+pPointsSpec :: Spec
+pPointsSpec = describe "pPoints" $ mapM_
+  (\(goals, assists, points) -> let
+    desc = "goals: " ++ show goals ++
+      ", assists: " ++ show assists
+    stats = newPlayerStats &
+      psGoals   .~ goals &
+      psAssists .~ assists
+    in context desc $
+      it ("should be " ++ show points) $
+        pPoints stats `shouldBe` points)
+  --  goals, assists, points
+  [ ( 0,     0,       0      )
+  , ( 1,     0,       1      )
+  , ( 0,     1,       1      )
+  , ( 2,     3,       5      )
   ]
