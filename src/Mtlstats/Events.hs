@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Events (handleEvent) where
 
 import Control.Monad.Trans.State (gets, modify)
+import Data.Char (toUpper)
 import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
@@ -55,4 +56,14 @@ handleEvent e = gets (view progMode) >>= \case
       promptHandler awayScorePrompt e
       modify overtimeCheck
       return True
+    | null $ gs ^. overtimeFlag -> do
+      overtimePrompt e
+        >>= modify . (progMode.gameStateL.overtimeFlag .~)
+      return True
     | otherwise -> undefined
+
+overtimePrompt :: C.Event -> Action (Maybe Bool)
+overtimePrompt (C.EventCharacter c) = case toUpper c of
+  'Y' -> return (Just True)
+  'N' -> return (Just False)
+  _   -> return Nothing

@@ -40,10 +40,16 @@ draw s = do
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
       NewGame gs
-        | null $ gs ^. gameType  -> drawMenu gameTypeMenu
-        | null $ gs ^. otherTeam -> drawPrompt otherTeamPrompt s
-        | null $ gs ^. homeScore -> drawPrompt homeScorePrompt s
-        | null $ gs ^. awayScore -> drawPrompt awayScorePrompt s
-        | otherwise              -> undefined
+        | null $ gs^.gameType     -> drawMenu gameTypeMenu
+        | null $ gs^.otherTeam    -> drawPrompt otherTeamPrompt s
+        | null $ gs^.homeScore    -> drawPrompt homeScorePrompt s
+        | null $ gs^.awayScore    -> drawPrompt awayScorePrompt s
+        | null $ gs^.overtimeFlag -> overtimePrompt
+        | otherwise               -> undefined
   C.render
   void $ C.setCursorMode cm
+
+overtimePrompt :: C.Update C.CursorMode
+overtimePrompt = do
+  C.drawString "Did the game go into overtime?  (Y/N)"
+  return C.CursorInvisible
