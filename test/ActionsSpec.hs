@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
-import Lens.Micro ((&), (.~), (?~), (^.))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, shouldBe, shouldNotBe)
 
@@ -36,6 +36,7 @@ spec = describe "Mtlstats.Actions" $ do
   resetYtdSpec
   addCharSpec
   removeCharSpec
+  overtimeCheckSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -125,6 +126,62 @@ removeCharSpec = describe "removeChar" $ do
         & inputBuffer .~ "foo"
         & removeChar
       in s ^. inputBuffer `shouldBe` "fo"
+
+overtimeCheckSpec = describe "overtimeCheck" $ do
+
+  context "tie game" $ do
+    let
+      s = newProgState
+        & progMode.gameStateL
+          %~ (gameType  ?~ HomeGame)
+          .  (homeScore ?~ 1)
+          .  (awayScore ?~ 1)
+        & overtimeCheck
+
+    it "should clear the home score" $
+      s^.progMode.gameStateL.homeScore `shouldBe` Nothing
+
+    it "should clear the away score" $
+      s^.progMode.gameStateL.awayScore `shouldBe` Nothing
+
+    it "should leave the overtimeFlag blank" $
+      s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
+
+  context "game won" $ do
+    let
+      s = newProgState
+        & progMode.gameStateL
+          %~ (gameType  ?~ HomeGame)
+          .  (homeScore ?~ 2)
+          .  (awayScore ?~ 1)
+        & overtimeCheck
+
+    it "should not change the home score" $
+      s^.progMode.gameStateL.homeScore `shouldBe` Just 2
+
+    it "should not change the away score" $
+      s^.progMode.gameStateL.awayScore `shouldBe` Just 1
+
+    it "should set the overtimeCheck flag to False" $
+      s^.progMode.gameStateL.overtimeFlag `shouldBe` Just False
+
+  context "game lost" $ do
+    let
+      s = newProgState
+        & progMode.gameStateL
+          %~ (gameType  ?~ HomeGame)
+          .  (homeScore ?~ 1)
+          .  (awayScore ?~ 2)
+        & overtimeCheck
+
+    it "should not change the home score" $
+      s^.progMode.gameStateL.homeScore `shouldBe` Just 1
+
+    it "should not change the away score" $
+      s^.progMode.gameStateL.awayScore `shouldBe` Just 2
+
+    it "should leave the overtimeCheck flag blank" $
+      s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
 
 makePlayer :: IO Player
 makePlayer = Player

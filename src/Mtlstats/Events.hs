@@ -53,5 +53,6 @@ handleEvent e = gets (view progMode) >>= \case
       return True
     | null $ gs ^. awayScore -> do
       promptHandler awayScorePrompt e
+      modify overtimeCheck
       return True
     | otherwise -> undefined

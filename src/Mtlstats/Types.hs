@@ -47,6 +47,7 @@ module Mtlstats.Types (
   otherTeam,
   homeScore,
   awayScore,
+  overtimeFlag,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -131,14 +132,16 @@ data ProgState = ProgState
 
 -- | The game state
 data GameState = GameState
-  { _gameType  :: Maybe GameType
+  { _gameType     :: Maybe GameType
   -- ^ The type of game (home/away)
-  , _otherTeam :: String
+  , _otherTeam    :: String
   -- ^ The name of the other team
-  , _homeScore :: Maybe Int
+  , _homeScore    :: Maybe Int
   -- ^ The home team's score
-  , _awayScore :: Maybe Int
+  , _awayScore    :: Maybe Int
   -- ^ The away team's score
+  , _overtimeFlag :: Maybe Bool
+  -- ^ Indicates whether or not the game went into overtime
   } deriving (Eq, Show)
 
 -- | The program mode
@@ -400,10 +403,11 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameType  = Nothing
-  , _otherTeam = ""
-  , _homeScore = Nothing
-  , _awayScore = Nothing
+  { _gameType     = Nothing
+  , _otherTeam    = ""
+  , _homeScore    = Nothing
+  , _awayScore    = Nothing
+  , _overtimeFlag = Nothing
   }
 
 -- | Constructor for a 'Database'

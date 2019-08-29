@@ -27,9 +27,10 @@ module Mtlstats.Actions
   , startNewGame
   , addChar
   , removeChar
+  , overtimeCheck
   ) where
 
-import Lens.Micro (over, (&), (.~), (?~), (%~))
+import Lens.Micro (over, (^.), (&), (.~), (?~), (%~))
 
 import Mtlstats.Types
 
@@ -58,3 +59,14 @@ removeChar :: ProgState -> ProgState
 removeChar = inputBuffer %~ \case
   ""  -> ""
   str -> init str
+
+-- | Determines whether or not to perform a check for overtime
+overtimeCheck :: ProgState -> ProgState
+overtimeCheck s
+  | gameTied (s^.progMode.gameStateL) =
+    s & progMode.gameStateL
+    %~ (homeScore .~ Nothing)
+    .  (awayScore .~ Nothing)
+  | gameWon (s^.progMode.gameStateL) =
+    s & progMode.gameStateL.overtimeFlag ?~ False
+  | otherwise  = s
