@@ -44,6 +44,7 @@ spec = describe "Mtlstats.Types" $ do
   teamScoreSpec
   otherScoreSpec
   gameWonSpec
+  gameLostSpec
   gameTiedSpec
   pPointsSpec
   Menu.spec
@@ -265,6 +266,34 @@ gameWonSpec = describe "gameWon" $ mapM_
   , ( Just AwayGame, Just 1,    Just 1,    Just False )
   , ( Just AwayGame, Just 1,    Just 2,    Just True  )
   , ( Just AwayGame, Just 2,    Just 1,    Just False )
+  , ( Nothing,       Just 1,    Just 2,    Nothing    )
+  , ( Just HomeGame, Nothing,   Just 1,    Nothing    )
+  , ( Just AwayGame, Nothing,   Just 1,    Nothing    )
+  , ( Just HomeGame, Just 1,    Nothing,   Nothing    )
+  , ( Just AwayGame, Just 1,    Nothing,   Nothing    )
+  , ( Nothing,       Nothing,   Nothing,   Nothing    )
+  ]
+
+gameLostSpec :: Spec
+gameLostSpec = describe "gameLost" $ mapM_
+  (\(t, h, a, expected) -> let
+    desc = "game type: " ++ show t ++
+      ", home score: " ++ show h ++
+      ", away score: " ++ show a
+    gs = newGameState
+      & gameType  .~ t
+      & homeScore .~ h
+      & awayScore .~ a
+    in context desc $
+      it ("should be " ++ show expected) $
+        gameLost gs `shouldBe` expected)
+  --  gameType,      homeScore, awayScore, expected
+  [ ( Just HomeGame, Just 1,    Just 1,    Just False )
+  , ( Just HomeGame, Just 1,    Just 2,    Just True  )
+  , ( Just HomeGame, Just 2,    Just 1,    Just False )
+  , ( Just AwayGame, Just 1,    Just 1,    Just False )
+  , ( Just AwayGame, Just 1,    Just 2,    Just False )
+  , ( Just AwayGame, Just 2,    Just 1,    Just True  )
   , ( Nothing,       Just 1,    Just 2,    Nothing    )
   , ( Just HomeGame, Nothing,   Just 1,    Nothing    )
   , ( Just AwayGame, Nothing,   Just 1,    Nothing    )

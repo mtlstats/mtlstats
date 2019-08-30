@@ -95,6 +95,7 @@ module Mtlstats.Types (
   teamScore,
   otherScore,
   gameWon,
+  gameLost,
   gameTied,
   -- ** Player Helpers
   pPoints
@@ -496,6 +497,10 @@ otherScore s = case s ^. gameType of
 -- | Checks if the game was won
 gameWon :: GameState -> Maybe Bool
 gameWon gs = (>) <$> teamScore gs <*> otherScore gs
+
+-- | Checks if the game was lost
+gameLost :: GameState -> Maybe Bool
+gameLost gs = (<) <$> teamScore gs <*> otherScore gs
 
 -- | Checks if the game has tied
 gameTied :: GameState -> Maybe Bool
