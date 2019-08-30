@@ -28,10 +28,11 @@ module Mtlstats.Actions
   , addChar
   , removeChar
   , overtimeCheck
+  , updateGameStats
   ) where
 
 import Data.Maybe (fromMaybe)
-import Lens.Micro (over, (^.), (&), (.~), (?~), (%~))
+import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
 
 import Mtlstats.Types
 
@@ -71,3 +72,29 @@ overtimeCheck s
   | fromMaybe False $ gameWon $ s^.progMode.gameStateL =
     s & progMode.gameStateL.overtimeFlag ?~ False
   | otherwise  = s
+
+-- | Adjusts the game stats based on the results of the current game
+updateGameStats :: ProgState -> ProgState
+updateGameStats s = fromMaybe s result
+  where
+    result = do
+      gType <- s^.progMode.gameStateL.gameType
+      won   <- gameWon $ s^.progMode.gameStateL
+      lost  <- gameLost $ s^.progMode.gameStateL
+      ot    <- s^.progMode.gameStateL.overtimeFlag
+      let
+        hw  = if gType == HomeGame && won then 1 else 0
+        hl  = if gType == HomeGame && lost then 1 else 0
+        hot = if gType == HomeGame && ot then 1 else 0
+        aw  = if gType == AwayGame && won then 1 else 0
+        al  = if gType == AwayGame && lost then 1 else 0
+        aot = if gType == AwayGame && ot then 1 else 0
+      Just $ s
+        & database.dbHomeGameStats
+          %~ (gmsWins +~ hw)
+          .  (gmsLosses +~ hl)
+          .  (gmsOvertime +~ hot)
+        & database.dbAwayGameStats
+          %~ (gmsWins +~ aw)
+          .  (gmsLosses +~ al)
+          .  (gmsOvertime +~ aot)

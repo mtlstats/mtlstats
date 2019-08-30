@@ -59,6 +59,7 @@ handleEvent e = gets (view progMode) >>= \case
     | null $ gs ^. overtimeFlag -> do
       overtimePrompt e
         >>= modify . (progMode.gameStateL.overtimeFlag .~)
+      modify updateGameStats
       return True
     | otherwise -> undefined
 

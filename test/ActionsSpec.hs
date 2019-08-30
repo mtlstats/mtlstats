@@ -37,6 +37,7 @@ spec = describe "Mtlstats.Actions" $ do
   addCharSpec
   removeCharSpec
   overtimeCheckSpec
+  updateGameStatsSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -182,6 +183,91 @@ overtimeCheckSpec = describe "overtimeCheck" $ do
 
     it "should leave the overtimeCheck flag blank" $
       s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
+
+updateGameStatsSpec :: Spec
+updateGameStatsSpec = describe "updateGameStats" $ do
+  let
+
+    baseStats = newGameStats
+      & gmsWins     .~ 1
+      & gmsLosses   .~ 1
+      & gmsOvertime .~ 1
+
+    s t h a o = newProgState
+      & progMode.gameStateL
+        %~ (gameType     .~ t)
+        .  (homeScore    .~ h)
+        .  (awayScore    .~ a)
+        .  (overtimeFlag .~ o)
+      & database
+        %~ (dbHomeGameStats .~ baseStats)
+        .  (dbAwayGameStats .~ baseStats)
+
+    db hw hl ho aw al ao = newDatabase
+      & dbHomeGameStats
+        %~ (gmsWins     .~ hw)
+        .  (gmsLosses   .~ hl)
+        .  (gmsOvertime .~ ho)
+      & dbAwayGameStats
+        %~ (gmsWins     .~ aw)
+        .  (gmsLosses   .~ al)
+        .  (gmsOvertime .~ ao)
+
+  context "home win" $
+    it "should record a home win" $ let
+      s'  = s (Just HomeGame) (Just 2) (Just 1) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 2 1 1 1 1 1
+
+  context "home loss" $
+    it "should record a home loss" $ let
+      s'  = s (Just HomeGame) (Just 1) (Just 2) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 2 1 1 1 1
+
+  context "home overtime loss" $
+    it "should record a home loss and overtime" $ let
+      s'  = s (Just HomeGame) (Just 1) (Just 2) (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 2 2 1 1 1
+
+  context "away win" $
+    it "should record an away win" $ let
+      s'  = s (Just AwayGame) (Just 1) (Just 2) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 2 1 1
+
+  context "away loss" $
+    it "should record an away loss" $ let
+      s'  = s (Just AwayGame) (Just 2) (Just 1) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 2 1
+
+  context "away overtime loss" $
+    it "should record an away loss and overtime" $ let
+      s'  = s (Just AwayGame) (Just 2) (Just 1) (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 2 2
+
+  context "missing game type" $
+    it "should not change anything" $ let
+      s' = s Nothing (Just 1) (Just 2) (Just True)
+      in updateGameStats s' `shouldBe` s'
+
+  context "missing home score" $
+    it "should not change anything" $ let
+      s' = s (Just HomeGame) Nothing (Just 1) (Just True)
+      in updateGameStats s' `shouldBe` s'
+
+  context "missing away score" $
+    it "should not change anything" $ let
+      s' = s (Just HomeGame) (Just 1) Nothing (Just True)
+      in updateGameStats s' `shouldBe` s'
+
+  context "missing overtime flag" $
+    it "should not change anything" $ let
+      s' = s (Just HomeGame) (Just 1) (Just 2) Nothing
+      in updateGameStats s' `shouldBe` s'
 
 makePlayer :: IO Player
 makePlayer = Player
