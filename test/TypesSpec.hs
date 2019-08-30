@@ -259,20 +259,21 @@ gameWonSpec = describe "gameWon" $ mapM_
       it ("should be " ++ show expected) $
         gameWon gs `shouldBe` expected)
   --  gameType,      homeScore, awayScore, expected
-  [ ( Just HomeGame, Just 1,    Just 1,    False    )
-  , ( Just HomeGame, Just 1,    Just 2,    False    )
-  , ( Just HomeGame, Just 2,    Just 1,    True     )
-  , ( Just AwayGame, Just 1,    Just 1,    False    )
-  , ( Just AwayGame, Just 1,    Just 2,    True     )
-  , ( Just AwayGame, Just 2,    Just 1,    False    )
-  , ( Nothing,       Just 1,    Just 2,    False    )
-  , ( Just HomeGame, Nothing,   Just 1,    False    )
-  , ( Just AwayGame, Nothing,   Just 1,    False    )
-  , ( Just HomeGame, Just 1,    Nothing,   False    )
-  , ( Just AwayGame, Just 1,    Nothing,   False    )
-  , ( Nothing,       Nothing,   Nothing,   False    )
+  [ ( Just HomeGame, Just 1,    Just 1,    Just False )
+  , ( Just HomeGame, Just 1,    Just 2,    Just False )
+  , ( Just HomeGame, Just 2,    Just 1,    Just True  )
+  , ( Just AwayGame, Just 1,    Just 1,    Just False )
+  , ( Just AwayGame, Just 1,    Just 2,    Just True  )
+  , ( Just AwayGame, Just 2,    Just 1,    Just False )
+  , ( Nothing,       Just 1,    Just 2,    Nothing    )
+  , ( Just HomeGame, Nothing,   Just 1,    Nothing    )
+  , ( Just AwayGame, Nothing,   Just 1,    Nothing    )
+  , ( Just HomeGame, Just 1,    Nothing,   Nothing    )
+  , ( Just AwayGame, Just 1,    Nothing,   Nothing    )
+  , ( Nothing,       Nothing,   Nothing,   Nothing    )
   ]
 
+gameTiedSpec :: Spec
 gameTiedSpec = describe "gameTied" $ mapM_
   (\(home, away, expected) -> let
     desc = "home score: " ++ show home ++
@@ -283,11 +284,11 @@ gameTiedSpec = describe "gameTied" $ mapM_
     in context desc $
       it ("should be " ++ show expected) $
         gameTied gs `shouldBe` expected)
-  [ ( Nothing, Nothing, False )
-  , ( Nothing, Just 1,  False )
-  , ( Just 1,  Nothing, False )
-  , ( Just 1,  Just 1,  True  )
-  , ( Just 1,  Just 2,  False )
+  [ ( Nothing, Nothing, Nothing    )
+  , ( Nothing, Just 1,  Nothing    )
+  , ( Just 1,  Nothing, Nothing    )
+  , ( Just 1,  Just 1,  Just True  )
+  , ( Just 1,  Just 2,  Just False )
   ]
 
 pPointsSpec :: Spec

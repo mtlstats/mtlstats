@@ -30,6 +30,7 @@ module Mtlstats.Actions
   , overtimeCheck
   ) where
 
+import Data.Maybe (fromMaybe)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~))
 
 import Mtlstats.Types
@@ -63,10 +64,10 @@ removeChar = inputBuffer %~ \case
 -- | Determines whether or not to perform a check for overtime
 overtimeCheck :: ProgState -> ProgState
 overtimeCheck s
-  | gameTied (s^.progMode.gameStateL) =
+  | fromMaybe False $ gameTied $ s^.progMode.gameStateL =
     s & progMode.gameStateL
     %~ (homeScore .~ Nothing)
     .  (awayScore .~ Nothing)
-  | gameWon (s^.progMode.gameStateL) =
+  | fromMaybe False $ gameWon $ s^.progMode.gameStateL =
     s & progMode.gameStateL.overtimeFlag ?~ False
   | otherwise  = s
