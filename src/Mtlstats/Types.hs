@@ -43,6 +43,9 @@ module Mtlstats.Types (
   -- ** ProgMode Lenses
   gameStateL,
   -- ** GameState Lenses
+  gameYear,
+  gameMonth,
+  gameDay,
   gameType,
   otherTeam,
   homeScore,
@@ -136,7 +139,13 @@ data ProgState = ProgState
 
 -- | The game state
 data GameState = GameState
-  { _gameType     :: Maybe GameType
+  { _gameYear     :: Maybe Int
+  -- ^ The year the game took place
+  , _gameMonth    :: Maybe Int
+  -- ^ The month the game took place
+  , _gameDay      :: Maybe Int
+  -- ^ The day of the month the game took place
+  , _gameType     :: Maybe GameType
   -- ^ The type of game (home/away)
   , _otherTeam    :: String
   -- ^ The name of the other team
@@ -407,7 +416,10 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameType     = Nothing
+  { _gameYear     = Nothing
+  , _gameMonth    = Nothing
+  , _gameDay      = Nothing
+  , _gameType     = Nothing
   , _otherTeam    = ""
   , _homeScore    = Nothing
   , _awayScore    = Nothing
