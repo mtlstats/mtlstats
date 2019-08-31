@@ -26,6 +26,7 @@ module Mtlstats.Menu (
   -- * Menus
   mainMenu,
   newSeasonMenu,
+  gameMonthMenu,
   gameTypeMenu
 ) where
 
@@ -70,6 +71,26 @@ newSeasonMenu = Menu "*** SEASON TYPE ***" ()
     modify $ resetYtd . startNewGame
   , MenuItem '2' "Playoffs" $
     modify startNewGame
+  ]
+
+-- | Requests the month in which the game took place
+gameMonthMenu :: Menu ()
+gameMonthMenu = Menu "Month:" () $ map
+  (\(ch, name, val) ->
+    MenuItem ch name $
+    modify $ progMode.gameStateL.gameMonth ?~ val)
+  [ ( 'A', "January",   1  )
+  , ( 'B', "February",  2  )
+  , ( 'C', "March",     3  )
+  , ( 'D', "April",     4  )
+  , ( 'E', "May",       5  )
+  , ( 'F', "June",      6  )
+  , ( 'G', "July",      7  )
+  , ( 'H', "August",    8  )
+  , ( 'I', "September", 9  )
+  , ( 'J', "October",   10 )
+  , ( 'K', "November",  11 )
+  , ( 'L', "December",  12 )
   ]
 
 -- | The game type menu (home/away)

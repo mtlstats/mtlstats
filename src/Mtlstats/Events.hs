@@ -46,6 +46,9 @@ handleEvent e = gets (view progMode) >>= \case
     | null $ gs^.gameYear -> do
       promptHandler gameYearPrompt e
       return True
+    | null $ gs^.gameMonth -> do
+      menuHandler gameMonthMenu e
+      return True
     | null $ gs^.gameType -> do
       menuHandler gameTypeMenu e
       return True
