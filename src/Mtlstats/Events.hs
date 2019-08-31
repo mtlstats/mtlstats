@@ -43,6 +43,9 @@ handleEvent e = gets (view progMode) >>= \case
   MainMenu  -> menuHandler mainMenu e
   NewSeason -> menuHandler newSeasonMenu e >> return True
   NewGame gs
+    | null $ gs^.gameYear -> do
+      promptHandler gameYearPrompt e
+      return True
     | null $ gs^.gameType -> do
       menuHandler gameTypeMenu e
       return True

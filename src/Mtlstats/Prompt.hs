@@ -26,6 +26,7 @@ module Mtlstats.Prompt (
   strPrompt,
   numPrompt,
   -- * Individual prompts
+  gameYearPrompt,
   otherTeamPrompt,
   homeScorePrompt,
   awayScorePrompt
@@ -92,6 +93,11 @@ numPrompt pStr act = Prompt
   , promptAction      = \inStr -> forM_ (readMaybe inStr) act
   , promptFunctionKey = const $ return ()
   }
+
+-- | Prompts for the game year
+gameYearPrompt :: Prompt
+gameYearPrompt = numPrompt "Game year: " $
+  modify . (progMode.gameStateL.gameYear ?~)
 
 -- | Prompts for the other team name
 otherTeamPrompt :: Prompt

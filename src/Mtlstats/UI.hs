@@ -40,6 +40,7 @@ draw s = do
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
       NewGame gs
+        | null $ gs^.gameYear     -> drawPrompt gameYearPrompt s
         | null $ gs^.gameType     -> drawMenu gameTypeMenu
         | null $ gs^.otherTeam    -> drawPrompt otherTeamPrompt s
         | null $ gs^.homeScore    -> drawPrompt homeScorePrompt s
