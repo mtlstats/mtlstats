@@ -30,6 +30,7 @@ module Mtlstats.Menu (
 ) where
 
 import Control.Monad.Trans.State (modify)
+import Data.Char (toUpper)
 import Lens.Micro ((^.), (.~), (?~))
 import qualified UI.NCurses as C
 
@@ -46,10 +47,10 @@ drawMenu m = do
 -- | The event handler for a 'Menu'
 menuHandler :: Menu a -> C.Event -> Action a
 menuHandler m (C.EventCharacter c) =
-  case filter (\i -> i ^. miKey == c) $ m ^. menuItems of
-    i:_ -> i ^. miAction
-    []  -> return $ m ^. menuDefault
-menuHandler m _ = return $ m ^. menuDefault
+  case filter (\i -> i^.miKey == toUpper c) $ m^.menuItems of
+    i:_ -> i^.miAction
+    []  -> return $ m^.menuDefault
+menuHandler m _ = return $ m^.menuDefault
 
 -- | The main menu
 mainMenu :: Menu Bool
