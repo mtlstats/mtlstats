@@ -42,6 +42,7 @@ draw s = do
       NewGame gs
         | null $ gs^.gameYear     -> drawPrompt gameYearPrompt s
         | null $ gs^.gameMonth    -> drawMenu gameMonthMenu
+        | null $ gs^.gameDay      -> drawPrompt gameDayPrompt s
         | null $ gs^.gameType     -> drawMenu gameTypeMenu
         | null $ gs^.otherTeam    -> drawPrompt otherTeamPrompt s
         | null $ gs^.homeScore    -> drawPrompt homeScorePrompt s

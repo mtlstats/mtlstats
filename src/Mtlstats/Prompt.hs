@@ -27,6 +27,7 @@ module Mtlstats.Prompt (
   numPrompt,
   -- * Individual prompts
   gameYearPrompt,
+  gameDayPrompt,
   otherTeamPrompt,
   homeScorePrompt,
   awayScorePrompt
@@ -98,6 +99,11 @@ numPrompt pStr act = Prompt
 gameYearPrompt :: Prompt
 gameYearPrompt = numPrompt "Game year: " $
   modify . (progMode.gameStateL.gameYear ?~)
+
+-- | Prompts for the day of the month the game took place
+gameDayPrompt :: Prompt
+gameDayPrompt = numPrompt "Day of month: " $
+  modify . (progMode.gameStateL.gameDay ?~)
 
 -- | Prompts for the other team name
 otherTeamPrompt :: Prompt
