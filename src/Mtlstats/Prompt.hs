@@ -93,14 +93,17 @@ numPrompt pStr act = Prompt
   , promptFunctionKey = const $ return ()
   }
 
+-- | Prompts for the other team name
 otherTeamPrompt :: Prompt
 otherTeamPrompt = strPrompt "Other team: " $
   modify . (progMode . gameStateL . otherTeam .~)
 
+-- | Prompts for the home score
 homeScorePrompt :: Prompt
 homeScorePrompt = numPrompt "Home score: " $
   modify . (progMode . gameStateL . homeScore ?~)
 
+-- | Prompts for the away score
 awayScorePrompt :: Prompt
 awayScorePrompt = numPrompt "Away score: " $
   modify . (progMode . gameStateL . awayScore ?~)
