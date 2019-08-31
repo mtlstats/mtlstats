@@ -43,20 +43,20 @@ handleEvent e = gets (view progMode) >>= \case
   MainMenu  -> menuHandler mainMenu e
   NewSeason -> menuHandler newSeasonMenu e >> return True
   NewGame gs
-    | null $ gs ^. gameType -> do
+    | null $ gs^.gameType -> do
       menuHandler gameTypeMenu e
       return True
-    | null $ gs ^. otherTeam -> do
+    | null $ gs^.otherTeam -> do
       promptHandler otherTeamPrompt e
       return True
-    | null $ gs ^. homeScore -> do
+    | null $ gs^.homeScore -> do
       promptHandler homeScorePrompt e
       return True
-    | null $ gs ^. awayScore -> do
+    | null $ gs^.awayScore -> do
       promptHandler awayScorePrompt e
       modify overtimeCheck
       return True
-    | null $ gs ^. overtimeFlag -> do
+    | null $ gs^.overtimeFlag -> do
       overtimePrompt e
         >>= modify . (progMode.gameStateL.overtimeFlag .~)
       modify updateGameStats
