@@ -47,6 +47,7 @@ spec = describe "Mtlstats.Types" $ do
   gameLostSpec
   gameTiedSpec
   gmsPointsSpec
+  addGameStatsSpec
   pPointsSpec
   Menu.spec
 
@@ -340,6 +341,30 @@ gmsPointsSpec = describe "gmsPoints" $ mapM_
   , ( 1,    1,      1,        3        )
   , ( 2,    4,      3,        7        )
   ]
+
+addGameStatsSpec :: Spec
+addGameStatsSpec = describe "addGameStats" $
+  it "should add the values" $ let
+
+    s1 = GameStats
+      { _gmsWins     = 1
+      , _gmsLosses   = 3
+      , _gmsOvertime = 2
+      }
+
+    s2 = GameStats
+      { _gmsWins     = 4
+      , _gmsLosses   = 6
+      , _gmsOvertime = 5
+      }
+
+    expected = GameStats
+      { _gmsWins     = 5
+      , _gmsLosses   = 9
+      , _gmsOvertime = 7
+      }
+
+    in addGameStats s1 s2 `shouldBe` expected
 
 pPointsSpec :: Spec
 pPointsSpec = describe "pPoints" $ mapM_

@@ -99,6 +99,7 @@ module Mtlstats.Types (
   gameTied,
   -- ** GameStats Helpers
   gmsPoints,
+  addGameStats,
   -- ** Player Helpers
   pPoints
 ) where
@@ -511,6 +512,14 @@ gameTied gs = (==) <$> gs^.homeScore <*> gs^.awayScore
 -- | Calculates the number of points
 gmsPoints :: GameStats -> Int
 gmsPoints gs = 2 * gs^.gmsWins + gs^. gmsOvertime
+
+-- | Adds two 'GameStats' values together
+addGameStats :: GameStats -> GameStats -> GameStats
+addGameStats s1 s2 = GameStats
+  { _gmsWins     = s1^.gmsWins + s2^.gmsWins
+  , _gmsLosses   = s1^.gmsLosses + s2^.gmsLosses
+  , _gmsOvertime = s1^.gmsOvertime + s2^.gmsOvertime
+  }
 
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int
