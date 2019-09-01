@@ -51,6 +51,7 @@ handleEvent e = gets (view progMode) >>= \case
       return True
     | null $ gs^.gameDay -> do
       promptHandler gameDayPrompt e
+      modify validateGameDate
       return True
     | null $ gs^.gameType -> do
       menuHandler gameTypeMenu e

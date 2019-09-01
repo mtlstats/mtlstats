@@ -38,6 +38,7 @@ spec = describe "Mtlstats.Actions" $ do
   removeCharSpec
   overtimeCheckSpec
   updateGameStatsSpec
+  validateGameDateSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -268,6 +269,51 @@ updateGameStatsSpec = describe "updateGameStats" $ do
     it "should not change anything" $ let
       s' = s (Just HomeGame) (Just 1) (Just 2) Nothing
       in updateGameStats s' `shouldBe` s'
+
+validateGameDateSpec :: Spec
+validateGameDateSpec = describe "validateGameDate" $ do
+
+  context "valid date" $
+    it "should leave the date unchanged" $ do
+      let
+        s = newProgState
+          & progMode.gameStateL
+            %~ (gameYear  ?~ 2019)
+            .  (gameMonth ?~ 6)
+            .  (gameDay   ?~ 25)
+          & validateGameDate
+      s^.progMode.gameStateL.gameYear  `shouldBe` Just 2019
+      s^.progMode.gameStateL.gameMonth `shouldBe` Just 6
+      s^.progMode.gameStateL.gameDay   `shouldBe` Just 25
+
+  context "invalid date" $
+    it "should clear the date" $ do
+      let
+        s = newProgState
+          & progMode.gameStateL
+            %~ (gameYear  ?~ 2019)
+            .  (gameMonth ?~ 2)
+            .  (gameDay   ?~ 30)
+          & validateGameDate
+      s^.progMode.gameStateL.gameYear  `shouldBe` Nothing
+      s^.progMode.gameStateL.gameMonth `shouldBe` Nothing
+      s^.progMode.gameStateL.gameDay   `shouldBe` Nothing
+
+  context "missing day" $
+    it "should not change anything" $ do
+      let
+
+        gs = newGameState
+          & gameYear  ?~ 2019
+          & gameMonth ?~ 6
+
+        s = newProgState
+          & progMode.gameStateL .~ gs
+          & validateGameDate
+
+      s^.progMode.gameStateL.gameYear  `shouldBe` Just 2019
+      s^.progMode.gameStateL.gameMonth `shouldBe` Just 6
+      s^.progMode.gameStateL.gameDay   `shouldBe` Nothing
 
 makePlayer :: IO Player
 makePlayer = Player

@@ -29,9 +29,11 @@ module Mtlstats.Actions
   , removeChar
   , overtimeCheck
   , updateGameStats
+  , validateGameDate
   ) where
 
 import Data.Maybe (fromMaybe)
+import Data.Time.Calendar (fromGregorianValid)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
 
 import Mtlstats.Types
@@ -98,3 +100,18 @@ updateGameStats s = fromMaybe s result
           %~ (gmsWins +~ aw)
           .  (gmsLosses +~ al)
           .  (gmsOvertime +~ aot)
+
+-- | Validates the game date
+validateGameDate :: ProgState -> ProgState
+validateGameDate s = fromMaybe s result
+  where
+    result = do
+      y <- toInteger <$> s^.progMode.gameStateL.gameYear
+      m <- s^.progMode.gameStateL.gameMonth
+      d <- s^.progMode.gameStateL.gameDay
+      Just $ if null $ fromGregorianValid y m d
+        then s & progMode.gameStateL
+          %~ (gameYear  .~ Nothing)
+          .  (gameMonth .~ Nothing)
+          .  (gameDay   .~ Nothing)
+        else s
