@@ -23,6 +23,7 @@ module Mtlstats.Format
   ( padNum
   , left
   , right
+  , centre
   ) where
 
 -- | Pad an 'Int' with leading zeroes to fit a certain character width
@@ -58,3 +59,16 @@ right
   -- ^ The text to align
   -> String
 right n str = reverse $ left n $ reverse str
+
+-- | Aligns text to the centre within a field (clipping if necessary)
+centre
+  :: Int
+  -- ^ The width of the field
+  -> String
+  -- ^ The text to align
+  -> String
+centre n str = let
+  sLen = length str
+  pLen = (n - sLen) `div` 2
+  pad  = replicate pLen ' '
+  in take n $ pad ++ str ++ repeat ' '
