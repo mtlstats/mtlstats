@@ -29,6 +29,7 @@ spec :: Spec
 spec = describe "Mtlstats.Format" $ do
   padNumSpec
   leftSpec
+  rightSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -63,3 +64,14 @@ leftSpec = describe "left" $ do
   context "overflow" $
     it "should truncate the text" $
       left 2 "foo" `shouldBe` "fo"
+
+rightSpec :: Spec
+rightSpec = describe "right" $ do
+
+  context "fit" $
+    it "should pad the text" $
+      right 5 "foo" `shouldBe` "  foo"
+
+  context "overflow" $
+    it "should truncate the text" $
+      right 2 "foo" `shouldBe` "oo"

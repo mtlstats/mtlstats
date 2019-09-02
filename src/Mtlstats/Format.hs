@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Format
   ( padNum
   , left
+  , right
   ) where
 
 -- | Pad an 'Int' with leading zeroes to fit a certain character width
@@ -48,3 +49,12 @@ left
   -- ^ The text to align
   -> String
 left n str = take n $ str ++ repeat ' '
+
+-- | Aligns text to the right within a field (clipping if necessary)
+right
+  :: Int
+  -- ^ The width of the field
+  -> String
+  -- ^ The text to align
+  -> String
+right n str = reverse $ left n $ reverse str
