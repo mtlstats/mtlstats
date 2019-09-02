@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,14 +19,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats.Format (padNum) where
 
-import qualified ActionsSpec as Actions
-import qualified FormatSpec as Format
-import qualified TypesSpec as Types
-
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
-  Format.spec
+-- | Pad an 'Int' with leading zeroes to fit a certain character width
+padNum
+  :: Int
+  -- ^ The width in characters
+  -> Int
+  -- ^ The value to format
+  -> String
+padNum size n
+  | n < 0 = '-' : padNum (pred size) (-n)
+  | otherwise = let
+    str  = show n
+    sLen = length str
+    pLen = size - sLen
+    pad  = replicate pLen '0'
+    in pad ++ str
