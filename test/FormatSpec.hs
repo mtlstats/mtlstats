@@ -26,8 +26,9 @@ import Test.Hspec (Spec, context, describe, it, shouldBe)
 import Mtlstats.Format
 
 spec :: Spec
-spec = describe "Mtlstats.Format"
+spec = describe "Mtlstats.Format" $ do
   padNumSpec
+  leftSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -51,3 +52,14 @@ padNumSpec = describe "padNum" $ do
   context "-1234, four digits" $
     it "should be -1234" $
       padNum 4 (-1234) `shouldBe` "-1234"
+
+leftSpec :: Spec
+leftSpec = describe "left" $ do
+
+  context "fit" $
+    it "should pad the text" $
+      left 5 "foo" `shouldBe` "foo  "
+
+  context "overflow" $
+    it "should truncate the text" $
+      left 2 "foo" `shouldBe` "fo"

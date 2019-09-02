@@ -19,7 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Format (padNum) where
+module Mtlstats.Format
+  ( padNum
+  , left
+  ) where
 
 -- | Pad an 'Int' with leading zeroes to fit a certain character width
 padNum
@@ -36,3 +39,12 @@ padNum size n
     pLen = size - sLen
     pad  = replicate pLen '0'
     in pad ++ str
+
+-- | Aligns text to the left within a field (clipping if necessary)
+left
+  :: Int
+  -- ^ The width of the field
+  -> String
+  -- ^ The text to align
+  -> String
+left n str = take n $ str ++ repeat ' '
