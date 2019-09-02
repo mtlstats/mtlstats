@@ -31,6 +31,7 @@ spec = describe "Mtlstats.Format" $ do
   leftSpec
   rightSpec
   centreSpec
+  monthSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -87,3 +88,14 @@ centreSpec = describe "centre" $ do
   context "overflow" $
     it "should truncate the text" $
       centre 2 "foo" `shouldBe` "fo"
+
+monthSpec :: Spec
+monthSpec = describe "month" $ do
+
+  context "January" $
+    it "should return \"JAN\"" $
+      month 1 `shouldBe` "JAN"
+
+  context "invalid" $
+    it "should return an empty string" $
+      month 0 `shouldBe` ""

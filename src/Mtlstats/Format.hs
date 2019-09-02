@@ -24,6 +24,7 @@ module Mtlstats.Format
   , left
   , right
   , centre
+  , month
   ) where
 
 -- | Pad an 'Int' with leading zeroes to fit a certain character width
@@ -72,3 +73,19 @@ centre n str = let
   pLen = (n - sLen) `div` 2
   pad  = replicate pLen ' '
   in take n $ pad ++ str ++ repeat ' '
+
+-- | Converts a number to a three character month (e.g. @"JAN"@)
+month :: Int -> String
+month 1  = "JAN"
+month 2  = "FEB"
+month 3  = "MAR"
+month 4  = "APR"
+month 5  = "MAY"
+month 6  = "JUN"
+month 7  = "JUL"
+month 8  = "AUG"
+month 9  = "SEP"
+month 10 = "OCT"
+month 11 = "NOV"
+month 12 = "DEC"
+month _  = ""
