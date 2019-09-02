@@ -30,6 +30,7 @@ import qualified Data.HashMap.Strict as HM
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
+import Mtlstats.Config
 import Mtlstats.Types
 
 import qualified Types.MenuSpec as Menu
@@ -43,6 +44,8 @@ spec = describe "Mtlstats.Types" $ do
   gameStateLSpec
   teamScoreSpec
   otherScoreSpec
+  homeTeamSpec
+  awayTeamSpec
   gameWonSpec
   gameLostSpec
   gameTiedSpec
@@ -247,6 +250,44 @@ dbJSON = Object $ HM.fromList
   , ( "home_game_stats", gameStatsJSON 1     )
   , ( "away_game_stats", gameStatsJSON 2     )
   ]
+
+homeTeamSpec :: Spec
+homeTeamSpec = describe "homeTeam" $ do
+  let
+    gs gt = newGameState
+      & gameType  .~ gt
+      & otherTeam .~ "foo"
+
+  context "unknown game type" $
+    it "should return an empty string" $
+      homeTeam (gs Nothing) `shouldBe` ""
+
+  context "home game" $
+    it ("should return " ++ show myTeam) $
+      homeTeam (gs $ Just HomeGame) `shouldBe` myTeam
+
+  context "away game" $
+    it "should return \"foo\"" $
+      homeTeam (gs $ Just AwayGame) `shouldBe` "foo"
+
+awayTeamSpec :: Spec
+awayTeamSpec = describe "awayTeam" $ do
+  let
+    gs gt = newGameState
+      & gameType  .~ gt
+      & otherTeam .~ "foo"
+
+  context "unknown game type" $
+    it "should return an empty string" $
+      awayTeam (gs Nothing) `shouldBe` ""
+
+  context "home game" $
+    it "should return \"foo\"" $
+      awayTeam (gs $ Just HomeGame) `shouldBe` "foo"
+
+  context "away game" $
+    it ("should return " ++ show myTeam) $
+      awayTeam (gs $ Just AwayGame) `shouldBe` myTeam
 
 gameWonSpec :: Spec
 gameWonSpec = describe "gameWon" $ mapM_

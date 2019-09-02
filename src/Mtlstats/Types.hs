@@ -97,6 +97,8 @@ module Mtlstats.Types (
   -- ** GameState Helpers
   teamScore,
   otherScore,
+  homeTeam,
+  awayTeam,
   gameWon,
   gameLost,
   gameTied,
@@ -123,6 +125,8 @@ import Data.Aeson
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 import UI.NCurses (Curses, Update)
+
+import Mtlstats.Config
 
 -- | Action which maintains program state
 type Action a = StateT ProgState Curses a
@@ -508,6 +512,22 @@ otherScore s = case s ^. gameType of
   Just HomeGame -> s ^. awayScore
   Just AwayGame -> s ^. homeScore
   Nothing       -> Nothing
+
+-- | Returns the name of the home team (or an empty string if
+-- unavailable)
+homeTeam :: GameState -> String
+homeTeam gs = case gs^.gameType of
+  Just HomeGame -> myTeam
+  Just AwayGame -> gs^.otherTeam
+  Nothing       -> ""
+
+-- | Returns the name of the visiting team (or an empty string if
+-- unavailable)
+awayTeam :: GameState -> String
+awayTeam gs = case gs^.gameType of
+  Just HomeGame -> gs^.otherTeam
+  Just AwayGame -> myTeam
+  Nothing       -> ""
 
 -- | Checks if the game was won
 gameWon :: GameState -> Maybe Bool
