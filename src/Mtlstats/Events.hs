@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Events (handleEvent) where
 
+import Control.Monad (when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
 import Lens.Micro ((^.), (.~))
@@ -72,7 +73,12 @@ handleEvent e = gets (view progMode) >>= \case
       modify updateGameStats
       return True
     | otherwise -> do
-      modify $ progMode .~ MainMenu
+      when
+        (case e of
+          C.EventCharacter _  -> True
+          C.EventSpecialKey _ -> True
+          _                   -> False) $
+        modify $ progMode .~ MainMenu
       return True
 
 overtimePrompt :: C.Event -> Action (Maybe Bool)
