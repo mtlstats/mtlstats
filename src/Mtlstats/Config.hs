@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Config (myTeam) where
+module Mtlstats.Config where
 
 -- | The name of the team whose stats we're tracking
 myTeam :: String

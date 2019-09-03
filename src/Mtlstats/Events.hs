@@ -71,7 +71,9 @@ handleEvent e = gets (view progMode) >>= \case
         >>= modify . (progMode.gameStateL.overtimeFlag .~)
       modify updateGameStats
       return True
-    | otherwise -> undefined
+    | otherwise -> do
+      modify $ progMode .~ MainMenu
+      return True
 
 overtimePrompt :: C.Event -> Action (Maybe Bool)
 overtimePrompt (C.EventCharacter c) = case toUpper c of

@@ -28,6 +28,7 @@ import qualified UI.NCurses as C
 import Mtlstats.Format
 import Mtlstats.Menu
 import Mtlstats.Prompt
+import Mtlstats.Report
 import Mtlstats.Types
 
 -- | Drawing function
@@ -49,7 +50,7 @@ draw s = do
         | null $ gs^.homeScore    -> header s >> drawPrompt homeScorePrompt s
         | null $ gs^.awayScore    -> header s >> drawPrompt awayScorePrompt s
         | null $ gs^.overtimeFlag -> header s >> overtimePrompt
-        | otherwise               -> undefined
+        | otherwise               -> showReport s
   C.render
   void $ C.setCursorMode cm
 
@@ -60,4 +61,9 @@ header s = C.drawString $
 overtimePrompt :: C.Update C.CursorMode
 overtimePrompt = do
   C.drawString "Did the game go into overtime?  (Y/N)"
+  return C.CursorInvisible
+
+showReport :: ProgState -> C.Update C.CursorMode
+showReport s = do
+  C.drawString $ report 72 s
   return C.CursorInvisible
