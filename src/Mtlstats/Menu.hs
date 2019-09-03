@@ -95,7 +95,7 @@ gameMonthMenu = Menu "Month:" () $ map
 
 -- | The game type menu (home/away)
 gameTypeMenu :: Menu ()
-gameTypeMenu = Menu "*** GAME TYPE ***" ()
+gameTypeMenu = Menu "Game type:" ()
   [ MenuItem '1' "Home Game" $
     modify $ progMode.gameStateL.gameType ?~ HomeGame
   , MenuItem '2' "Away Game" $
