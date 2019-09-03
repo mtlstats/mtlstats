@@ -24,6 +24,7 @@ module Mtlstats.Format
   , left
   , right
   , centre
+  , overlay
   , month
   ) where
 
@@ -73,6 +74,17 @@ centre n str = let
   pLen = (n - sLen) `div` 2
   pad  = replicate pLen ' '
   in take n $ pad ++ str ++ repeat ' '
+
+-- | Overlays one string on top of another
+overlay
+  :: String
+  -- ^ The string on the top
+  -> String
+  -- ^ The string on the bottom
+  -> String
+overlay (x:xs) (_:ys) = x : overlay xs ys
+overlay xs []         = xs
+overlay [] ys         = ys
 
 -- | Converts a number to a three character month (e.g. @"JAN"@)
 month :: Int -> String

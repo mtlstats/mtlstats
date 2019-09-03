@@ -31,6 +31,7 @@ spec = describe "Mtlstats.Format" $ do
   leftSpec
   rightSpec
   centreSpec
+  overlaySpec
   monthSpec
 
 padNumSpec :: Spec
@@ -88,6 +89,17 @@ centreSpec = describe "centre" $ do
   context "overflow" $
     it "should truncate the text" $
       centre 2 "foo" `shouldBe` "fo"
+
+overlaySpec :: Spec
+overlaySpec = describe "overlay" $ do
+
+  context "first string shorter" $
+    it "should overlay" $
+      overlay "foo" "abc123" `shouldBe` "foo123"
+
+  context "first string longer" $
+    it "should overlay" $
+      overlay "abc123" "foo" `shouldBe` "abc123"
 
 monthSpec :: Spec
 monthSpec = describe "month" $ do
