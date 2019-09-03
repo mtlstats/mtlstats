@@ -49,6 +49,7 @@ spec = describe "Mtlstats.Types" $ do
   gameWonSpec
   gameLostSpec
   gameTiedSpec
+  gmsGamesSpec
   gmsPointsSpec
   addGameStatsSpec
   pPointsSpec
@@ -361,6 +362,25 @@ gameTiedSpec = describe "gameTied" $ mapM_
   , ( Just 1,  Nothing, Nothing    )
   , ( Just 1,  Just 1,  Just True  )
   , ( Just 1,  Just 2,  Just False )
+  ]
+
+gmsGamesSpec :: Spec
+gmsGamesSpec = describe "gmsGames" $ mapM_
+  (\(w, l, expected) -> let
+    desc = "wins: " ++ show w ++
+      ", losses: " ++ show l
+    gs = newGameStats
+      & gmsWins   .~ w
+      & gmsLosses .~ l
+    in context desc $
+      it ("should be " ++ show expected) $
+        gmsGames gs `shouldBe` expected)
+  --  wins, losses, expected
+  [ ( 0,    0,      0        )
+  , ( 1,    0,      1        )
+  , ( 0,    1,      1        )
+  , ( 1,    1,      2        )
+  , ( 2,    3,      5        )
   ]
 
 gmsPointsSpec :: Spec

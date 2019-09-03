@@ -103,6 +103,7 @@ module Mtlstats.Types (
   gameLost,
   gameTied,
   -- ** GameStats Helpers
+  gmsGames,
   gmsPoints,
   addGameStats,
   -- ** Player Helpers
@@ -540,6 +541,10 @@ gameLost gs = (<) <$> teamScore gs <*> otherScore gs
 -- | Checks if the game has tied
 gameTied :: GameState -> Maybe Bool
 gameTied gs = (==) <$> gs^.homeScore <*> gs^.awayScore
+
+-- | Calculates the number of games played
+gmsGames :: GameStats -> Int
+gmsGames gs = gs^.gmsWins + gs^.gmsLosses
 
 -- | Calculates the number of points
 gmsPoints :: GameStats -> Int
