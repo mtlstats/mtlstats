@@ -66,6 +66,7 @@ handleEvent e = gets (view progMode) >>= \case
     | null $ gs^.awayScore -> do
       promptHandler awayScorePrompt e
       modify overtimeCheck
+      modify updateGameStats
       return True
     | null $ gs^.overtimeFlag -> do
       overtimePrompt e
