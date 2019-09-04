@@ -77,41 +77,37 @@ overtimeCheck s
 
 -- | Adjusts the game stats based on the results of the current game
 updateGameStats :: ProgState -> ProgState
-updateGameStats s = fromMaybe s result
-  where
-    result = do
-      gType <- s^.progMode.gameStateL.gameType
-      won   <- gameWon $ s^.progMode.gameStateL
-      lost  <- gameLost $ s^.progMode.gameStateL
-      ot    <- s^.progMode.gameStateL.overtimeFlag
-      let
-        hw  = if gType == HomeGame && won then 1 else 0
-        hl  = if gType == HomeGame && lost then 1 else 0
-        hot = if gType == HomeGame && ot then 1 else 0
-        aw  = if gType == AwayGame && won then 1 else 0
-        al  = if gType == AwayGame && lost then 1 else 0
-        aot = if gType == AwayGame && ot then 1 else 0
-      Just $ s
-        & database.dbHomeGameStats
-          %~ (gmsWins +~ hw)
-          .  (gmsLosses +~ hl)
-          .  (gmsOvertime +~ hot)
-        & database.dbAwayGameStats
-          %~ (gmsWins +~ aw)
-          .  (gmsLosses +~ al)
-          .  (gmsOvertime +~ aot)
+updateGameStats s = fromMaybe s $ do
+  gType <- s^.progMode.gameStateL.gameType
+  won   <- gameWon $ s^.progMode.gameStateL
+  lost  <- gameLost $ s^.progMode.gameStateL
+  ot    <- s^.progMode.gameStateL.overtimeFlag
+  let
+    hw  = if gType == HomeGame && won then 1 else 0
+    hl  = if gType == HomeGame && lost then 1 else 0
+    hot = if gType == HomeGame && ot then 1 else 0
+    aw  = if gType == AwayGame && won then 1 else 0
+    al  = if gType == AwayGame && lost then 1 else 0
+    aot = if gType == AwayGame && ot then 1 else 0
+  Just $ s
+    & database.dbHomeGameStats
+      %~ (gmsWins +~ hw)
+      .  (gmsLosses +~ hl)
+      .  (gmsOvertime +~ hot)
+    & database.dbAwayGameStats
+      %~ (gmsWins +~ aw)
+      .  (gmsLosses +~ al)
+      .  (gmsOvertime +~ aot)
 
 -- | Validates the game date
 validateGameDate :: ProgState -> ProgState
-validateGameDate s = fromMaybe s result
-  where
-    result = do
-      y <- toInteger <$> s^.progMode.gameStateL.gameYear
-      m <- s^.progMode.gameStateL.gameMonth
-      d <- s^.progMode.gameStateL.gameDay
-      Just $ if null $ fromGregorianValid y m d
-        then s & progMode.gameStateL
-          %~ (gameYear  .~ Nothing)
-          .  (gameMonth .~ Nothing)
-          .  (gameDay   .~ Nothing)
-        else s
+validateGameDate s = fromMaybe s $ do
+  y <- toInteger <$> s^.progMode.gameStateL.gameYear
+  m <- s^.progMode.gameStateL.gameMonth
+  d <- s^.progMode.gameStateL.gameDay
+  Just $ if null $ fromGregorianValid y m d
+    then s & progMode.gameStateL
+      %~ (gameYear  .~ Nothing)
+      .  (gameMonth .~ Nothing)
+      .  (gameDay   .~ Nothing)
+    else s
