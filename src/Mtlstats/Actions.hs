@@ -27,9 +27,14 @@ module Mtlstats.Actions
   , startNewGame
   , addChar
   , removeChar
+  , overtimeCheck
+  , updateGameStats
+  , validateGameDate
   ) where
 
-import Lens.Micro (over, (&), (.~), (?~), (%~))
+import Data.Maybe (fromMaybe)
+import Data.Time.Calendar (fromGregorianValid)
+import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
 
 import Mtlstats.Types
 
@@ -58,3 +63,51 @@ removeChar :: ProgState -> ProgState
 removeChar = inputBuffer %~ \case
   ""  -> ""
   str -> init str
+
+-- | Determines whether or not to perform a check for overtime
+overtimeCheck :: ProgState -> ProgState
+overtimeCheck s
+  | fromMaybe False $ gameTied $ s^.progMode.gameStateL =
+    s & progMode.gameStateL
+    %~ (homeScore .~ Nothing)
+    .  (awayScore .~ Nothing)
+  | fromMaybe False $ gameWon $ s^.progMode.gameStateL =
+    s & progMode.gameStateL.overtimeFlag ?~ False
+  | otherwise  = s
+
+-- | Adjusts the game stats based on the results of the current game
+updateGameStats :: ProgState -> ProgState
+updateGameStats s = fromMaybe s $ do
+  gType <- s^.progMode.gameStateL.gameType
+  won   <- gameWon $ s^.progMode.gameStateL
+  lost  <- gameLost $ s^.progMode.gameStateL
+  ot    <- s^.progMode.gameStateL.overtimeFlag
+  let
+    hw  = if gType == HomeGame && won then 1 else 0
+    hl  = if gType == HomeGame && lost then 1 else 0
+    hot = if gType == HomeGame && ot then 1 else 0
+    aw  = if gType == AwayGame && won then 1 else 0
+    al  = if gType == AwayGame && lost then 1 else 0
+    aot = if gType == AwayGame && ot then 1 else 0
+  Just $ s
+    & database.dbHomeGameStats
+      %~ (gmsWins +~ hw)
+      .  (gmsLosses +~ hl)
+      .  (gmsOvertime +~ hot)
+    & database.dbAwayGameStats
+      %~ (gmsWins +~ aw)
+      .  (gmsLosses +~ al)
+      .  (gmsOvertime +~ aot)
+
+-- | Validates the game date
+validateGameDate :: ProgState -> ProgState
+validateGameDate s = fromMaybe s $ do
+  y <- toInteger <$> s^.progMode.gameStateL.gameYear
+  m <- s^.progMode.gameStateL.gameMonth
+  d <- s^.progMode.gameStateL.gameDay
+  Just $ if null $ fromGregorianValid y m d
+    then s & progMode.gameStateL
+      %~ (gameYear  .~ Nothing)
+      .  (gameMonth .~ Nothing)
+      .  (gameDay   .~ Nothing)
+    else s

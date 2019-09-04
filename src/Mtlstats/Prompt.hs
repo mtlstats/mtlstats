@@ -26,6 +26,8 @@ module Mtlstats.Prompt (
   strPrompt,
   numPrompt,
   -- * Individual prompts
+  gameYearPrompt,
+  gameDayPrompt,
   otherTeamPrompt,
   homeScorePrompt,
   awayScorePrompt
@@ -93,17 +95,30 @@ numPrompt pStr act = Prompt
   , promptFunctionKey = const $ return ()
   }
 
+-- | Prompts for the game year
+gameYearPrompt :: Prompt
+gameYearPrompt = numPrompt "Game year: " $
+  modify . (progMode.gameStateL.gameYear ?~)
+
+-- | Prompts for the day of the month the game took place
+gameDayPrompt :: Prompt
+gameDayPrompt = numPrompt "Day of month: " $
+  modify . (progMode.gameStateL.gameDay ?~)
+
+-- | Prompts for the other team name
 otherTeamPrompt :: Prompt
 otherTeamPrompt = strPrompt "Other team: " $
-  modify . (progMode . otherTeamL .~)
+  modify . (progMode.gameStateL.otherTeam .~)
 
+-- | Prompts for the home score
 homeScorePrompt :: Prompt
 homeScorePrompt = numPrompt "Home score: " $
-  modify . (progMode . homeScoreL ?~)
+  modify . (progMode.gameStateL.homeScore ?~)
 
+-- | Prompts for the away score
 awayScorePrompt :: Prompt
 awayScorePrompt = numPrompt "Away score: " $
-  modify . (progMode . awayScoreL ?~)
+  modify . (progMode.gameStateL.awayScore ?~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
-drawSimplePrompt pStr s = C.drawString $ pStr ++ s ^. inputBuffer
+drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

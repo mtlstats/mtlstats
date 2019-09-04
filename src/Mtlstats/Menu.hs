@@ -26,10 +26,12 @@ module Mtlstats.Menu (
   -- * Menus
   mainMenu,
   newSeasonMenu,
+  gameMonthMenu,
   gameTypeMenu
 ) where
 
 import Control.Monad.Trans.State (modify)
+import Data.Char (toUpper)
 import Lens.Micro ((^.), (.~), (?~))
 import qualified UI.NCurses as C
 
@@ -46,10 +48,10 @@ drawMenu m = do
 -- | The event handler for a 'Menu'
 menuHandler :: Menu a -> C.Event -> Action a
 menuHandler m (C.EventCharacter c) =
-  case filter (\i -> i ^. miKey == c) $ m ^. menuItems of
-    i:_ -> i ^. miAction
-    []  -> return $ m ^. menuDefault
-menuHandler m _ = return $ m ^. menuDefault
+  case filter (\i -> i^.miKey == toUpper c) $ m^.menuItems of
+    i:_ -> i^.miAction
+    []  -> return $ m^.menuDefault
+menuHandler m _ = return $ m^.menuDefault
 
 -- | The main menu
 mainMenu :: Menu Bool
@@ -71,11 +73,31 @@ newSeasonMenu = Menu "*** SEASON TYPE ***" ()
     modify startNewGame
   ]
 
+-- | Requests the month in which the game took place
+gameMonthMenu :: Menu ()
+gameMonthMenu = Menu "Month:" () $ map
+  (\(ch, name, val) ->
+    MenuItem ch name $
+    modify $ progMode.gameStateL.gameMonth ?~ val)
+  [ ( 'A', "January",   1  )
+  , ( 'B', "February",  2  )
+  , ( 'C', "March",     3  )
+  , ( 'D', "April",     4  )
+  , ( 'E', "May",       5  )
+  , ( 'F', "June",      6  )
+  , ( 'G', "July",      7  )
+  , ( 'H', "August",    8  )
+  , ( 'I', "September", 9  )
+  , ( 'J', "October",   10 )
+  , ( 'K', "November",  11 )
+  , ( 'L', "December",  12 )
+  ]
+
 -- | The game type menu (home/away)
 gameTypeMenu :: Menu ()
-gameTypeMenu = Menu "*** GAME TYPE ***" ()
+gameTypeMenu = Menu "Game type:" ()
   [ MenuItem '1' "Home Game" $
-    modify $ progMode . gameTypeL ?~ HomeGame
+    modify $ progMode.gameStateL.gameType ?~ HomeGame
   , MenuItem '2' "Away Game" $
-    modify $ progMode . gameTypeL ?~ AwayGame
+    modify $ progMode.gameStateL.gameType ?~ AwayGame
   ]

@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,14 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats.Config where
 
-import qualified ActionsSpec as Actions
-import qualified FormatSpec as Format
-import qualified TypesSpec as Types
-
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
-  Format.spec
+-- | The name of the team whose stats we're tracking
+myTeam :: String
+myTeam = "MONTREAL"

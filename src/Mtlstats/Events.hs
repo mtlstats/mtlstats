@@ -23,7 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Events (handleEvent) where
 
+import Control.Monad (when)
 import Control.Monad.Trans.State (gets, modify)
+import Data.Char (toUpper)
 import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
@@ -42,16 +44,46 @@ handleEvent e = gets (view progMode) >>= \case
   MainMenu  -> menuHandler mainMenu e
   NewSeason -> menuHandler newSeasonMenu e >> return True
   NewGame gs
-    | null $ gs ^. gameType -> do
+    | null $ gs^.gameYear -> do
+      promptHandler gameYearPrompt e
+      return True
+    | null $ gs^.gameMonth -> do
+      menuHandler gameMonthMenu e
+      return True
+    | null $ gs^.gameDay -> do
+      promptHandler gameDayPrompt e
+      modify validateGameDate
+      return True
+    | null $ gs^.gameType -> do
       menuHandler gameTypeMenu e
       return True
-    | null $ gs ^. otherTeam -> do
+    | null $ gs^.otherTeam -> do
       promptHandler otherTeamPrompt e
       return True
-    | null $ gs ^. homeScore -> do
+    | null $ gs^.homeScore -> do
       promptHandler homeScorePrompt e
       return True
-    | null $ gs ^. awayScore -> do
+    | null $ gs^.awayScore -> do
       promptHandler awayScorePrompt e
+      modify overtimeCheck
+      modify updateGameStats
       return True
-    | otherwise -> undefined
+    | null $ gs^.overtimeFlag -> do
+      overtimePrompt e
+        >>= modify . (progMode.gameStateL.overtimeFlag .~)
+      modify updateGameStats
+      return True
+    | otherwise -> do
+      when
+        (case e of
+          C.EventCharacter _  -> True
+          C.EventSpecialKey _ -> True
+          _                   -> False) $
+        modify $ progMode .~ MainMenu
+      return True
+
+overtimePrompt :: C.Event -> Action (Maybe Bool)
+overtimePrompt (C.EventCharacter c) = case toUpper c of
+  'Y' -> return (Just True)
+  'N' -> return (Just False)
+  _   -> return Nothing

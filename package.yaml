@@ -26,7 +26,7 @@ dependencies:
 - microlens-th >= 0.4.2.3 && < 0.5
 - ncurses >= 0.2.16 && < 0.3
 - random >= 1.1 && < 1.2
-- raw-strings-qq >= 1.1 && < 1.2
+- time >= 1.8.0.2 && < 1.9
 - transformers >= 0.5.6.2 && < 0.6
 - bytestring
 - microlens
@@ -56,3 +56,4 @@ tests:
     dependencies:
     - mtlstats
     - hspec >= 2.7.1 && < 2.8
+    - unordered-containers

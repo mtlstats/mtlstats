@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
-import Lens.Micro ((&), (.~), (?~), (^.))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, shouldBe, shouldNotBe)
 
@@ -36,6 +36,9 @@ spec = describe "Mtlstats.Actions" $ do
   resetYtdSpec
   addCharSpec
   removeCharSpec
+  overtimeCheckSpec
+  updateGameStatsSpec
+  validateGameDateSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -125,6 +128,192 @@ removeCharSpec = describe "removeChar" $ do
         & inputBuffer .~ "foo"
         & removeChar
       in s ^. inputBuffer `shouldBe` "fo"
+
+overtimeCheckSpec = describe "overtimeCheck" $ do
+
+  context "tie game" $ do
+    let
+      s = newProgState
+        & progMode.gameStateL
+          %~ (gameType  ?~ HomeGame)
+          .  (homeScore ?~ 1)
+          .  (awayScore ?~ 1)
+        & overtimeCheck
+
+    it "should clear the home score" $
+      s^.progMode.gameStateL.homeScore `shouldBe` Nothing
+
+    it "should clear the away score" $
+      s^.progMode.gameStateL.awayScore `shouldBe` Nothing
+
+    it "should leave the overtimeFlag blank" $
+      s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
+
+  context "game won" $ do
+    let
+      s = newProgState
+        & progMode.gameStateL
+          %~ (gameType  ?~ HomeGame)
+          .  (homeScore ?~ 2)
+          .  (awayScore ?~ 1)
+        & overtimeCheck
+
+    it "should not change the home score" $
+      s^.progMode.gameStateL.homeScore `shouldBe` Just 2
+
+    it "should not change the away score" $
+      s^.progMode.gameStateL.awayScore `shouldBe` Just 1
+
+    it "should set the overtimeCheck flag to False" $
+      s^.progMode.gameStateL.overtimeFlag `shouldBe` Just False
+
+  context "game lost" $ do
+    let
+      s = newProgState
+        & progMode.gameStateL
+          %~ (gameType  ?~ HomeGame)
+          .  (homeScore ?~ 1)
+          .  (awayScore ?~ 2)
+        & overtimeCheck
+
+    it "should not change the home score" $
+      s^.progMode.gameStateL.homeScore `shouldBe` Just 1
+
+    it "should not change the away score" $
+      s^.progMode.gameStateL.awayScore `shouldBe` Just 2
+
+    it "should leave the overtimeCheck flag blank" $
+      s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
+
+updateGameStatsSpec :: Spec
+updateGameStatsSpec = describe "updateGameStats" $ do
+  let
+
+    baseStats = newGameStats
+      & gmsWins     .~ 1
+      & gmsLosses   .~ 1
+      & gmsOvertime .~ 1
+
+    s t h a o = newProgState
+      & progMode.gameStateL
+        %~ (gameType     .~ t)
+        .  (homeScore    .~ h)
+        .  (awayScore    .~ a)
+        .  (overtimeFlag .~ o)
+      & database
+        %~ (dbHomeGameStats .~ baseStats)
+        .  (dbAwayGameStats .~ baseStats)
+
+    db hw hl ho aw al ao = newDatabase
+      & dbHomeGameStats
+        %~ (gmsWins     .~ hw)
+        .  (gmsLosses   .~ hl)
+        .  (gmsOvertime .~ ho)
+      & dbAwayGameStats
+        %~ (gmsWins     .~ aw)
+        .  (gmsLosses   .~ al)
+        .  (gmsOvertime .~ ao)
+
+  context "home win" $
+    it "should record a home win" $ let
+      s'  = s (Just HomeGame) (Just 2) (Just 1) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 2 1 1 1 1 1
+
+  context "home loss" $
+    it "should record a home loss" $ let
+      s'  = s (Just HomeGame) (Just 1) (Just 2) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 2 1 1 1 1
+
+  context "home overtime loss" $
+    it "should record a home loss and overtime" $ let
+      s'  = s (Just HomeGame) (Just 1) (Just 2) (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 2 2 1 1 1
+
+  context "away win" $
+    it "should record an away win" $ let
+      s'  = s (Just AwayGame) (Just 1) (Just 2) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 2 1 1
+
+  context "away loss" $
+    it "should record an away loss" $ let
+      s'  = s (Just AwayGame) (Just 2) (Just 1) (Just False)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 2 1
+
+  context "away overtime loss" $
+    it "should record an away loss and overtime" $ let
+      s'  = s (Just AwayGame) (Just 2) (Just 1) (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 2 2
+
+  context "missing game type" $
+    it "should not change anything" $ let
+      s' = s Nothing (Just 1) (Just 2) (Just True)
+      in updateGameStats s' `shouldBe` s'
+
+  context "missing home score" $
+    it "should not change anything" $ let
+      s' = s (Just HomeGame) Nothing (Just 1) (Just True)
+      in updateGameStats s' `shouldBe` s'
+
+  context "missing away score" $
+    it "should not change anything" $ let
+      s' = s (Just HomeGame) (Just 1) Nothing (Just True)
+      in updateGameStats s' `shouldBe` s'
+
+  context "missing overtime flag" $
+    it "should not change anything" $ let
+      s' = s (Just HomeGame) (Just 1) (Just 2) Nothing
+      in updateGameStats s' `shouldBe` s'
+
+validateGameDateSpec :: Spec
+validateGameDateSpec = describe "validateGameDate" $ do
+
+  context "valid date" $
+    it "should leave the date unchanged" $ do
+      let
+        s = newProgState
+          & progMode.gameStateL
+            %~ (gameYear  ?~ 2019)
+            .  (gameMonth ?~ 6)
+            .  (gameDay   ?~ 25)
+          & validateGameDate
+      s^.progMode.gameStateL.gameYear  `shouldBe` Just 2019
+      s^.progMode.gameStateL.gameMonth `shouldBe` Just 6
+      s^.progMode.gameStateL.gameDay   `shouldBe` Just 25
+
+  context "invalid date" $
+    it "should clear the date" $ do
+      let
+        s = newProgState
+          & progMode.gameStateL
+            %~ (gameYear  ?~ 2019)
+            .  (gameMonth ?~ 2)
+            .  (gameDay   ?~ 30)
+          & validateGameDate
+      s^.progMode.gameStateL.gameYear  `shouldBe` Nothing
+      s^.progMode.gameStateL.gameMonth `shouldBe` Nothing
+      s^.progMode.gameStateL.gameDay   `shouldBe` Nothing
+
+  context "missing day" $
+    it "should not change anything" $ do
+      let
+
+        gs = newGameState
+          & gameYear  ?~ 2019
+          & gameMonth ?~ 6
+
+        s = newProgState
+          & progMode.gameStateL .~ gs
+          & validateGameDate
+
+      s^.progMode.gameStateL.gameYear  `shouldBe` Just 2019
+      s^.progMode.gameStateL.gameMonth `shouldBe` Just 6
+      s^.progMode.gameStateL.gameDay   `shouldBe` Nothing
 
 makePlayer :: IO Player
 makePlayer = Player

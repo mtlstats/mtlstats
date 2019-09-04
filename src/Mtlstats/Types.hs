@@ -33,26 +33,30 @@ module Mtlstats.Types (
   PlayerStats (..),
   Goalie (..),
   GoalieStats (..),
+  GameStats (..),
   Prompt (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
   progMode,
   inputBuffer,
+  -- ** ProgMode Lenses
+  gameStateL,
   -- ** GameState Lenses
+  gameYear,
+  gameMonth,
+  gameDay,
   gameType,
   otherTeam,
   homeScore,
   awayScore,
-  -- ** ProgMode Lenses
-  gameTypeL,
-  otherTeamL,
-  homeScoreL,
-  awayScoreL,
+  overtimeFlag,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
   dbGames,
+  dbHomeGameStats,
+  dbAwayGameStats,
   -- ** Player Lenses
   pNumber,
   pName,
@@ -76,6 +80,10 @@ module Mtlstats.Types (
   gsWins,
   gsLosses,
   gsTies,
+  -- ** GameStats Lenses
+  gmsWins,
+  gmsLosses,
+  gmsOvertime,
   -- * Constructors
   newProgState,
   newGameState,
@@ -84,9 +92,20 @@ module Mtlstats.Types (
   newPlayerStats,
   newGoalie,
   newGoalieStats,
+  newGameStats,
   -- * Helper Functions
-  -- ** ProgState Helpers
+  -- ** GameState Helpers
   teamScore,
+  otherScore,
+  homeTeam,
+  awayTeam,
+  gameWon,
+  gameLost,
+  gameTied,
+  -- ** GameStats Helpers
+  gmsGames,
+  gmsPoints,
+  addGameStats,
   -- ** Player Helpers
   pPoints
 ) where
@@ -108,6 +127,8 @@ import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 import UI.NCurses (Curses, Update)
 
+import Mtlstats.Config
+
 -- | Action which maintains program state
 type Action a = StateT ProgState Curses a
 
@@ -123,14 +144,22 @@ data ProgState = ProgState
 
 -- | The game state
 data GameState = GameState
-  { _gameType  :: Maybe GameType
+  { _gameYear     :: Maybe Int
+  -- ^ The year the game took place
+  , _gameMonth    :: Maybe Int
+  -- ^ The month the game took place
+  , _gameDay      :: Maybe Int
+  -- ^ The day of the month the game took place
+  , _gameType     :: Maybe GameType
   -- ^ The type of game (home/away)
-  , _otherTeam :: String
+  , _otherTeam    :: String
   -- ^ The name of the other team
-  , _homeScore :: Maybe Int
+  , _homeScore    :: Maybe Int
   -- ^ The home team's score
-  , _awayScore :: Maybe Int
+  , _awayScore    :: Maybe Int
   -- ^ The away team's score
+  , _overtimeFlag :: Maybe Bool
+  -- ^ Indicates whether or not the game went into overtime
   } deriving (Eq, Show)
 
 -- | The program mode
@@ -148,12 +177,16 @@ data GameType
 
 -- | Represents the database
 data Database = Database
-  { _dbPlayers :: [Player]
+  { _dbPlayers       :: [Player]
   -- ^ The list of players
-  , _dbGoalies :: [Goalie]
+  , _dbGoalies       :: [Goalie]
   -- ^ The list of goalies
-  , _dbGames   :: Int
+  , _dbGames         :: Int
   -- ^ The number of games recorded
+  , _dbHomeGameStats :: GameStats
+  -- ^ Statistics for home games
+  , _dbAwayGameStats :: GameStats
+  -- ^ Statistics for away games
   } deriving (Eq, Show)
 
 instance FromJSON Database where
@@ -161,17 +194,23 @@ instance FromJSON Database where
     <$> v .: "players"
     <*> v .: "goalies"
     <*> v .: "games"
+    <*> v .: "home_game_stats"
+    <*> v .: "away_game_stats"
 
 instance ToJSON Database where
-  toJSON (Database players goalies games) = object
-    [ "players" .= players
-    , "goalies" .= goalies
-    , "games"   .= games
+  toJSON (Database players goalies games hgs ags) = object
+    [ "players"         .= players
+    , "goalies"         .= goalies
+    , "games"           .= games
+    , "home_game_stats" .= hgs
+    , "away_game_stats" .= ags
     ]
-  toEncoding (Database players goalies games) = pairs $
-    "players" .= players <>
-    "goalies" .= goalies <>
-    "games"   .= games
+  toEncoding (Database players goalies games hgs ags) = pairs $
+    "players"         .= players <>
+    "goalies"         .= goalies <>
+    "games"           .= games   <>
+    "home_game_stats" .= hgs     <>
+    "away_game_stats" .= ags
 
 -- | Represents a (non-goalie) player
 data Player = Player
@@ -316,6 +355,33 @@ instance ToJSON GoalieStats where
       "losses"        .= l  <>
       "ties"          .= t
 
+-- | Game statistics
+data GameStats = GameStats
+  { _gmsWins     :: Int
+  -- ^ Games won
+  , _gmsLosses   :: Int
+  -- ^ Games lost
+  , _gmsOvertime :: Int
+  -- ^ Games lost in overtime
+  } deriving (Eq, Show)
+
+instance FromJSON GameStats where
+  parseJSON = withObject "GameStats" $ \v -> GameStats
+    <$> v .: "wins"
+    <*> v .: "losses"
+    <*> v .: "overtime"
+
+instance ToJSON GameStats where
+  toJSON (GameStats w l ot) = object
+    [ "wins"     .= w
+    , "losses"   .= l
+    , "overtime" .= ot
+    ]
+  toEncoding (GameStats w l ot) = pairs $
+    "wins"     .= w  <>
+    "losses"   .= l  <>
+    "overtime" .= ot
+
 -- | Defines a user prompt
 data Prompt = Prompt
   { promptDrawer      :: ProgState -> Update ()
@@ -335,42 +401,14 @@ makeLenses ''Player
 makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
+makeLenses ''GameStats
 
-gameTypeL :: Lens' ProgMode (Maybe GameType)
-gameTypeL = lens
+gameStateL :: Lens' ProgMode GameState
+gameStateL = lens
   (\case
-    NewGame gs -> gs ^. gameType
-    _          -> Nothing)
-  (\m gt -> case m of
-    NewGame gs -> NewGame $ gs & gameType .~ gt
-    _          -> NewGame $ newGameState & gameType .~ gt)
-
-otherTeamL :: Lens' ProgMode String
-otherTeamL = lens
-  (\case
-    NewGame gs -> gs ^. otherTeam
-    _          -> "")
-  (\m ot -> case m of
-    NewGame gs -> NewGame $ gs & otherTeam .~ ot
-    _          -> NewGame $ newGameState & otherTeam .~ ot)
-
-homeScoreL :: Lens' ProgMode (Maybe Int)
-homeScoreL = lens
-  (\case
-    NewGame gs -> gs ^. homeScore
-    _          -> Nothing)
-  (\m hs -> case m of
-    NewGame gs -> NewGame $ gs & homeScore .~ hs
-    _          -> NewGame $ newGameState & homeScore .~ hs)
-
-awayScoreL :: Lens' ProgMode (Maybe Int)
-awayScoreL = lens
-  (\case
-    NewGame gs -> gs ^. awayScore
-    _          -> Nothing)
-  (\m as -> case m of
-    NewGame gs -> NewGame $ gs & awayScore .~ as
-    _          -> NewGame $ newGameState & awayScore .~ as)
+    NewGame gs -> gs
+    _          -> newGameState)
+  (\_ gs -> NewGame gs)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
@@ -383,18 +421,24 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameType  = Nothing
-  , _otherTeam = ""
-  , _homeScore = Nothing
-  , _awayScore = Nothing
+  { _gameYear     = Nothing
+  , _gameMonth    = Nothing
+  , _gameDay      = Nothing
+  , _gameType     = Nothing
+  , _otherTeam    = ""
+  , _homeScore    = Nothing
+  , _awayScore    = Nothing
+  , _overtimeFlag = Nothing
   }
 
 -- | Constructor for a 'Database'
 newDatabase :: Database
 newDatabase = Database
-  { _dbPlayers = []
-  , _dbGoalies = []
-  , _dbGames   = 0
+  { _dbPlayers       = []
+  , _dbGoalies       = []
+  , _dbGames         = 0
+  , _dbHomeGameStats = newGameStats
+  , _dbAwayGameStats = newGameStats
   }
 
 -- | Constructor for a 'Player'
@@ -448,12 +492,71 @@ newGoalieStats = GoalieStats
   , _gsTies         = 0
   }
 
--- | Determines the team's points
-teamScore :: ProgState -> Maybe Int
-teamScore s = case s ^. progMode . gameTypeL of
-  Just HomeGame -> s ^. progMode . homeScoreL
-  Just AwayGame -> s ^. progMode . awayScoreL
+-- | Constructor for a 'GameStats' value
+newGameStats :: GameStats
+newGameStats = GameStats
+  { _gmsWins     = 0
+  , _gmsLosses   = 0
+  , _gmsOvertime = 0
+  }
+
+-- | Determines the team's score
+teamScore :: GameState -> Maybe Int
+teamScore s = case s ^. gameType of
+  Just HomeGame -> s ^. homeScore
+  Just AwayGame -> s ^. awayScore
   Nothing       -> Nothing
+
+-- | Determines the other team's score
+otherScore :: GameState -> Maybe Int
+otherScore s = case s ^. gameType of
+  Just HomeGame -> s ^. awayScore
+  Just AwayGame -> s ^. homeScore
+  Nothing       -> Nothing
+
+-- | Returns the name of the home team (or an empty string if
+-- unavailable)
+homeTeam :: GameState -> String
+homeTeam gs = case gs^.gameType of
+  Just HomeGame -> myTeam
+  Just AwayGame -> gs^.otherTeam
+  Nothing       -> ""
+
+-- | Returns the name of the visiting team (or an empty string if
+-- unavailable)
+awayTeam :: GameState -> String
+awayTeam gs = case gs^.gameType of
+  Just HomeGame -> gs^.otherTeam
+  Just AwayGame -> myTeam
+  Nothing       -> ""
+
+-- | Checks if the game was won
+gameWon :: GameState -> Maybe Bool
+gameWon gs = (>) <$> teamScore gs <*> otherScore gs
+
+-- | Checks if the game was lost
+gameLost :: GameState -> Maybe Bool
+gameLost gs = (<) <$> teamScore gs <*> otherScore gs
+
+-- | Checks if the game has tied
+gameTied :: GameState -> Maybe Bool
+gameTied gs = (==) <$> gs^.homeScore <*> gs^.awayScore
+
+-- | Calculates the number of games played
+gmsGames :: GameStats -> Int
+gmsGames gs = gs^.gmsWins + gs^.gmsLosses
+
+-- | Calculates the number of points
+gmsPoints :: GameStats -> Int
+gmsPoints gs = 2 * gs^.gmsWins + gs^. gmsOvertime
+
+-- | Adds two 'GameStats' values together
+addGameStats :: GameStats -> GameStats -> GameStats
+addGameStats s1 s2 = GameStats
+  { _gmsWins     = s1^.gmsWins + s2^.gmsWins
+  , _gmsLosses   = s1^.gmsLosses + s2^.gmsLosses
+  , _gmsOvertime = s1^.gmsOvertime + s2^.gmsOvertime
+  }
 
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int

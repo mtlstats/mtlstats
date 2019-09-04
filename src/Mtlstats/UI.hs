@@ -25,8 +25,10 @@ import Control.Monad (void)
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
+import Mtlstats.Format
 import Mtlstats.Menu
 import Mtlstats.Prompt
+import Mtlstats.Report
 import Mtlstats.Types
 
 -- | Drawing function
@@ -40,10 +42,28 @@ draw s = do
       MainMenu  -> drawMenu mainMenu
       NewSeason -> drawMenu newSeasonMenu
       NewGame gs
-        | null $ gs ^. gameType  -> drawMenu gameTypeMenu
-        | null $ gs ^. otherTeam -> drawPrompt otherTeamPrompt s
-        | null $ gs ^. homeScore -> drawPrompt homeScorePrompt s
-        | null $ gs ^. awayScore -> drawPrompt awayScorePrompt s
-        | otherwise              -> undefined
+        | null $ gs^.gameYear     -> header s >> drawPrompt gameYearPrompt s
+        | null $ gs^.gameMonth    -> header s >> drawMenu gameMonthMenu
+        | null $ gs^.gameDay      -> header s >> drawPrompt gameDayPrompt s
+        | null $ gs^.gameType     -> header s >> drawMenu gameTypeMenu
+        | null $ gs^.otherTeam    -> header s >> drawPrompt otherTeamPrompt s
+        | null $ gs^.homeScore    -> header s >> drawPrompt homeScorePrompt s
+        | null $ gs^.awayScore    -> header s >> drawPrompt awayScorePrompt s
+        | null $ gs^.overtimeFlag -> header s >> overtimePrompt
+        | otherwise               -> showReport s
   C.render
   void $ C.setCursorMode cm
+
+header :: ProgState -> C.Update ()
+header s = C.drawString $
+  "*** GAME " ++ padNum 2 (s^.database.dbGames) ++ " ***\n"
+
+overtimePrompt :: C.Update C.CursorMode
+overtimePrompt = do
+  C.drawString "Did the game go into overtime?  (Y/N)"
+  return C.CursorInvisible
+
+showReport :: ProgState -> C.Update C.CursorMode
+showReport s = do
+  C.drawString $ report 72 s
+  return C.CursorInvisible
