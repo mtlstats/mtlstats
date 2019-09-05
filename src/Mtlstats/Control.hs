@@ -132,7 +132,8 @@ dispatch s = case s^.progMode of
 
     | otherwise -> Controller
       { drawController = \s -> do
-        C.drawString $ report 72 s
+        (_, cols) <- C.windowSize
+        C.drawString $ report (fromInteger $ pred cols) s
         return C.CursorInvisible
       , handleController = \e -> do
         when
