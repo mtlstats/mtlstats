@@ -24,13 +24,12 @@ module Mtlstats (initState, mainLoop) where
 import Control.Monad (void)
 import Control.Monad.Extra (whenM)
 import Control.Monad.Trans.Class (lift)
-import Control.Monad.Trans.State (get)
+import Control.Monad.Trans.State (get, gets)
 import Data.Maybe (fromJust)
 import qualified UI.NCurses as C
 
-import Mtlstats.Events
+import Mtlstats.Control
 import Mtlstats.Types
-import Mtlstats.UI
 
 -- | Initializes the progran
 initState :: C.Curses ProgState
@@ -42,7 +41,18 @@ initState = do
 -- | Main program loop
 mainLoop :: Action ()
 mainLoop = do
-  get >>= lift . draw
+  c <- gets dispatch
+  get >>= lift . draw . drawController c
   w <- lift C.defaultWindow
-  whenM (lift (fromJust <$> C.getEvent w Nothing) >>= handleEvent)
+  whenM (lift (fromJust <$> C.getEvent w Nothing) >>= handleController c)
     mainLoop
+
+draw :: C.Update C.CursorMode -> C.Curses ()
+draw u = do
+  void $ C.setCursorMode C.CursorInvisible
+  w  <- C.defaultWindow
+  cm <- C.updateWindow w $ do
+    C.clear
+    u
+  C.render
+  void $ C.setCursorMode cm
