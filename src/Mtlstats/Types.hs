@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Types (
   -- * Types
+  Controller (..),
   Action,
   ProgState (..),
   GameState (..),
@@ -125,12 +126,20 @@ import Data.Aeson
   )
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
-import UI.NCurses (Curses, Update)
+import qualified UI.NCurses as C
 
 import Mtlstats.Config
 
+-- | Controls the program flow
+data Controller = Controller
+  { drawController   :: ProgState -> C.Update C.CursorMode
+  -- ^ The drawing phase
+  , handleController :: C.Event -> Action Bool
+  -- ^ The event handler
+  }
+
 -- | Action which maintains program state
-type Action a = StateT ProgState Curses a
+type Action a = StateT ProgState C.Curses a
 
 -- | Represents the program state
 data ProgState = ProgState
@@ -384,7 +393,7 @@ instance ToJSON GameStats where
 
 -- | Defines a user prompt
 data Prompt = Prompt
-  { promptDrawer      :: ProgState -> Update ()
+  { promptDrawer      :: ProgState -> C.Update ()
   -- ^ Draws the prompt to thr screen
   , promptCharCheck   :: Char -> Bool
   -- ^ Determines whether or not the character is valid
