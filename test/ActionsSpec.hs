@@ -227,10 +227,10 @@ updateGameStatsSpec = describe "updateGameStats" $ do
       in db' `shouldBe` db 1 2 1 1 1 1
 
   context "home overtime loss" $
-    it "should record a home loss and overtime" $ let
+    it "should record a home overtime" $ let
       s'  = s (Just HomeGame) (Just 1) (Just 2) (Just True)
       db' = updateGameStats s' ^. database
-      in db' `shouldBe` db 1 2 2 1 1 1
+      in db' `shouldBe` db 1 1 2 1 1 1
 
   context "away win" $
     it "should record an away win" $ let
@@ -245,10 +245,10 @@ updateGameStatsSpec = describe "updateGameStats" $ do
       in db' `shouldBe` db 1 1 1 1 2 1
 
   context "away overtime loss" $
-    it "should record an away loss and overtime" $ let
+    it "should record an away overtime" $ let
       s'  = s (Just AwayGame) (Just 2) (Just 1) (Just True)
       db' = updateGameStats s' ^. database
-      in db' `shouldBe` db 1 1 1 1 2 2
+      in db' `shouldBe` db 1 1 1 1 1 2
 
   context "missing game type" $
     it "should not change anything" $ let

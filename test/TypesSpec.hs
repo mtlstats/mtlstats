@@ -320,30 +320,36 @@ gameWonSpec = describe "gameWon" $ mapM_
 
 gameLostSpec :: Spec
 gameLostSpec = describe "gameLost" $ mapM_
-  (\(t, h, a, expected) -> let
+  (\(t, h, a, ot, expected) -> let
     desc = "game type: " ++ show t ++
       ", home score: " ++ show h ++
-      ", away score: " ++ show a
+      ", away score: " ++ show a ++
+      ", overtimr flag: " ++ show ot
     gs = newGameState
-      & gameType  .~ t
-      & homeScore .~ h
-      & awayScore .~ a
+      & gameType     .~ t
+      & homeScore    .~ h
+      & awayScore    .~ a
+      & overtimeFlag .~ ot
     in context desc $
       it ("should be " ++ show expected) $
         gameLost gs `shouldBe` expected)
-  --  gameType,      homeScore, awayScore, expected
-  [ ( Just HomeGame, Just 1,    Just 1,    Just False )
-  , ( Just HomeGame, Just 1,    Just 2,    Just True  )
-  , ( Just HomeGame, Just 2,    Just 1,    Just False )
-  , ( Just AwayGame, Just 1,    Just 1,    Just False )
-  , ( Just AwayGame, Just 1,    Just 2,    Just False )
-  , ( Just AwayGame, Just 2,    Just 1,    Just True  )
-  , ( Nothing,       Just 1,    Just 2,    Nothing    )
-  , ( Just HomeGame, Nothing,   Just 1,    Nothing    )
-  , ( Just AwayGame, Nothing,   Just 1,    Nothing    )
-  , ( Just HomeGame, Just 1,    Nothing,   Nothing    )
-  , ( Just AwayGame, Just 1,    Nothing,   Nothing    )
-  , ( Nothing,       Nothing,   Nothing,   Nothing    )
+  --  gameType,      homeScore, awayScore, overtimeFlag, expected
+  [ ( Just HomeGame, Just 1,    Just 1,    Just False,   Just False )
+  , ( Just HomeGame, Just 1,    Just 2,    Just False,   Just True  )
+  , ( Just HomeGame, Just 1,    Just 2,    Just True,    Just False )
+  , ( Just HomeGame, Just 2,    Just 1,    Just False,   Just False )
+  , ( Just AwayGame, Just 1,    Just 1,    Just False,   Just False )
+  , ( Just AwayGame, Just 1,    Just 2,    Just False,   Just False )
+  , ( Just AwayGame, Just 2,    Just 1,    Just False,   Just True  )
+  , ( Just AwayGame, Just 2,    Just 1,    Just True,    Just False )
+  , ( Nothing,       Just 1,    Just 2,    Just False,   Nothing    )
+  , ( Just HomeGame, Nothing,   Just 1,    Just False,   Nothing    )
+  , ( Just AwayGame, Nothing,   Just 1,    Just False,   Nothing    )
+  , ( Just HomeGame, Just 1,    Nothing,   Just False,   Nothing    )
+  , ( Just AwayGame, Just 1,    Nothing,   Just False,   Nothing    )
+  , ( Just HomeGame, Just 1,    Just 2,    Nothing,      Nothing    )
+  , ( Just AwayGame, Just 1,    Just 2,    Nothing,      Nothing    )
+  , ( Nothing,       Nothing,   Nothing,   Just False,   Nothing    )
   ]
 
 gameTiedSpec :: Spec
@@ -366,21 +372,24 @@ gameTiedSpec = describe "gameTied" $ mapM_
 
 gmsGamesSpec :: Spec
 gmsGamesSpec = describe "gmsGames" $ mapM_
-  (\(w, l, expected) -> let
+  (\(w, l, ot, expected) -> let
     desc = "wins: " ++ show w ++
-      ", losses: " ++ show l
+      ", losses: " ++ show l ++
+      ", overtime: " ++ show ot
     gs = newGameStats
-      & gmsWins   .~ w
-      & gmsLosses .~ l
+      & gmsWins     .~ w
+      & gmsLosses   .~ l
+      & gmsOvertime .~ ot
     in context desc $
       it ("should be " ++ show expected) $
         gmsGames gs `shouldBe` expected)
-  --  wins, losses, expected
-  [ ( 0,    0,      0        )
-  , ( 1,    0,      1        )
-  , ( 0,    1,      1        )
-  , ( 1,    1,      2        )
-  , ( 2,    3,      5        )
+  --  wins, losses, overtime, expected
+  [ ( 0,    0,      0,        0        )
+  , ( 1,    0,      0,        1        )
+  , ( 0,    1,      0,        1        )
+  , ( 0,    0,      1,        1        )
+  , ( 1,    1,      1,        3        )
+  , ( 2,    3,      5,        10       )
   ]
 
 gmsPointsSpec :: Spec
