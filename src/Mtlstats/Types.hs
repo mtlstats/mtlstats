@@ -545,7 +545,11 @@ gameWon gs = (>) <$> teamScore gs <*> otherScore gs
 
 -- | Checks if the game was lost
 gameLost :: GameState -> Maybe Bool
-gameLost gs = (<) <$> teamScore gs <*> otherScore gs
+gameLost gs = do
+  ot    <- gs^.overtimeFlag
+  team  <- teamScore gs
+  other <- otherScore gs
+  Just $ not ot && other > team
 
 -- | Checks if the game has tied
 gameTied :: GameState -> Maybe Bool
@@ -553,7 +557,7 @@ gameTied gs = (==) <$> gs^.homeScore <*> gs^.awayScore
 
 -- | Calculates the number of games played
 gmsGames :: GameStats -> Int
-gmsGames gs = gs^.gmsWins + gs^.gmsLosses
+gmsGames gs = gs^.gmsWins + gs^.gmsLosses + gs^.gmsOvertime
 
 -- | Calculates the number of points
 gmsPoints :: GameStats -> Int
