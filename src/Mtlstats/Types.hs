@@ -52,6 +52,7 @@ module Mtlstats.Types (
   homeScore,
   awayScore,
   overtimeFlag,
+  dataVerified,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -169,6 +170,8 @@ data GameState = GameState
   -- ^ The away team's score
   , _overtimeFlag :: Maybe Bool
   -- ^ Indicates whether or not the game went into overtime
+  , _dataVerified :: Bool
+  -- ^ Set to 'True' when the user confirms the entered data
   } deriving (Eq, Show)
 
 -- | The program mode
@@ -438,6 +441,7 @@ newGameState = GameState
   , _homeScore    = Nothing
   , _awayScore    = Nothing
   , _overtimeFlag = Nothing
+  , _dataVerified = False
   }
 
 -- | Constructor for a 'Database'
