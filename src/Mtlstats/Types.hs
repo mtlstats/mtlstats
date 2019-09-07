@@ -26,8 +26,8 @@ module Mtlstats.Types (
   Controller (..),
   Action,
   ProgState (..),
-  GameState (..),
   ProgMode (..),
+  GameState (..),
   GameType (..),
   Database (..),
   Player (..),
@@ -152,6 +152,13 @@ data ProgState = ProgState
   -- ^ Buffer for user input
   } deriving (Eq, Show)
 
+-- | The program mode
+data ProgMode
+  = MainMenu
+  | NewSeason
+  | NewGame GameState
+  deriving (Eq, Show)
+
 -- | The game state
 data GameState = GameState
   { _gameYear     :: Maybe Int
@@ -173,13 +180,6 @@ data GameState = GameState
   , _dataVerified :: Bool
   -- ^ Set to 'True' when the user confirms the entered data
   } deriving (Eq, Show)
-
--- | The program mode
-data ProgMode
-  = MainMenu
-  | NewSeason
-  | NewGame GameState
-  deriving (Eq, Show)
 
 -- | The type of game
 data GameType
