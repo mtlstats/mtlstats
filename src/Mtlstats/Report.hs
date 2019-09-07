@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Report (report) where
+module Mtlstats.Report (report, gameDate) where
 
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
@@ -40,6 +40,7 @@ report width s = unlines $ fromMaybe [] $ do
     db     = s^.database
     gs     = s^.progMode.gameStateL
     gNum   = db^.dbGames
+    date   = gameDate gs
     hTeam  = homeTeam gs
     aTeam  = awayTeam gs
     hStats = db^.dbHomeGameStats
@@ -47,10 +48,6 @@ report width s = unlines $ fromMaybe [] $ do
     tStats = addGameStats hStats aStats
   hScore <- gs^.homeScore
   aScore <- gs^.awayScore
-  month  <- month <$> gs^.gameMonth
-  day    <- padNum 2 <$> gs^.gameDay
-  year   <- show <$> gs^.gameYear
-  let date = month ++ " " ++ day ++ " " ++ year
   Just
     [ overlay
       ("GAME NUMBER " ++ padNum 2 gNum)
@@ -80,6 +77,13 @@ report width s = unlines $ fromMaybe [] $ do
       $  left 11 "TOTALS"
       ++ showStats tStats
     ]
+
+gameDate :: GameState -> String
+gameDate gs = fromMaybe "" $ do
+  year  <- show <$> gs^.gameYear
+  month <- month <$> gs^.gameMonth
+  day   <- padNum 2 <$> gs^.gameDay
+  Just $ month ++ " " ++ day ++ " " ++ year
 
 showStats :: GameStats -> String
 showStats gs

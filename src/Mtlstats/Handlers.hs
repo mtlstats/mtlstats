@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,18 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats.Handlers (ynHandler) where
 
-import qualified ActionsSpec as Actions
-import qualified FormatSpec as Format
-import qualified HandlersSpec as Handlers
-import qualified ReportSpec as Report
-import qualified TypesSpec as Types
+import Data.Char (toUpper)
+import qualified UI.NCurses as C
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
-  Format.spec
-  Handlers.spec
-  Report.spec
+-- | Handler for a yes/no prompt
+ynHandler :: C.Event -> Maybe Bool
+ynHandler (C.EventCharacter c) = case toUpper c of
+  'Y' -> Just True
+  'N' -> Just False
+  _   -> Nothing
+ynHandler _ = Nothing
