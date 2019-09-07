@@ -157,7 +157,7 @@ verifyDataC = Controller
     let gs = s^.progMode.gameStateL
     header s
     C.drawString "\n"
-    C.drawString $ "      Date: " ++ date gs ++ "\n"
+    C.drawString $ "      Date: " ++ gameDate gs ++ "\n"
     C.drawString $ " Game type: " ++ show (fromJust $ gs^.gameType) ++ "\n"
     C.drawString $ "Other team: " ++ gs^.otherTeam ++ "\n"
     C.drawString $ "Home score: " ++ show (fromJust $ gs^.homeScore) ++ "\n"

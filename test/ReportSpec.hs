@@ -29,19 +29,19 @@ import Mtlstats.Types
 
 spec :: Spec
 spec = describe "Mtlstats.Report"
-  dateSpec
+  gameDateSpec
 
-dateSpec :: Spec
-dateSpec = describe "date" $ do
+gameDateSpec :: Spec
+gameDateSpec = describe "gameDate" $ do
 
-  context "valid date" $
+  context "valid gameDate" $
     it "should format the date" $ let
       gs = newGameState
         & gameYear  ?~ 1980
         & gameMonth ?~ 6
         & gameDay   ?~ 25
-      in date gs `shouldBe` "JUN 25 1980"
+      in gameDate gs `shouldBe` "JUN 25 1980"
 
   context "invalid date" $
     it "should return an empty string" $
-      date newGameState `shouldBe` ""
+      gameDate newGameState `shouldBe` ""
