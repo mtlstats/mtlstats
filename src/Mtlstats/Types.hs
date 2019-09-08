@@ -29,6 +29,7 @@ module Mtlstats.Types (
   ProgMode (..),
   GameState (..),
   GameType (..),
+  CreatePlayerState (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -53,6 +54,11 @@ module Mtlstats.Types (
   awayScore,
   overtimeFlag,
   dataVerified,
+  -- ** CreatePlayerState Lenses
+  cpsNumber,
+  cpsName,
+  cpsPosition,
+  cpsConfirmed,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -89,6 +95,7 @@ module Mtlstats.Types (
   -- * Constructors
   newProgState,
   newGameState,
+  newCreatePlayerState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -186,6 +193,18 @@ data GameType
   = HomeGame
   | AwayGame
   deriving (Eq, Show)
+
+-- | Player creation status
+data CreatePlayerState = CreatePlayerState
+  { _cpsNumber    :: Maybe Int
+  -- ^ The player's number
+  , _cpsName      :: String
+  -- ^ The player's name
+  , _cpsPosition  :: String
+  -- ^ The player's position
+  , _cpsConfirmed :: Bool
+  -- ^ Set when the user confirms the input
+  } deriving (Eq, Show)
 
 -- | Represents the database
 data Database = Database
@@ -408,6 +427,7 @@ data Prompt = Prompt
 
 makeLenses ''ProgState
 makeLenses ''GameState
+makeLenses ''CreatePlayerState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
@@ -442,6 +462,15 @@ newGameState = GameState
   , _awayScore    = Nothing
   , _overtimeFlag = Nothing
   , _dataVerified = False
+  }
+
+-- | Constructor for a 'CreatePlayerState'
+newCreatePlayerState :: CreatePlayerState
+newCreatePlayerState = CreatePlayerState
+  { _cpsNumber    = Nothing
+  , _cpsName      = ""
+  , _cpsPosition  = ""
+  , _cpsConfirmed = False
   }
 
 -- | Constructor for a 'Database'
