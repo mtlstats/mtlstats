@@ -53,7 +53,9 @@ dispatch s = case s^.progMode of
     | null $ gs^.overtimeFlag -> overtimeFlagC
     | not $ gs^.dataVerified  -> verifyDataC
     | otherwise               -> reportC
-  CreatePlayer _ -> undefined
+  CreatePlayer cps
+    | null $ cps^.cpsNumber -> getPlayerNumC
+    | otherwise             -> undefined
 
 mainMenuC :: Controller
 mainMenuC = Controller
@@ -195,3 +197,11 @@ reportC = Controller
 header :: ProgState -> C.Update ()
 header s = C.drawString $
   "*** GAME " ++ padNum 2 (s^.database.dbGames) ++ " ***\n"
+
+getPlayerNumC :: Controller
+getPlayerNumC = Controller
+  { drawController   = drawPrompt playerNumPrompt
+  , handleController = \e -> do
+    promptHandler playerNumPrompt e
+    return True
+  }
