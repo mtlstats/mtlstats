@@ -30,6 +30,7 @@ module Mtlstats.Actions
   , overtimeCheck
   , updateGameStats
   , validateGameDate
+  , createPlayer
   ) where
 
 import Data.Maybe (fromMaybe)
@@ -111,3 +112,7 @@ validateGameDate s = fromMaybe s $ do
       .  (gameMonth .~ Nothing)
       .  (gameDay   .~ Nothing)
     else s
+
+-- | Starts player creation mode
+createPlayer :: ProgState -> ProgState
+createPlayer = progMode .~ CreatePlayer newCreatePlayerState

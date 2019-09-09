@@ -164,6 +164,7 @@ data ProgMode
   = MainMenu
   | NewSeason
   | NewGame GameState
+  | CreatePlayer CreatePlayerState
   deriving (Eq, Show)
 
 -- | The game state

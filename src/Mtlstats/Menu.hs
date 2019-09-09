@@ -60,7 +60,9 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify startNewSeason >> return True
   , MenuItem '2' "New Game" $
     modify startNewGame >> return True
-  , MenuItem '3' "Exit" $
+  , MenuItem '3' "Create Player" $
+    modify createPlayer >> return True
+  , MenuItem '4' "Exit" $
     return False
   ]
 

@@ -53,6 +53,7 @@ dispatch s = case s^.progMode of
     | null $ gs^.overtimeFlag -> overtimeFlagC
     | not $ gs^.dataVerified  -> verifyDataC
     | otherwise               -> reportC
+  CreatePlayer _ -> undefined
 
 mainMenuC :: Controller
 mainMenuC = Controller

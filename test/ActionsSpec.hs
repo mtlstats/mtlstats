@@ -39,6 +39,7 @@ spec = describe "Mtlstats.Actions" $ do
   overtimeCheckSpec
   updateGameStatsSpec
   validateGameDateSpec
+  createPlayerSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -314,6 +315,12 @@ validateGameDateSpec = describe "validateGameDate" $ do
       s^.progMode.gameStateL.gameYear  `shouldBe` Just 2019
       s^.progMode.gameStateL.gameMonth `shouldBe` Just 6
       s^.progMode.gameStateL.gameDay   `shouldBe` Nothing
+
+createPlayerSpec :: Spec
+createPlayerSpec = describe "createPlayer" $
+  it "should change the mode appropriately" $ let
+    s = createPlayer newProgState
+    in s^.progMode `shouldBe` CreatePlayer newCreatePlayerState
 
 makePlayer :: IO Player
 makePlayer = Player
