@@ -42,6 +42,7 @@ spec = describe "Mtlstats.Types" $ do
   gameStatsSpec
   databaseSpec
   gameStateLSpec
+  createPlayerStateLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -80,6 +81,23 @@ gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   , ( NewGame $ gs HomeGame, newGameState )
   ]
   where gs t = newGameState & gameType ?~ t
+
+createPlayerStateLSpec :: Spec
+createPlayerStateLSpec = describe "createPlayerStateL" $
+  lensSpec createPlayerStateL
+  -- getters
+  [ ( MainMenu,              newCreatePlayerState )
+  , ( CreatePlayer $ cps 1 , cps 1                )
+  ]
+  -- setters
+  [ ( MainMenu,             cps 1 )
+  , ( CreatePlayer $ cps 1, cps 2 )
+  ]
+  where
+    cps n = newCreatePlayerState
+      & cpsNumber   ?~ n
+      & cpsName     .~ "foo"
+      & cpsPosition .~ "bar"
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do

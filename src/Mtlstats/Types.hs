@@ -44,6 +44,7 @@ module Mtlstats.Types (
   inputBuffer,
   -- ** ProgMode Lenses
   gameStateL,
+  createPlayerStateL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -442,6 +443,13 @@ gameStateL = lens
     NewGame gs -> gs
     _          -> newGameState)
   (\_ gs -> NewGame gs)
+
+createPlayerStateL :: Lens' ProgMode CreatePlayerState
+createPlayerStateL = lens
+  (\case
+    CreatePlayer cps -> cps
+    _                -> newCreatePlayerState)
+  (\_ cps -> CreatePlayer cps)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
