@@ -31,6 +31,7 @@ module Mtlstats.Actions
   , updateGameStats
   , validateGameDate
   , createPlayer
+  , addPlayer
   ) where
 
 import Data.Maybe (fromMaybe)
@@ -116,3 +117,15 @@ validateGameDate s = fromMaybe s $ do
 -- | Starts player creation mode
 createPlayer :: ProgState -> ProgState
 createPlayer = progMode .~ CreatePlayer newCreatePlayerState
+
+-- | Adds the entered player to the roster
+addPlayer :: ProgState -> ProgState
+addPlayer s = fromMaybe s $ do
+  let cps = s^.progMode.createPlayerStateL
+  num <- cps^.cpsNumber
+  let
+    name   = cps^.cpsName
+    pos    = cps^.cpsPosition
+    player = newPlayer num name pos
+  Just $ s & database.dbPlayers
+    %~ (player:)

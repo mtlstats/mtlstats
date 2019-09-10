@@ -57,6 +57,7 @@ dispatch s = case s^.progMode of
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC
     | null $ cps^.cpsPosition -> getPlayerPosC
+    | not $ cps^.cpsConfirmed -> confirmCreatePlayerC
     | otherwise               -> undefined
 
 mainMenuC :: Controller
@@ -221,5 +222,24 @@ getPlayerPosC = Controller
   { drawController   = drawPrompt playerPosPrompt
   , handleController = \e -> do
     promptHandler playerPosPrompt e
+    return True
+  }
+
+confirmCreatePlayerC :: Controller
+confirmCreatePlayerC = Controller
+  { drawController = \s -> do
+    let cps = s^.progMode.createPlayerStateL
+    C.drawString $ "  Player number: " ++ show (fromJust $ cps^.cpsNumber) ++ "\n"
+    C.drawString $ "    Player name: " ++ cps^.cpsName ++ "\n"
+    C.drawString $ "Player position: " ++ cps^.cpsPosition ++ "\n\n"
+    C.drawString "Create player: are you sure?  (Y/N)"
+    return C.CursorInvisible
+  , handleController = \e -> do
+    case ynHandler e of
+      Just True  -> do
+        modify addPlayer
+        modify $ progMode .~ MainMenu
+      Just False -> modify $ progMode .~ MainMenu
+      Nothing    -> return ()
     return True
   }
