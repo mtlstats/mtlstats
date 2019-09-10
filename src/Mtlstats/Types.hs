@@ -59,7 +59,6 @@ module Mtlstats.Types (
   cpsNumber,
   cpsName,
   cpsPosition,
-  cpsConfirmed,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -204,8 +203,6 @@ data CreatePlayerState = CreatePlayerState
   -- ^ The player's name
   , _cpsPosition  :: String
   -- ^ The player's position
-  , _cpsConfirmed :: Bool
-  -- ^ Set when the user confirms the input
   } deriving (Eq, Show)
 
 -- | Represents the database
@@ -479,7 +476,6 @@ newCreatePlayerState = CreatePlayerState
   { _cpsNumber    = Nothing
   , _cpsName      = ""
   , _cpsPosition  = ""
-  , _cpsConfirmed = False
   }
 
 -- | Constructor for a 'Database'
