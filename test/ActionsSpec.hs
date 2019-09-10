@@ -39,6 +39,8 @@ spec = describe "Mtlstats.Actions" $ do
   overtimeCheckSpec
   updateGameStatsSpec
   validateGameDateSpec
+  createPlayerSpec
+  addPlayerSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -314,6 +316,36 @@ validateGameDateSpec = describe "validateGameDate" $ do
       s^.progMode.gameStateL.gameYear  `shouldBe` Just 2019
       s^.progMode.gameStateL.gameMonth `shouldBe` Just 6
       s^.progMode.gameStateL.gameDay   `shouldBe` Nothing
+
+createPlayerSpec :: Spec
+createPlayerSpec = describe "createPlayer" $
+  it "should change the mode appropriately" $ let
+    s = createPlayer newProgState
+    in s^.progMode `shouldBe` CreatePlayer newCreatePlayerState
+
+addPlayerSpec :: Spec
+addPlayerSpec = describe "addPlayer" $ do
+  let
+    p1 = newPlayer 1 "Joe" "centre"
+    p2 = newPlayer 2 "Bob" "defense"
+    db = newDatabase
+      & dbPlayers .~ [p2]
+    s pm = newProgState
+      & progMode .~ pm
+      & database .~ db
+
+  context "data available" $
+    it "should create the player" $ let
+      s' = addPlayer $ s $ CreatePlayer $ newCreatePlayerState
+        & cpsNumber   ?~ 1
+        & cpsName     .~ "Joe"
+        & cpsPosition .~ "centre"
+      in s'^.database.dbPlayers `shouldBe` [p1, p2]
+
+  context "data unavailable" $
+    it "should not create the player" $ let
+      s' = addPlayer $ s MainMenu
+      in s'^.database.dbPlayers `shouldBe` [p2]
 
 makePlayer :: IO Player
 makePlayer = Player
