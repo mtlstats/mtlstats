@@ -57,8 +57,7 @@ dispatch s = case s^.progMode of
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC
     | null $ cps^.cpsPosition -> getPlayerPosC
-    | not $ cps^.cpsConfirmed -> confirmCreatePlayerC
-    | otherwise               -> undefined
+    | otherwise               -> confirmCreatePlayerC
 
 mainMenuC :: Controller
 mainMenuC = Controller
