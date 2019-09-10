@@ -31,7 +31,8 @@ module Mtlstats.Prompt (
   otherTeamPrompt,
   homeScorePrompt,
   awayScorePrompt,
-  playerNumPrompt
+  playerNumPrompt,
+  playerNamePrompt,
 ) where
 
 import Control.Monad (when)
@@ -125,6 +126,11 @@ awayScorePrompt = numPrompt "Away score: " $
 playerNumPrompt :: Prompt
 playerNumPrompt = numPrompt "Player number: " $
   modify . (progMode.createPlayerStateL.cpsNumber ?~)
+
+-- | Prompts for a new player's name
+playerNamePrompt :: Prompt
+playerNamePrompt = strPrompt "Player name: " $
+  modify . (progMode.createPlayerStateL.cpsName .~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

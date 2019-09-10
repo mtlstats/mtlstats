@@ -55,6 +55,7 @@ dispatch s = case s^.progMode of
     | otherwise               -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber -> getPlayerNumC
+    | null $ cps^.cpsName   -> getPlayerNameC
     | otherwise             -> undefined
 
 mainMenuC :: Controller
@@ -203,5 +204,13 @@ getPlayerNumC = Controller
   { drawController   = drawPrompt playerNumPrompt
   , handleController = \e -> do
     promptHandler playerNumPrompt e
+    return True
+  }
+
+getPlayerNameC :: Controller
+getPlayerNameC = Controller
+  { drawController   = drawPrompt playerNamePrompt
+  , handleController = \e -> do
+    promptHandler playerNamePrompt e
     return True
   }
