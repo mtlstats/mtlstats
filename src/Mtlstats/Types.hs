@@ -59,6 +59,8 @@ module Mtlstats.Types (
   cpsNumber,
   cpsName,
   cpsPosition,
+  cpsSuccessCallback,
+  cpsFailureCallback,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -157,7 +159,7 @@ data ProgState = ProgState
   -- ^ The program's mode
   , _inputBuffer :: String
   -- ^ Buffer for user input
-  } deriving (Eq, Show)
+  }
 
 -- | The program mode
 data ProgMode
@@ -165,7 +167,12 @@ data ProgMode
   | NewSeason
   | NewGame GameState
   | CreatePlayer CreatePlayerState
-  deriving (Eq, Show)
+
+instance Show ProgMode where
+  show MainMenu         = "MainMenu"
+  show NewSeason        = "NewSeason"
+  show (NewGame _)      = "NewGame"
+  show (CreatePlayer _) = "CreatePlayer"
 
 -- | The game state
 data GameState = GameState
@@ -197,13 +204,17 @@ data GameType
 
 -- | Player creation status
 data CreatePlayerState = CreatePlayerState
-  { _cpsNumber    :: Maybe Int
+  { _cpsNumber          :: Maybe Int
   -- ^ The player's number
-  , _cpsName      :: String
+  , _cpsName            :: String
   -- ^ The player's name
-  , _cpsPosition  :: String
+  , _cpsPosition        :: String
   -- ^ The player's position
-  } deriving (Eq, Show)
+  , _cpsSuccessCallback :: Action ()
+  -- ^ The function to call on success
+  , _cpsFailureCallback :: Action ()
+  -- ^ The function to call on failure
+  }
 
 -- | Represents the database
 data Database = Database
@@ -473,9 +484,11 @@ newGameState = GameState
 -- | Constructor for a 'CreatePlayerState'
 newCreatePlayerState :: CreatePlayerState
 newCreatePlayerState = CreatePlayerState
-  { _cpsNumber    = Nothing
-  , _cpsName      = ""
-  , _cpsPosition  = ""
+  { _cpsNumber          = Nothing
+  , _cpsName            = ""
+  , _cpsPosition        = ""
+  , _cpsSuccessCallback = return ()
+  , _cpsFailureCallback = return ()
   }
 
 -- | Constructor for a 'Database'

@@ -50,7 +50,7 @@ startNewSeasonSpec = describe "startNewSeason" $ do
       & startNewSeason
 
   it "should set the progState to NewSeason" $
-    s ^. progMode `shouldBe` NewSeason
+    show (s^.progMode) `shouldBe` "NewSeason"
 
   it "should set the number of games to 0" $
     s ^. database . dbGames `shouldBe` 0
@@ -63,7 +63,7 @@ startNewGameSpec = describe "startNewGame" $ do
     s ^. database . dbGames `shouldBe` 1
 
   it "should set the mode to NewGame" $
-    s ^. progMode `shouldBe` NewGame newGameState
+    show (s^.progMode) `shouldBe` "NewGame"
 
 resetYtdSpec :: Spec
 resetYtdSpec = describe "resetYtd" $
@@ -254,23 +254,27 @@ updateGameStatsSpec = describe "updateGameStats" $ do
 
   context "missing game type" $
     it "should not change anything" $ let
-      s' = s Nothing (Just 1) (Just 2) (Just True)
-      in updateGameStats s' `shouldBe` s'
+      s'  = s Nothing (Just 1) (Just 2) (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 1 1
 
   context "missing home score" $
     it "should not change anything" $ let
-      s' = s (Just HomeGame) Nothing (Just 1) (Just True)
-      in updateGameStats s' `shouldBe` s'
+      s'  = s (Just HomeGame) Nothing (Just 1) (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 1 1
 
   context "missing away score" $
     it "should not change anything" $ let
-      s' = s (Just HomeGame) (Just 1) Nothing (Just True)
-      in updateGameStats s' `shouldBe` s'
+      s'  = s (Just HomeGame) (Just 1) Nothing (Just True)
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 1 1
 
   context "missing overtime flag" $
     it "should not change anything" $ let
-      s' = s (Just HomeGame) (Just 1) (Just 2) Nothing
-      in updateGameStats s' `shouldBe` s'
+      s'  = s (Just HomeGame) (Just 1) (Just 2) Nothing
+      db' = updateGameStats s' ^. database
+      in db' `shouldBe` db 1 1 1 1 1 1
 
 validateGameDateSpec :: Spec
 validateGameDateSpec = describe "validateGameDate" $ do
@@ -321,7 +325,7 @@ createPlayerSpec :: Spec
 createPlayerSpec = describe "createPlayer" $
   it "should change the mode appropriately" $ let
     s = createPlayer newProgState
-    in s^.progMode `shouldBe` CreatePlayer newCreatePlayerState
+    in show (s^.progMode) `shouldBe` "CreatePlayer"
 
 addPlayerSpec :: Spec
 addPlayerSpec = describe "addPlayer" $ do
