@@ -34,7 +34,6 @@ module Mtlstats.Actions
   , addPlayer
   ) where
 
-import Control.Monad.Trans.State (modify)
 import Data.Maybe (fromMaybe)
 import Data.Time.Calendar (fromGregorianValid)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
@@ -118,7 +117,7 @@ validateGameDate s = fromMaybe s $ do
 -- | Starts player creation mode
 createPlayer :: ProgState -> ProgState
 createPlayer = let
-  cb = modify $ progMode .~ MainMenu
+  cb = progMode .~ MainMenu
   cps
     = newCreatePlayerState
     & cpsSuccessCallback .~ cb

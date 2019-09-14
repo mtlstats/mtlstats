@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control (dispatch) where
 
-import Control.Monad (join, when)
+import Control.Monad (when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
 import Data.Maybe (fromJust)
@@ -238,8 +238,10 @@ confirmCreatePlayerC = Controller
     case ynHandler e of
       Just True  -> do
         modify addPlayer
-        join $ gets (view $ progMode.createPlayerStateL.cpsSuccessCallback)
-      Just False -> join $ gets (view $ progMode.createPlayerStateL.cpsFailureCallback)
+        gets (view $ progMode.createPlayerStateL.cpsSuccessCallback)
+          >>= modify
+      Just False -> gets (view $ progMode.createPlayerStateL.cpsFailureCallback)
+        >>= modify
       Nothing    -> return ()
     return True
   }

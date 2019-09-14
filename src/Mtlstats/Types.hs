@@ -210,9 +210,9 @@ data CreatePlayerState = CreatePlayerState
   -- ^ The player's name
   , _cpsPosition        :: String
   -- ^ The player's position
-  , _cpsSuccessCallback :: Action ()
+  , _cpsSuccessCallback :: ProgState -> ProgState
   -- ^ The function to call on success
-  , _cpsFailureCallback :: Action ()
+  , _cpsFailureCallback :: ProgState -> ProgState
   -- ^ The function to call on failure
   }
 
@@ -487,8 +487,8 @@ newCreatePlayerState = CreatePlayerState
   { _cpsNumber          = Nothing
   , _cpsName            = ""
   , _cpsPosition        = ""
-  , _cpsSuccessCallback = return ()
-  , _cpsFailureCallback = return ()
+  , _cpsSuccessCallback = id
+  , _cpsFailureCallback = id
   }
 
 -- | Constructor for a 'Database'
