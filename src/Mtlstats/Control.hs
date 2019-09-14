@@ -21,11 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control (dispatch) where
 
-import Control.Monad (when)
-import Control.Monad.Trans.State (modify)
+import Control.Monad (join, when)
+import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
 import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (.~))
+import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -237,8 +238,8 @@ confirmCreatePlayerC = Controller
     case ynHandler e of
       Just True  -> do
         modify addPlayer
-        modify $ progMode .~ MainMenu
-      Just False -> modify $ progMode .~ MainMenu
+        join $ gets (view $ progMode.createPlayerStateL.cpsSuccessCallback)
+      Just False -> join $ gets (view $ progMode.createPlayerStateL.cpsFailureCallback)
       Nothing    -> return ()
     return True
   }
