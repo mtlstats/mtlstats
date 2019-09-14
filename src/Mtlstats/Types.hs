@@ -114,6 +114,7 @@ module Mtlstats.Types (
   gameWon,
   gameLost,
   gameTied,
+  unaccountedPoints,
   -- ** GameStats Helpers
   gmsGames,
   gmsPoints,
@@ -608,6 +609,13 @@ gameLost gs = do
 -- | Checks if the game has tied
 gameTied :: GameState -> Maybe Bool
 gameTied gs = (==) <$> gs^.homeScore <*> gs^.awayScore
+
+-- | Checks for unaccounted points
+unaccountedPoints :: GameState -> Maybe Bool
+unaccountedPoints gs = do
+  scored <- teamScore gs
+  let accounted = gs^.pointsAccounted
+  Just $ scored > accounted
 
 -- | Calculates the number of games played
 gmsGames :: GameStats -> Int

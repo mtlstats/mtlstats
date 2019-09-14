@@ -50,6 +50,7 @@ spec = describe "Mtlstats.Types" $ do
   gameWonSpec
   gameLostSpec
   gameTiedSpec
+  unaccountedPointsSpec
   gmsGamesSpec
   gmsPointsSpec
   addGameStatsSpec
@@ -398,6 +399,35 @@ gameTiedSpec = describe "gameTied" $ mapM_
   , ( Just 1,  Just 1,  Just True  )
   , ( Just 1,  Just 2,  Just False )
   ]
+
+unaccountedPointsSpec :: Spec
+unaccountedPointsSpec = describe "unaccounted points" $ do
+  context "no data" $
+    it "should return Nothing" $
+      unaccountedPoints newGameState `shouldBe` Nothing
+
+  context "unaccounted points" $
+    it "should return True" $ let
+      gs = newGameState
+        & gameType  ?~ HomeGame
+        & homeScore ?~ 1
+      in unaccountedPoints gs `shouldBe` Just True
+
+  context "all points accounted" $
+    it "should return False" $ let
+      gs = newGameState
+        & gameType        ?~ HomeGame
+        & homeScore       ?~ 1
+        & pointsAccounted .~ 1
+      in unaccountedPoints gs `shouldBe` Just False
+
+  context "more points accounted" $
+    it "should return True" $ let
+      gs = newGameState
+        & gameType        ?~ HomeGame
+        & homeScore       ?~ 1
+        & pointsAccounted .~ 2
+      in unaccountedPoints gs `shouldBe` Just False
 
 gmsGamesSpec :: Spec
 gmsGamesSpec = describe "gmsGames" $ mapM_
