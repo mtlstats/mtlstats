@@ -1,4 +1,4 @@
-{-
+{- |
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,20 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module Mtlstats.Util (nth) where
 
-import qualified ActionsSpec as Actions
-import qualified FormatSpec as Format
-import qualified HandlersSpec as Handlers
-import qualified ReportSpec as Report
-import qualified TypesSpec as Types
-import qualified UtilSpec as Util
-
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
-  Format.spec
-  Handlers.spec
-  Report.spec
-  Util.spec
+nth :: Int -> [a] -> Maybe a
+nth _ [] = Nothing
+nth n (x:xs)
+  | n == 0    = Just x
+  | n < 0     = Nothing
+  | otherwise = nth (pred n) xs

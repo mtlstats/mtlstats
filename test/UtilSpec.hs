@@ -19,20 +19,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module UtilSpec (spec) where
 
-import qualified ActionsSpec as Actions
-import qualified FormatSpec as Format
-import qualified HandlersSpec as Handlers
-import qualified ReportSpec as Report
-import qualified TypesSpec as Types
-import qualified UtilSpec as Util
+import Test.Hspec (Spec, context, describe, it, shouldBe)
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Actions.spec
-  Format.spec
-  Handlers.spec
-  Report.spec
-  Util.spec
+import Mtlstats.Util
+
+spec :: Spec
+spec = describe "Mtlstats.Util"
+  nthSpec
+
+nthSpec :: Spec
+nthSpec = describe "nth" $ mapM_
+  (\(n, expected) -> context (show n) $
+    it ("should be " ++ show expected) $ let
+      xs = ["foo", "bar", "baz"]
+      in nth n xs `shouldBe` expected)
+  --  index, expected
+  [ ( 0,     Just "foo" )
+  , ( 1,     Just "bar" )
+  , ( 2,     Just "baz" )
+  , ( 3,     Nothing    )
+  , ( -1,    Nothing    )
+  ]
