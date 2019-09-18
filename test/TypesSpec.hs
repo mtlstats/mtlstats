@@ -55,6 +55,7 @@ spec = describe "Mtlstats.Types" $ do
   gmsPointsSpec
   addGameStatsSpec
   pPointsSpec
+  playerSearchSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -512,3 +513,20 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 0,     1,       1      )
   , ( 2,     3,       5      )
   ]
+
+playerSearchSpec :: Spec
+playerSearchSpec = describe "playerSearch" $ mapM_
+  (\(sStr, expected) -> context sStr $
+    it ("should return " ++ show expected) $ let
+      ps = [joe, bob, steve]
+      in playerSearch sStr ps `shouldBe` expected)
+  --  search, result
+  [ ( "Joe",  [(0, joe)]             )
+  , ( "o",    [(0, joe), (1, bob)]   )
+  , ( "e",    [(0, joe), (2, steve)] )
+  , ( "x",    []                     )
+  ]
+  where
+    joe   = newPlayer 2 "Joe"   "center"
+    bob   = newPlayer 3 "Bob"   "defense"
+    steve = newPlayer 5 "Steve" "forward"

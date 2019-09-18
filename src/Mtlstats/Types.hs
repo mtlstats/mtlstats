@@ -120,7 +120,8 @@ module Mtlstats.Types (
   gmsPoints,
   addGameStats,
   -- ** Player Helpers
-  pPoints
+  pPoints,
+  playerSearch
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -136,6 +137,7 @@ import Data.Aeson
   , (.:)
   , (.=)
   )
+import Data.List (isInfixOf)
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 import qualified UI.NCurses as C
@@ -636,3 +638,16 @@ addGameStats s1 s2 = GameStats
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int
 pPoints s = s^.psGoals + s^.psAssists
+
+-- | Searches through a list of players
+playerSearch
+  :: String
+  -- ^ The search string
+  -> [Player]
+  -- ^ The list of players to search
+  -> [(Int, Player)]
+  -- ^ The matching players with their index numbers
+playerSearch sStr =
+  filter (match sStr) .
+  zip [0..]
+  where match sStr (_, p) = sStr `isInfixOf` (p^.pName)
