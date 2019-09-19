@@ -28,3 +28,11 @@ myTeam = "MONTREAL"
 -- | The maximum number of function keys
 maxFunKeys :: Int
 maxFunKeys = 9
+
+-- | The application name
+appName :: String
+appName = "mtlstats"
+
+-- | The database filename
+dbFname :: String
+dbFname = "database.json"
