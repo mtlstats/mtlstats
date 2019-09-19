@@ -66,8 +66,8 @@ promptHandler p (C.EventCharacter c) = let
    modify $ addChar c'
 promptHandler _ (C.EventSpecialKey C.KeyBackspace) =
   modify removeChar
-promptHandler p (C.EventSpecialKey (C.KeyFunction k)) =
-  promptFunctionKey p k
+promptHandler p (C.EventSpecialKey k) =
+  promptSpecialKey p k
 promptHandler _ _ = return ()
 
 -- | Builds a string prompt
@@ -78,10 +78,10 @@ strPrompt
   -- ^ The callback function for the result
   -> Prompt
 strPrompt pStr act = Prompt
-  { promptDrawer      = drawSimplePrompt pStr
-  , promptCharCheck   = const True
-  , promptAction      = act
-  , promptFunctionKey = const $ return ()
+  { promptDrawer     = drawSimplePrompt pStr
+  , promptCharCheck  = const True
+  , promptAction     = act
+  , promptSpecialKey = const $ return ()
   }
 
 -- | Builds a numeric prompt
@@ -92,10 +92,10 @@ numPrompt
   -- ^ The callback function for the result
   -> Prompt
 numPrompt pStr act = Prompt
-  { promptDrawer      = drawSimplePrompt pStr
-  , promptCharCheck   = isDigit
-  , promptAction      = \inStr -> forM_ (readMaybe inStr) act
-  , promptFunctionKey = const $ return ()
+  { promptDrawer     = drawSimplePrompt pStr
+  , promptCharCheck  = isDigit
+  , promptAction     = \inStr -> forM_ (readMaybe inStr) act
+  , promptSpecialKey = const $ return ()
   }
 
 -- | Prompts for the game year
