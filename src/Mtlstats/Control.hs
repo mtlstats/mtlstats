@@ -44,16 +44,17 @@ dispatch s = case s^.progMode of
   MainMenu  -> mainMenuC
   NewSeason -> newSeasonC
   NewGame gs
-    | null $ gs^.gameYear     -> gameYearC
-    | null $ gs^.gameMonth    -> gameMonthC
-    | null $ gs^.gameDay      -> gameDayC
-    | null $ gs^.gameType     -> gameTypeC
-    | null $ gs^.otherTeam    -> otherTeamC
-    | null $ gs^.homeScore    -> homeScoreC
-    | null $ gs^.awayScore    -> awayScoreC
-    | null $ gs^.overtimeFlag -> overtimeFlagC
-    | not $ gs^.dataVerified  -> verifyDataC
-    | otherwise               -> reportC
+    | null $ gs^.gameYear             -> gameYearC
+    | null $ gs^.gameMonth            -> gameMonthC
+    | null $ gs^.gameDay              -> gameDayC
+    | null $ gs^.gameType             -> gameTypeC
+    | null $ gs^.otherTeam            -> otherTeamC
+    | null $ gs^.homeScore            -> homeScoreC
+    | null $ gs^.awayScore            -> awayScoreC
+    | null $ gs^.overtimeFlag         -> overtimeFlagC
+    | not $ gs^.dataVerified          -> verifyDataC
+    | fromJust (unaccountedPoints gs) -> recordGoalC
+    | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC
@@ -178,6 +179,19 @@ verifyDataC = Controller
         modify updateGameStats
       Just False -> modify $ progMode.gameStateL .~ newGameState
       Nothing    -> return ()
+    return True
+  }
+
+recordGoalC :: Controller
+recordGoalC = Controller
+  { drawController = \s -> let
+    game = s^.database.dbGames
+    goal = succ $ s^.progMode.gameStateL.pointsAccounted
+    in drawPrompt (recordGoalPrompt game goal) s
+  , handleController = \e -> do
+    game <- gets $ view $ database.dbGames
+    goal <- succ <$> gets (view $ progMode.gameStateL.pointsAccounted)
+    promptHandler (recordGoalPrompt game goal) e
     return True
   }
 
