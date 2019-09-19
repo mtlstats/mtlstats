@@ -121,7 +121,8 @@ module Mtlstats.Types (
   addGameStats,
   -- ** Player Helpers
   pPoints,
-  playerSearch
+  playerSearch,
+  playerSearchExact
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -138,6 +139,7 @@ import Data.Aeson
   , (.=)
   )
 import Data.List (isInfixOf)
+import Data.Maybe (listToMaybe)
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 import qualified UI.NCurses as C
@@ -651,3 +653,17 @@ playerSearch sStr =
   filter (match sStr) .
   zip [0..]
   where match sStr (_, p) = sStr `isInfixOf` (p^.pName)
+
+-- | Searches for a player by exact match on name
+playerSearchExact
+  :: String
+  -- ^ The player's name
+  -> [Player]
+  -- ^ The list of players to search
+  -> Maybe (Int, Player)
+  -- ^ The player's index and value
+playerSearchExact sStr =
+  listToMaybe .
+  filter (match sStr) .
+  zip [0..]
+  where match sStr (_, p) = p^.pName == sStr
