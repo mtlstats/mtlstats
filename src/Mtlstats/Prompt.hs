@@ -50,6 +50,7 @@ import Text.Read (readMaybe)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Config
 import Mtlstats.Format
 import Mtlstats.Types
 import Mtlstats.Util
@@ -159,7 +160,7 @@ selectPlayerPrompt pStr callback = Prompt
     C.drawString sStr
     (row, col) <- C.cursorPosition
     C.drawString "\n\nPlayer select:\n"
-    let sel = zip [1..] $ playerSearch sStr $ s^.database.dbPlayers
+    let sel = zip [1..maxFunKeys] $ playerSearch sStr $ s^.database.dbPlayers
     mapM_
       (\(n, (_, p)) -> C.drawString $
         "F" ++ show n ++ ") " ++ p^.pName ++ " (" ++ show (p^.pNumber) ++ ")\n")

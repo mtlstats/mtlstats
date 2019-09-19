@@ -24,3 +24,7 @@ module Mtlstats.Config where
 -- | The name of the team whose stats we're tracking
 myTeam :: String
 myTeam = "MONTREAL"
+
+-- | The maximum number of function keys
+maxFunKeys :: Int
+maxFunKeys = 9
