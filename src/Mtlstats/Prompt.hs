@@ -37,18 +37,20 @@ module Mtlstats.Prompt (
   playerNamePrompt,
   playerPosPrompt,
   selectPlayerPrompt,
+  recordGoalPrompt,
 ) where
 
 import Control.Monad (when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
-import Lens.Micro ((^.), (&), (.~), (?~))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Format
 import Mtlstats.Types
 import Mtlstats.Util
 
@@ -192,6 +194,22 @@ selectPlayerPrompt pStr callback = Prompt
       callback sel
     _ -> return ()
   }
+
+-- | Prompts for the player who scored the goal
+recordGoalPrompt
+  :: Int
+  -- ^ The game number
+  -> Int
+  -- ^ The goal number
+  -> Prompt
+recordGoalPrompt game goal = selectPlayerPrompt
+  ("*** GAME " ++ padNum 2 game ++ " ***\n" ++
+   "Who scored goal number " ++ show goal ++ "? ") $
+  \case
+    Nothing -> return ()
+    Just n  -> modify
+      $ awardGoal n
+      . (progMode.gameStateL.pointsAccounted %~ succ)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
