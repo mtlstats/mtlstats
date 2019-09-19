@@ -187,6 +187,7 @@ selectPlayerPrompt pStr callback = Prompt
     C.KeyFunction n -> do
       sStr    <- gets $ view inputBuffer
       players <- gets $ view $ database.dbPlayers
+      modify $ inputBuffer .~ ""
       let
         fKey    = pred $ fromIntegral n
         options = playerSearch sStr players
