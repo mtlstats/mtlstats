@@ -41,6 +41,7 @@ spec = describe "Mtlstats.Actions" $ do
   validateGameDateSpec
   createPlayerSpec
   addPlayerSpec
+  awardGoalSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -350,6 +351,56 @@ addPlayerSpec = describe "addPlayer" $ do
     it "should not create the player" $ let
       s' = addPlayer $ s MainMenu
       in s'^.database.dbPlayers `shouldBe` [p2]
+
+awardGoalSpec :: Spec
+awardGoalSpec = describe "awardGoal" $ do
+  let
+    joe
+      = newPlayer 2 "Joe" "centre"
+      & pYtd.psGoals      .~ 1
+      & pLifetime.psGoals .~ 2
+    bob
+      = newPlayer 3 "Bob" "defense"
+      & pYtd.psGoals      .~ 3
+      & pLifetime.psGoals .~ 4
+    db
+      = newDatabase
+      & dbPlayers .~ [joe, bob]
+    ps
+      = newProgState
+      & database .~ db
+
+  context "Joe" $ do
+    let
+      ps'    = awardGoal 0 ps
+      player = head $ ps'^.database.dbPlayers
+
+    it "should increment Joe's year-to-date goals" $
+      player^.pYtd.psGoals `shouldBe` 2
+
+    it "should increment Joe's lifetime goals" $
+      player^.pLifetime.psGoals `shouldBe` 3
+
+  context "Bob" $ do
+    let
+      ps' = awardGoal 1 ps
+      player = last $ ps'^.database.dbPlayers
+
+    it "should increment Bob's year-to-data goals" $
+      player^.pYtd.psGoals `shouldBe` 4
+
+    it "should increment Bob's lifetime goals" $
+      player^.pLifetime.psGoals `shouldBe` 5
+
+  context "invalid index" $ let
+    ps' = awardGoal 2 ps
+    in it "should not change the database" $
+      ps'^.database `shouldBe` db
+
+  context "negative index" $ let
+    ps' = awardGoal (-1) ps
+    in it "should not change the database" $
+      ps'^.database `shouldBe` db
 
 makePlayer :: IO Player
 makePlayer = Player

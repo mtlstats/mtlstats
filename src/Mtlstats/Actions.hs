@@ -32,6 +32,7 @@ module Mtlstats.Actions
   , validateGameDate
   , createPlayer
   , addPlayer
+  , awardGoal
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -136,3 +137,18 @@ addPlayer s = fromMaybe s $ do
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
     %~ (player:)
+
+-- | Awards a goal to a player
+awardGoal
+  :: Int
+  -- ^ The player's index number
+  -> ProgState
+  -> ProgState
+awardGoal n ps = ps
+  &  database.dbPlayers
+  %~ map
+     (\(i, p) -> if i == n
+       then p
+         & pYtd.psGoals      %~ succ
+         & pLifetime.psGoals %~ succ
+       else p) . zip [0..]
