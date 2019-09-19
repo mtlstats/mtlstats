@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
@@ -33,20 +35,25 @@ module Mtlstats.Prompt (
   awayScorePrompt,
   playerNumPrompt,
   playerNamePrompt,
-  playerPosPrompt
+  playerPosPrompt,
+  selectPlayerPrompt,
+  recordGoalPrompt,
 ) where
 
 import Control.Monad (when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
-import Lens.Micro ((^.), (.~), (?~))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Config
+import Mtlstats.Format
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Draws the prompt to the screen
 drawPrompt :: Prompt -> ProgState -> C.Update C.CursorMode
@@ -66,8 +73,8 @@ promptHandler p (C.EventCharacter c) = let
    modify $ addChar c'
 promptHandler _ (C.EventSpecialKey C.KeyBackspace) =
   modify removeChar
-promptHandler p (C.EventSpecialKey (C.KeyFunction k)) =
-  promptFunctionKey p k
+promptHandler p (C.EventSpecialKey k) =
+  promptSpecialKey p k
 promptHandler _ _ = return ()
 
 -- | Builds a string prompt
@@ -78,10 +85,10 @@ strPrompt
   -- ^ The callback function for the result
   -> Prompt
 strPrompt pStr act = Prompt
-  { promptDrawer      = drawSimplePrompt pStr
-  , promptCharCheck   = const True
-  , promptAction      = act
-  , promptFunctionKey = const $ return ()
+  { promptDrawer     = drawSimplePrompt pStr
+  , promptCharCheck  = const True
+  , promptAction     = act
+  , promptSpecialKey = const $ return ()
   }
 
 -- | Builds a numeric prompt
@@ -92,10 +99,10 @@ numPrompt
   -- ^ The callback function for the result
   -> Prompt
 numPrompt pStr act = Prompt
-  { promptDrawer      = drawSimplePrompt pStr
-  , promptCharCheck   = isDigit
-  , promptAction      = \inStr -> forM_ (readMaybe inStr) act
-  , promptFunctionKey = const $ return ()
+  { promptDrawer     = drawSimplePrompt pStr
+  , promptCharCheck  = isDigit
+  , promptAction     = \inStr -> forM_ (readMaybe inStr) act
+  , promptSpecialKey = const $ return ()
   }
 
 -- | Prompts for the game year
@@ -137,6 +144,74 @@ playerNamePrompt = strPrompt "Player name: " $
 playerPosPrompt :: Prompt
 playerPosPrompt = strPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
+
+-- | Selects a player (creating one if necessary)
+selectPlayerPrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the payer as
+  -- input)
+  -> Prompt
+selectPlayerPrompt pStr callback = Prompt
+  { promptDrawer = \s -> do
+    let sStr = s^.inputBuffer
+    C.drawString pStr
+    C.drawString sStr
+    (row, col) <- C.cursorPosition
+    C.drawString "\n\nPlayer select:\n"
+    let sel = zip [1..maxFunKeys] $ playerSearch sStr $ s^.database.dbPlayers
+    mapM_
+      (\(n, (_, p)) -> C.drawString $
+        "F" ++ show n ++ ") " ++ p^.pName ++ " (" ++ show (p^.pNumber) ++ ")\n")
+      sel
+    C.moveCursor row col
+  , promptCharCheck = const True
+  , promptAction = \sStr -> do
+    players <- gets $ view $ database.dbPlayers
+    case playerSearchExact sStr players of
+      Just (n, _) -> callback $ Just n
+      Nothing -> do
+        mode <- gets $ view progMode
+        let
+          cps
+            = newCreatePlayerState
+            & cpsName .~ sStr
+            & cpsSuccessCallback .~ do
+              modify $ progMode .~ mode
+              callback (Just 0)
+            & cpsFailureCallback .~ do
+              modify $ progMode .~ mode
+              callback Nothing
+        modify $ progMode .~ CreatePlayer cps
+  , promptSpecialKey = \case
+    C.KeyFunction n -> do
+      sStr    <- gets $ view inputBuffer
+      players <- gets $ view $ database.dbPlayers
+      modify $ inputBuffer .~ ""
+      let
+        fKey    = pred $ fromIntegral n
+        options = playerSearch sStr players
+        sel     = fst <$> nth fKey options
+      callback sel
+    _ -> return ()
+  }
+
+-- | Prompts for the player who scored the goal
+recordGoalPrompt
+  :: Int
+  -- ^ The game number
+  -> Int
+  -- ^ The goal number
+  -> Prompt
+recordGoalPrompt game goal = selectPlayerPrompt
+  ("*** GAME " ++ padNum 2 game ++ " ***\n" ++
+   "Who scored goal number " ++ show goal ++ "? ") $
+  \case
+    Nothing -> return ()
+    Just n  -> modify
+      $ awardGoal n
+      . (progMode.gameStateL.pointsAccounted %~ succ)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

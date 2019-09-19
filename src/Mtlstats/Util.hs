@@ -19,12 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Config where
+module Mtlstats.Util (nth) where
 
--- | The name of the team whose stats we're tracking
-myTeam :: String
-myTeam = "MONTREAL"
-
--- | The maximum number of function keys
-maxFunKeys :: Int
-maxFunKeys = 9
+nth :: Int -> [a] -> Maybe a
+nth _ [] = Nothing
+nth n (x:xs)
+  | n == 0    = Just x
+  | n < 0     = Nothing
+  | otherwise = nth (pred n) xs

@@ -21,11 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control (dispatch) where
 
-import Control.Monad (when)
-import Control.Monad.Trans.State (modify)
+import Control.Monad (join, when)
+import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
 import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (.~))
+import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -43,16 +44,17 @@ dispatch s = case s^.progMode of
   MainMenu  -> mainMenuC
   NewSeason -> newSeasonC
   NewGame gs
-    | null $ gs^.gameYear     -> gameYearC
-    | null $ gs^.gameMonth    -> gameMonthC
-    | null $ gs^.gameDay      -> gameDayC
-    | null $ gs^.gameType     -> gameTypeC
-    | null $ gs^.otherTeam    -> otherTeamC
-    | null $ gs^.homeScore    -> homeScoreC
-    | null $ gs^.awayScore    -> awayScoreC
-    | null $ gs^.overtimeFlag -> overtimeFlagC
-    | not $ gs^.dataVerified  -> verifyDataC
-    | otherwise               -> reportC
+    | null $ gs^.gameYear             -> gameYearC
+    | null $ gs^.gameMonth            -> gameMonthC
+    | null $ gs^.gameDay              -> gameDayC
+    | null $ gs^.gameType             -> gameTypeC
+    | null $ gs^.otherTeam            -> otherTeamC
+    | null $ gs^.homeScore            -> homeScoreC
+    | null $ gs^.awayScore            -> awayScoreC
+    | null $ gs^.overtimeFlag         -> overtimeFlagC
+    | not $ gs^.dataVerified          -> verifyDataC
+    | fromJust (unaccountedPoints gs) -> recordGoalC
+    | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC
@@ -180,6 +182,19 @@ verifyDataC = Controller
     return True
   }
 
+recordGoalC :: Controller
+recordGoalC = Controller
+  { drawController = \s -> let
+    game = s^.database.dbGames
+    goal = succ $ s^.progMode.gameStateL.pointsAccounted
+    in drawPrompt (recordGoalPrompt game goal) s
+  , handleController = \e -> do
+    game <- gets $ view $ database.dbGames
+    goal <- succ <$> gets (view $ progMode.gameStateL.pointsAccounted)
+    promptHandler (recordGoalPrompt game goal) e
+    return True
+  }
+
 reportC :: Controller
 reportC = Controller
   { drawController = \s -> do
@@ -235,10 +250,11 @@ confirmCreatePlayerC = Controller
     return C.CursorInvisible
   , handleController = \e -> do
     case ynHandler e of
-      Just True  -> do
+      Just True -> do
         modify addPlayer
-        modify $ progMode .~ MainMenu
-      Just False -> modify $ progMode .~ MainMenu
-      Nothing    -> return ()
+        join $ gets $ view $ progMode.createPlayerStateL.cpsSuccessCallback
+      Just False ->
+        join $ gets $ view $ progMode.createPlayerStateL.cpsFailureCallback
+      Nothing -> return ()
     return True
   }

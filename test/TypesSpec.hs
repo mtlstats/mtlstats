@@ -50,10 +50,13 @@ spec = describe "Mtlstats.Types" $ do
   gameWonSpec
   gameLostSpec
   gameTiedSpec
+  unaccountedPointsSpec
   gmsGamesSpec
   gmsPointsSpec
   addGameStatsSpec
   pPointsSpec
+  playerSearchSpec
+  playerSearchExactSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -83,21 +86,32 @@ gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   where gs t = newGameState & gameType ?~ t
 
 createPlayerStateLSpec :: Spec
-createPlayerStateLSpec = describe "createPlayerStateL" $
-  lensSpec createPlayerStateL
-  -- getters
-  [ ( MainMenu,              newCreatePlayerState )
-  , ( CreatePlayer $ cps 1 , cps 1                )
-  ]
-  -- setters
-  [ ( MainMenu,             cps 1 )
-  , ( CreatePlayer $ cps 1, cps 2 )
-  ]
-  where
-    cps n = newCreatePlayerState
-      & cpsNumber   ?~ n
-      & cpsName     .~ "foo"
-      & cpsPosition .~ "bar"
+createPlayerStateLSpec = describe "createPlayerStateL" $ do
+  context "getters" $ do
+    context "state missing" $ let
+      pm  = MainMenu
+      cps = pm^.createPlayerStateL
+      in it "should not have a number" $
+        cps^.cpsNumber `shouldBe` Nothing
+
+    context "existing state" $ let
+      pm  = CreatePlayer $ newCreatePlayerState & cpsNumber ?~ 1
+      cps = pm^.createPlayerStateL
+      in it "should have a number of 1" $
+        cps^.cpsNumber `shouldBe` Just 1
+
+  context "setters" $ do
+    context "state missing" $ let
+      pm  = MainMenu
+      pm' = pm & createPlayerStateL.cpsNumber ?~ 1
+      in it "should set the player number to 1" $
+        pm'^.createPlayerStateL.cpsNumber `shouldBe` Just 1
+
+    context "existing state" $ let
+      pm  = CreatePlayer $ newCreatePlayerState & cpsNumber ?~ 1
+      pm' = pm & createPlayerStateL.cpsNumber ?~ 2
+      in it "should set the player number to 2" $
+        pm'^.createPlayerStateL.cpsNumber `shouldBe` Just 2
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -388,6 +402,35 @@ gameTiedSpec = describe "gameTied" $ mapM_
   , ( Just 1,  Just 2,  Just False )
   ]
 
+unaccountedPointsSpec :: Spec
+unaccountedPointsSpec = describe "unaccounted points" $ do
+  context "no data" $
+    it "should return Nothing" $
+      unaccountedPoints newGameState `shouldBe` Nothing
+
+  context "unaccounted points" $
+    it "should return True" $ let
+      gs = newGameState
+        & gameType  ?~ HomeGame
+        & homeScore ?~ 1
+      in unaccountedPoints gs `shouldBe` Just True
+
+  context "all points accounted" $
+    it "should return False" $ let
+      gs = newGameState
+        & gameType        ?~ HomeGame
+        & homeScore       ?~ 1
+        & pointsAccounted .~ 1
+      in unaccountedPoints gs `shouldBe` Just False
+
+  context "more points accounted" $
+    it "should return True" $ let
+      gs = newGameState
+        & gameType        ?~ HomeGame
+        & homeScore       ?~ 1
+        & pointsAccounted .~ 2
+      in unaccountedPoints gs `shouldBe` Just False
+
 gmsGamesSpec :: Spec
 gmsGamesSpec = describe "gmsGames" $ mapM_
   (\(w, l, ot, expected) -> let
@@ -471,3 +514,39 @@ pPointsSpec = describe "pPoints" $ mapM_
   , ( 0,     1,       1      )
   , ( 2,     3,       5      )
   ]
+
+playerSearchSpec :: Spec
+playerSearchSpec = describe "playerSearch" $ mapM_
+  (\(sStr, expected) -> context sStr $
+    it ("should return " ++ show expected) $ let
+      ps = [joe, bob, steve]
+      in playerSearch sStr ps `shouldBe` expected)
+  --  search, result
+  [ ( "Joe",  [(0, joe)]             )
+  , ( "o",    [(0, joe), (1, bob)]   )
+  , ( "e",    [(0, joe), (2, steve)] )
+  , ( "x",    []                     )
+  ]
+
+playerSearchExactSpec :: Spec
+playerSearchExactSpec = describe "playerSearchExact" $ mapM_
+  (\(sStr, expected) -> context sStr $
+    it ("should be " ++ show expected) $ let
+      ps = [joe, bob, steve]
+      in playerSearchExact sStr ps `shouldBe` expected)
+  --  search,  result
+  [ ( "Joe",   Just (0, joe)   )
+  , ( "Bob",   Just (1, bob)   )
+  , ( "Steve", Just (2, steve) )
+  , ( "Sam",   Nothing         )
+  , ( "",      Nothing         )
+  ]
+
+joe :: Player
+joe = newPlayer 2 "Joe" "center"
+
+bob :: Player
+bob = newPlayer 3 "Bob" "defense"
+
+steve :: Player
+steve = newPlayer 5 "Steve" "forward"

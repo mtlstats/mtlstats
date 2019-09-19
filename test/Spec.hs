@@ -26,6 +26,7 @@ import qualified FormatSpec as Format
 import qualified HandlersSpec as Handlers
 import qualified ReportSpec as Report
 import qualified TypesSpec as Types
+import qualified UtilSpec as Util
 
 main :: IO ()
 main = hspec $ do
@@ -34,3 +35,4 @@ main = hspec $ do
   Format.spec
   Handlers.spec
   Report.spec
+  Util.spec

@@ -1,4 +1,4 @@
-{- |
+{-
 
 mtlstats
 Copyright (C) 2019 Rhéal Lamothe
@@ -19,12 +19,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Config where
+module UtilSpec (spec) where
 
--- | The name of the team whose stats we're tracking
-myTeam :: String
-myTeam = "MONTREAL"
+import Test.Hspec (Spec, context, describe, it, shouldBe)
 
--- | The maximum number of function keys
-maxFunKeys :: Int
-maxFunKeys = 9
+import Mtlstats.Util
+
+spec :: Spec
+spec = describe "Mtlstats.Util"
+  nthSpec
+
+nthSpec :: Spec
+nthSpec = describe "nth" $ mapM_
+  (\(n, expected) -> context (show n) $
+    it ("should be " ++ show expected) $ let
+      xs = ["foo", "bar", "baz"]
+      in nth n xs `shouldBe` expected)
+  --  index, expected
+  [ ( 0,     Just "foo" )
+  , ( 1,     Just "bar" )
+  , ( 2,     Just "baz" )
+  , ( 3,     Nothing    )
+  , ( -1,    Nothing    )
+  ]

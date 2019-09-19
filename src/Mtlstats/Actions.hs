@@ -32,8 +32,10 @@ module Mtlstats.Actions
   , validateGameDate
   , createPlayer
   , addPlayer
+  , awardGoal
   ) where
 
+import Control.Monad.Trans.State (modify)
 import Data.Maybe (fromMaybe)
 import Data.Time.Calendar (fromGregorianValid)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
@@ -116,7 +118,13 @@ validateGameDate s = fromMaybe s $ do
 
 -- | Starts player creation mode
 createPlayer :: ProgState -> ProgState
-createPlayer = progMode .~ CreatePlayer newCreatePlayerState
+createPlayer = let
+  cb = modify $ progMode .~ MainMenu
+  cps
+    = newCreatePlayerState
+    & cpsSuccessCallback .~ cb
+    & cpsFailureCallback .~ cb
+  in progMode .~ CreatePlayer cps
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
@@ -129,3 +137,18 @@ addPlayer s = fromMaybe s $ do
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
     %~ (player:)
+
+-- | Awards a goal to a player
+awardGoal
+  :: Int
+  -- ^ The player's index number
+  -> ProgState
+  -> ProgState
+awardGoal n ps = ps
+  &  database.dbPlayers
+  %~ map
+     (\(i, p) -> if i == n
+       then p
+         & pYtd.psGoals      %~ succ
+         & pLifetime.psGoals %~ succ
+       else p) . zip [0..]

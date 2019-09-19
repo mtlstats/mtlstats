@@ -55,10 +55,13 @@ module Mtlstats.Types (
   awayScore,
   overtimeFlag,
   dataVerified,
+  pointsAccounted,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
   cpsPosition,
+  cpsSuccessCallback,
+  cpsFailureCallback,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -111,12 +114,15 @@ module Mtlstats.Types (
   gameWon,
   gameLost,
   gameTied,
+  unaccountedPoints,
   -- ** GameStats Helpers
   gmsGames,
   gmsPoints,
   addGameStats,
   -- ** Player Helpers
-  pPoints
+  pPoints,
+  playerSearch,
+  playerSearchExact
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -132,6 +138,8 @@ import Data.Aeson
   , (.:)
   , (.=)
   )
+import Data.List (isInfixOf)
+import Data.Maybe (listToMaybe)
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 import qualified UI.NCurses as C
@@ -157,7 +165,7 @@ data ProgState = ProgState
   -- ^ The program's mode
   , _inputBuffer :: String
   -- ^ Buffer for user input
-  } deriving (Eq, Show)
+  }
 
 -- | The program mode
 data ProgMode
@@ -165,28 +173,34 @@ data ProgMode
   | NewSeason
   | NewGame GameState
   | CreatePlayer CreatePlayerState
-  deriving (Eq, Show)
+
+instance Show ProgMode where
+  show MainMenu         = "MainMenu"
+  show NewSeason        = "NewSeason"
+  show (NewGame _)      = "NewGame"
+  show (CreatePlayer _) = "CreatePlayer"
 
 -- | The game state
 data GameState = GameState
-  { _gameYear     :: Maybe Int
+  { _gameYear        :: Maybe Int
   -- ^ The year the game took place
-  , _gameMonth    :: Maybe Int
+  , _gameMonth       :: Maybe Int
   -- ^ The month the game took place
-  , _gameDay      :: Maybe Int
+  , _gameDay         :: Maybe Int
   -- ^ The day of the month the game took place
-  , _gameType     :: Maybe GameType
+  , _gameType        :: Maybe GameType
   -- ^ The type of game (home/away)
-  , _otherTeam    :: String
+  , _otherTeam       :: String
   -- ^ The name of the other team
-  , _homeScore    :: Maybe Int
+  , _homeScore       :: Maybe Int
   -- ^ The home team's score
-  , _awayScore    :: Maybe Int
+  , _awayScore       :: Maybe Int
   -- ^ The away team's score
-  , _overtimeFlag :: Maybe Bool
+  , _overtimeFlag    :: Maybe Bool
   -- ^ Indicates whether or not the game went into overtime
-  , _dataVerified :: Bool
+  , _dataVerified    :: Bool
   -- ^ Set to 'True' when the user confirms the entered data
+  , _pointsAccounted :: Int
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -197,13 +211,17 @@ data GameType
 
 -- | Player creation status
 data CreatePlayerState = CreatePlayerState
-  { _cpsNumber    :: Maybe Int
+  { _cpsNumber          :: Maybe Int
   -- ^ The player's number
-  , _cpsName      :: String
+  , _cpsName            :: String
   -- ^ The player's name
-  , _cpsPosition  :: String
+  , _cpsPosition        :: String
   -- ^ The player's position
-  } deriving (Eq, Show)
+  , _cpsSuccessCallback :: Action ()
+  -- ^ The function to call on success
+  , _cpsFailureCallback :: Action ()
+  -- ^ The function to call on failure
+  }
 
 -- | Represents the database
 data Database = Database
@@ -414,14 +432,14 @@ instance ToJSON GameStats where
 
 -- | Defines a user prompt
 data Prompt = Prompt
-  { promptDrawer      :: ProgState -> C.Update ()
+  { promptDrawer     :: ProgState -> C.Update ()
   -- ^ Draws the prompt to thr screen
-  , promptCharCheck   :: Char -> Bool
+  , promptCharCheck  :: Char -> Bool
   -- ^ Determines whether or not the character is valid
-  , promptAction      :: String -> Action ()
+  , promptAction     :: String -> Action ()
   -- ^ Action to perform when the value is entered
-  , promptFunctionKey :: Integer -> Action ()
-  -- ^ Action to perform when a function key is pressed
+  , promptSpecialKey :: C.Key -> Action ()
+  -- ^ Action to perform when a special key is pressed
   }
 
 makeLenses ''ProgState
@@ -459,23 +477,26 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameYear     = Nothing
-  , _gameMonth    = Nothing
-  , _gameDay      = Nothing
-  , _gameType     = Nothing
-  , _otherTeam    = ""
-  , _homeScore    = Nothing
-  , _awayScore    = Nothing
-  , _overtimeFlag = Nothing
-  , _dataVerified = False
+  { _gameYear        = Nothing
+  , _gameMonth       = Nothing
+  , _gameDay         = Nothing
+  , _gameType        = Nothing
+  , _otherTeam       = ""
+  , _homeScore       = Nothing
+  , _awayScore       = Nothing
+  , _overtimeFlag    = Nothing
+  , _dataVerified    = False
+  , _pointsAccounted = 0
   }
 
 -- | Constructor for a 'CreatePlayerState'
 newCreatePlayerState :: CreatePlayerState
 newCreatePlayerState = CreatePlayerState
-  { _cpsNumber    = Nothing
-  , _cpsName      = ""
-  , _cpsPosition  = ""
+  { _cpsNumber          = Nothing
+  , _cpsName            = ""
+  , _cpsPosition        = ""
+  , _cpsSuccessCallback = return ()
+  , _cpsFailureCallback = return ()
   }
 
 -- | Constructor for a 'Database'
@@ -593,6 +614,13 @@ gameLost gs = do
 gameTied :: GameState -> Maybe Bool
 gameTied gs = (==) <$> gs^.homeScore <*> gs^.awayScore
 
+-- | Checks for unaccounted points
+unaccountedPoints :: GameState -> Maybe Bool
+unaccountedPoints gs = do
+  scored <- teamScore gs
+  let accounted = gs^.pointsAccounted
+  Just $ scored > accounted
+
 -- | Calculates the number of games played
 gmsGames :: GameStats -> Int
 gmsGames gs = gs^.gmsWins + gs^.gmsLosses + gs^.gmsOvertime
@@ -612,3 +640,30 @@ addGameStats s1 s2 = GameStats
 -- | Calculates a player's points
 pPoints :: PlayerStats -> Int
 pPoints s = s^.psGoals + s^.psAssists
+
+-- | Searches through a list of players
+playerSearch
+  :: String
+  -- ^ The search string
+  -> [Player]
+  -- ^ The list of players to search
+  -> [(Int, Player)]
+  -- ^ The matching players with their index numbers
+playerSearch sStr =
+  filter (match sStr) .
+  zip [0..]
+  where match sStr (_, p) = sStr `isInfixOf` (p^.pName)
+
+-- | Searches for a player by exact match on name
+playerSearchExact
+  :: String
+  -- ^ The player's name
+  -> [Player]
+  -- ^ The list of players to search
+  -> Maybe (Int, Player)
+  -- ^ The player's index and value
+playerSearchExact sStr =
+  listToMaybe .
+  filter (match sStr) .
+  zip [0..]
+  where match sStr (_, p) = p^.pName == sStr
