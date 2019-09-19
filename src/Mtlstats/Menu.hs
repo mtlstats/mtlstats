@@ -30,12 +30,21 @@ module Mtlstats.Menu (
   gameTypeMenu
 ) where
 
-import Control.Monad.Trans.State (modify)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.State (gets, modify)
+import Data.Aeson (encodeFile)
 import Data.Char (toUpper)
 import Lens.Micro ((^.), (.~), (?~))
+import Lens.Micro.Extras (view)
+import System.EasyFile
+  ( createDirectoryIfMissing
+  , getAppUserDataDirectory
+  , (</>)
+  )
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Config
 import Mtlstats.Types
 import Mtlstats.Types.Menu
 
@@ -62,7 +71,13 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify startNewGame >> return True
   , MenuItem '3' "Create Player" $
     modify createPlayer >> return True
-  , MenuItem '4' "Exit" $
+  , MenuItem '4' "Exit" $ do
+    db <- gets $ view database
+    liftIO $ do
+      dir <- getAppUserDataDirectory appName
+      let dbFile = dir </> dbFname
+      createDirectoryIfMissing True dir
+      encodeFile dbFile db
     return False
   ]
 
