@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
@@ -33,20 +35,22 @@ module Mtlstats.Prompt (
   awayScorePrompt,
   playerNumPrompt,
   playerNamePrompt,
-  playerPosPrompt
+  playerPosPrompt,
+  selectPlayerPrompt,
 ) where
 
 import Control.Monad (when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
-import Lens.Micro ((^.), (.~), (?~))
+import Lens.Micro ((^.), (&), (.~), (?~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Draws the prompt to the screen
 drawPrompt :: Prompt -> ProgState -> C.Update C.CursorMode
@@ -137,6 +141,57 @@ playerNamePrompt = strPrompt "Player name: " $
 playerPosPrompt :: Prompt
 playerPosPrompt = strPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
+
+-- | Selects a player (creating one if necessary)
+selectPlayerPrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the payer as
+  -- input)
+  -> Prompt
+selectPlayerPrompt pStr callback = Prompt
+  { promptDrawer = \s -> do
+    let sStr = s^.inputBuffer
+    C.drawString pStr
+    C.drawString sStr
+    (row, col) <- C.cursorPosition
+    C.drawString "\n\nPlayer select:\n"
+    let sel = zip [1..] $ playerSearch sStr $ s^.database.dbPlayers
+    mapM_
+      (\(n, (_, p)) -> C.drawString $
+        "F" ++ show n ++ ") " ++ p^.pName ++ " (" ++ show (p^.pNumber) ++ ")\n")
+      sel
+    C.moveCursor row col
+  , promptCharCheck = const True
+  , promptAction = \sStr -> do
+    players <- gets $ view $ database.dbPlayers
+    case playerSearchExact sStr players of
+      Just (n, _) -> callback $ Just n
+      Nothing -> do
+        mode <- gets $ view progMode
+        let
+          cps
+            = newCreatePlayerState
+            & cpsName .~ sStr
+            & cpsSuccessCallback .~ do
+              modify $ progMode .~ mode
+              callback (Just 0)
+            & cpsFailureCallback .~ do
+              modify $ progMode .~ mode
+              callback Nothing
+        modify $ progMode .~ CreatePlayer cps
+  , promptSpecialKey = \case
+    C.KeyFunction n -> do
+      sStr    <- gets $ view inputBuffer
+      players <- gets $ view $ database.dbPlayers
+      let
+        fKey    = pred $ fromIntegral n
+        options = playerSearch sStr players
+        sel     = fst <$> nth fKey options
+      callback sel
+    _ -> return ()
+  }
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
