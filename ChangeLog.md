@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## Unreleased changes
+## v0.2.0
 
 - Overtime losses don't count in the loss column
 - Confirm game data with user before updating stats
