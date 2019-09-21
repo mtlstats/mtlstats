@@ -63,6 +63,8 @@ report width s = unlines $ fromMaybe [] $ do
       ++ right 4 "W"
       ++ right 4 "L"
       ++ right 4 "OT"
+      ++ right 4 "GF"
+      ++ right 4 "GA"
       ++ right 4 "P"
     , centre width
       $  left 11 "HOME"
@@ -72,7 +74,7 @@ report width s = unlines $ fromMaybe [] $ do
       ++ showStats aStats
     , centre width
       $  replicate 11 ' '
-      ++ replicate (2 + 4 * 4) '-'
+      ++ replicate (2 + 4 * 6) '-'
     , centre width
       $  left 11 "TOTALS"
       ++ showStats tStats
@@ -91,4 +93,6 @@ showStats gs
   ++ right 4 (show $ gs^.gmsWins)
   ++ right 4 (show $ gs^.gmsLosses)
   ++ right 4 (show $ gs^.gmsOvertime)
+  ++ right 4 (show $ gs^.gmsGoalsFor)
+  ++ right 4 (show $ gs^.gmsGoalsAgainst)
   ++ right 4 (show $ gmsPoints gs)
