@@ -95,6 +95,8 @@ module Mtlstats.Types (
   gmsWins,
   gmsLosses,
   gmsOvertime,
+  gmsGoalsFor,
+  gmsGoalsAgainst,
   -- * Constructors
   newProgState,
   newGameState,
@@ -405,12 +407,16 @@ instance ToJSON GoalieStats where
 
 -- | Game statistics
 data GameStats = GameStats
-  { _gmsWins     :: Int
+  { _gmsWins         :: Int
   -- ^ Games won
-  , _gmsLosses   :: Int
+  , _gmsLosses       :: Int
   -- ^ Games lost
-  , _gmsOvertime :: Int
+  , _gmsOvertime     :: Int
   -- ^ Games lost in overtime
+  , _gmsGoalsFor     :: Int
+  -- ^ Goals for the team
+  , _gmsGoalsAgainst :: Int
+  -- ^ Goals against the team
   } deriving (Eq, Show)
 
 instance FromJSON GameStats where
@@ -418,17 +424,23 @@ instance FromJSON GameStats where
     <$> v .: "wins"
     <*> v .: "losses"
     <*> v .: "overtime"
+    <*> v .: "goals_for"
+    <*> v .: "goals_against"
 
 instance ToJSON GameStats where
-  toJSON (GameStats w l ot) = object
-    [ "wins"     .= w
-    , "losses"   .= l
-    , "overtime" .= ot
+  toJSON (GameStats w l ot gf ga) = object
+    [ "wins"          .= w
+    , "losses"        .= l
+    , "overtime"      .= ot
+    , "goals_for"     .= gf
+    , "goals_against" .= ga
     ]
-  toEncoding (GameStats w l ot) = pairs $
-    "wins"     .= w  <>
-    "losses"   .= l  <>
-    "overtime" .= ot
+  toEncoding (GameStats w l ot gf ga) = pairs $
+    "wins"          .= w  <>
+    "losses"        .= l  <>
+    "overtime"      .= ot <>
+    "goals_for"     .= gf <>
+    "goals_against" .= ga
 
 -- | Defines a user prompt
 data Prompt = Prompt
@@ -563,9 +575,11 @@ newGoalieStats = GoalieStats
 -- | Constructor for a 'GameStats' value
 newGameStats :: GameStats
 newGameStats = GameStats
-  { _gmsWins     = 0
-  , _gmsLosses   = 0
-  , _gmsOvertime = 0
+  { _gmsWins         = 0
+  , _gmsLosses       = 0
+  , _gmsOvertime     = 0
+  , _gmsGoalsFor     = 0
+  , _gmsGoalsAgainst = 0
   }
 
 -- | Determines the team's score
@@ -632,9 +646,11 @@ gmsPoints gs = 2 * gs^.gmsWins + gs^. gmsOvertime
 -- | Adds two 'GameStats' values together
 addGameStats :: GameStats -> GameStats -> GameStats
 addGameStats s1 s2 = GameStats
-  { _gmsWins     = s1^.gmsWins + s2^.gmsWins
-  , _gmsLosses   = s1^.gmsLosses + s2^.gmsLosses
-  , _gmsOvertime = s1^.gmsOvertime + s2^.gmsOvertime
+  { _gmsWins         = s1^.gmsWins + s2^.gmsWins
+  , _gmsLosses       = s1^.gmsLosses + s2^.gmsLosses
+  , _gmsOvertime     = s1^.gmsOvertime + s2^.gmsOvertime
+  , _gmsGoalsFor     = s1^.gmsGoalsFor + s2^.gmsGoalsFor
+  , _gmsGoalsAgainst = s1^.gmsGoalsAgainst + s2^.gmsGoalsAgainst
   }
 
 -- | Calculates a player's points

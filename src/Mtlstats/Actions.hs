@@ -82,26 +82,37 @@ overtimeCheck s
 -- | Adjusts the game stats based on the results of the current game
 updateGameStats :: ProgState -> ProgState
 updateGameStats s = fromMaybe s $ do
-  gType <- s^.progMode.gameStateL.gameType
-  won   <- gameWon $ s^.progMode.gameStateL
-  lost  <- gameLost $ s^.progMode.gameStateL
-  ot    <- s^.progMode.gameStateL.overtimeFlag
+  let gs = s^.progMode.gameStateL
+  gType  <- gs^.gameType
+  won    <- gameWon gs
+  lost   <- gameLost gs
+  ot     <- gs^.overtimeFlag
+  tScore <- teamScore gs
+  oScore <- otherScore gs
   let
     hw  = if gType == HomeGame && won then 1 else 0
     hl  = if gType == HomeGame && lost then 1 else 0
     hot = if gType == HomeGame && ot then 1 else 0
+    hgf = if gType == HomeGame then tScore else 0
+    hga = if gType == HomeGame then oScore else 0
     aw  = if gType == AwayGame && won then 1 else 0
     al  = if gType == AwayGame && lost then 1 else 0
     aot = if gType == AwayGame && ot then 1 else 0
+    agf = if gType == AwayGame then tScore else 0
+    aga = if gType == AwayGame then oScore else 0
   Just $ s
     & database.dbHomeGameStats
-      %~ (gmsWins +~ hw)
-      .  (gmsLosses +~ hl)
-      .  (gmsOvertime +~ hot)
+      %~ (gmsWins         +~ hw)
+      .  (gmsLosses       +~ hl)
+      .  (gmsOvertime     +~ hot)
+      .  (gmsGoalsFor     +~ hgf)
+      .  (gmsGoalsAgainst +~ hga)
     & database.dbAwayGameStats
-      %~ (gmsWins +~ aw)
-      .  (gmsLosses +~ al)
-      .  (gmsOvertime +~ aot)
+      %~ (gmsWins         +~ aw)
+      .  (gmsLosses       +~ al)
+      .  (gmsOvertime     +~ aot)
+      .  (gmsGoalsFor     +~ agf)
+      .  (gmsGoalsAgainst +~ aga)
 
 -- | Validates the game date
 validateGameDate :: ProgState -> ProgState
