@@ -255,16 +255,20 @@ goalieStatsJSON n = Object $ HM.fromList
 
 gameStats :: Int -> GameStats
 gameStats n = GameStats
-  { _gmsWins     = n
-  , _gmsLosses   = n + 1
-  , _gmsOvertime = n + 2
+  { _gmsWins         = n
+  , _gmsLosses       = n + 1
+  , _gmsOvertime     = n + 2
+  , _gmsGoalsFor     = n + 3
+  , _gmsGoalsAgainst = n + 4
   }
 
 gameStatsJSON :: Int -> Value
 gameStatsJSON n = Object $ HM.fromList
-  [ ( "wins",     toJSON n       )
-  , ( "losses",   toJSON $ n + 1 )
-  , ( "overtime", toJSON $ n + 2 )
+  [ ( "wins",          toJSON n       )
+  , ( "losses",        toJSON $ n + 1 )
+  , ( "overtime",      toJSON $ n + 2 )
+  , ( "goals_for",     toJSON $ n + 3 )
+  , ( "goals_against", toJSON $ n + 4 )
   ]
 
 db :: Database
@@ -456,11 +460,11 @@ gmsGamesSpec = describe "gmsGames" $ mapM_
 gmsPointsSpec :: Spec
 gmsPointsSpec = describe "gmsPoints" $ mapM_
   (\(w, l, ot, expected) -> let
-    gs = GameStats
-      { _gmsWins     = w
-      , _gmsLosses   = l
-      , _gmsOvertime = ot
-      }
+    gs
+      = newGameStats
+      & gmsWins     .~ w
+      & gmsLosses   .~ l
+      & gmsOvertime .~ ot
     in context (show gs) $
       it ("should be " ++ show expected) $
         gmsPoints gs `shouldBe` expected)
@@ -478,21 +482,27 @@ addGameStatsSpec = describe "addGameStats" $
   it "should add the values" $ let
 
     s1 = GameStats
-      { _gmsWins     = 1
-      , _gmsLosses   = 3
-      , _gmsOvertime = 2
+      { _gmsWins         = 1
+      , _gmsLosses       = 2
+      , _gmsOvertime     = 3
+      , _gmsGoalsFor     = 4
+      , _gmsGoalsAgainst = 5
       }
 
     s2 = GameStats
-      { _gmsWins     = 4
-      , _gmsLosses   = 6
-      , _gmsOvertime = 5
+      { _gmsWins         = 6
+      , _gmsLosses       = 7
+      , _gmsOvertime     = 8
+      , _gmsGoalsFor     = 9
+      , _gmsGoalsAgainst = 10
       }
 
     expected = GameStats
-      { _gmsWins     = 5
-      , _gmsLosses   = 9
-      , _gmsOvertime = 7
+      { _gmsWins         = 7
+      , _gmsLosses       = 9
+      , _gmsOvertime     = 11
+      , _gmsGoalsFor     = 13
+      , _gmsGoalsAgainst = 15
       }
 
     in addGameStats s1 s2 `shouldBe` expected
