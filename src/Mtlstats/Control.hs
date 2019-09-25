@@ -53,7 +53,7 @@ dispatch s = case s^.progMode of
     | null $ gs^.awayScore            -> awayScoreC
     | null $ gs^.overtimeFlag         -> overtimeFlagC
     | not $ gs^.dataVerified          -> verifyDataC
-    | fromJust (unaccountedPoints gs) -> recordGoalC
+    | fromJust (unaccountedPoints gs) -> goalInput gs
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
@@ -182,6 +182,11 @@ verifyDataC = Controller
     return True
   }
 
+goalInput :: GameState -> Controller
+goalInput gs
+  | null (gs^.goalBy) = recordGoalC
+  | otherwise         = recordAssistC
+
 recordGoalC :: Controller
 recordGoalC = Controller
   { drawController = \s -> let
@@ -194,6 +199,9 @@ recordGoalC = Controller
     promptHandler (recordGoalPrompt game goal) e
     return True
   }
+
+recordAssistC :: Controller
+recordAssistC = undefined
 
 reportC :: Controller
 reportC = Controller

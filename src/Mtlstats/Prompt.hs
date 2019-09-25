@@ -205,13 +205,14 @@ recordGoalPrompt
   -- ^ The goal number
   -> Prompt
 recordGoalPrompt game goal = selectPlayerPrompt
-  ("*** GAME " ++ padNum 2 game ++ " ***\n" ++
-   "Who scored goal number " ++ show goal ++ "? ") $
-  \case
+  ( "*** GAME " ++ padNum 2 game ++ " ***\n" ++
+    "Who scored goal number " ++ show goal ++ "? "
+  ) $ \case
     Nothing -> return ()
-    Just n  -> modify
-      $ awardGoal n
-      . (progMode.gameStateL.pointsAccounted %~ succ)
+    Just n  -> nth n <$> gets (view $ database.dbPlayers)
+      >>= maybe
+      (return ())
+      (\p -> modify $ progMode.gameStateL.goalBy .~ p^.pName)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
