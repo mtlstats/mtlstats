@@ -126,7 +126,8 @@ module Mtlstats.Types (
   -- ** Player Helpers
   pPoints,
   playerSearch,
-  playerSearchExact
+  playerSearchExact,
+  modifyPlayer
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -692,3 +693,18 @@ playerSearchExact sStr =
   filter (match sStr) .
   zip [0..]
   where match sStr (_, p) = p^.pName == sStr
+
+-- | Modifies a player with a given name
+modifyPlayer
+  :: (Player -> Player)
+  -- ^ The modification function
+  -> String
+  -- ^ The player's name
+  -> [Player]
+  -- ^ The list of players to modify
+  -> [Player]
+  -- ^ The modified list
+modifyPlayer f n = map
+  (\p -> if p^.pName == n
+    then f p
+    else p)
