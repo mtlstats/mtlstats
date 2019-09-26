@@ -190,18 +190,24 @@ goalInput gs
 recordGoalC :: Controller
 recordGoalC = Controller
   { drawController = \s -> let
-    game = s^.database.dbGames
-    goal = succ $ s^.progMode.gameStateL.pointsAccounted
+    (game, goal) = gameGoal s
     in drawPrompt (recordGoalPrompt game goal) s
   , handleController = \e -> do
-    game <- gets $ view $ database.dbGames
-    goal <- succ <$> gets (view $ progMode.gameStateL.pointsAccounted)
+    (game, goal) <- gets gameGoal
     promptHandler (recordGoalPrompt game goal) e
     return True
   }
 
 recordAssistC :: Controller
-recordAssistC = undefined
+recordAssistC = Controller
+  { drawController = \s -> let
+    (game, goal, assist) = gameGoalAssist s
+    in drawPrompt (recordAssistPrompt game goal assist) s
+  , handleController = \e -> do
+    (game, goal, assist) <- gets gameGoalAssist
+    promptHandler (recordAssistPrompt game goal assist) e
+    return True
+  }
 
 reportC :: Controller
 reportC = Controller
@@ -266,3 +272,15 @@ confirmCreatePlayerC = Controller
       Nothing -> return ()
     return True
   }
+
+gameGoal :: ProgState -> (Int, Int)
+gameGoal s =
+  ( s^.database.dbGames
+  , succ $ s^.progMode.gameStateL.pointsAccounted
+  )
+
+gameGoalAssist :: ProgState -> (Int, Int, Int)
+gameGoalAssist s = let
+  (game, goal) = gameGoal s
+  assist       = succ $ length $ s^.progMode.gameStateL.assistsBy
+  in (game, goal, assist)

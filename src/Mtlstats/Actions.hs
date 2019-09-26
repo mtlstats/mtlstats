@@ -32,6 +32,7 @@ module Mtlstats.Actions
   , validateGameDate
   , createPlayer
   , addPlayer
+  , recordGoalAssists
   , awardGoal
   ) where
 
@@ -148,6 +149,10 @@ addPlayer s = fromMaybe s $ do
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
     %~ (player:)
+
+-- | Awards the goal and assists to the players
+recordGoalAssists :: ProgState -> ProgState
+recordGoalAssists = undefined
 
 -- | Awards a goal to a player
 awardGoal

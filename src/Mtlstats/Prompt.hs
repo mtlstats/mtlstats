@@ -38,6 +38,7 @@ module Mtlstats.Prompt (
   playerPosPrompt,
   selectPlayerPrompt,
   recordGoalPrompt,
+  recordAssistPrompt
 ) where
 
 import Control.Monad (when)
@@ -205,14 +206,38 @@ recordGoalPrompt
   -- ^ The goal number
   -> Prompt
 recordGoalPrompt game goal = selectPlayerPrompt
-  ( "*** GAME " ++ padNum 2 game ++ " ***\n" ++
-    "Who scored goal number " ++ show goal ++ "? "
+  (  "*** GAME " ++ padNum 2 game ++ " ***\n"
+  ++ "Who scored goal number " ++ show goal ++ "? "
   ) $ \case
     Nothing -> return ()
     Just n  -> nth n <$> gets (view $ database.dbPlayers)
       >>= maybe
       (return ())
       (\p -> modify $ progMode.gameStateL.goalBy .~ p^.pName)
+
+-- | Prompts for a player who assisted the goal
+recordAssistPrompt
+  :: Int
+  -- ^ The game number
+  -> Int
+  -- ^ The goal nuber
+  -> Int
+  -- ^ The assist number
+  -> Prompt
+recordAssistPrompt game goal assist = selectPlayerPrompt
+  (  "*** GAME " ++ padNum 2 game ++ " ***\n"
+  ++ "Goal: " ++ show goal ++ "\n"
+  ++ "Assist #" ++ show assist ++ ": "
+  ) $ \case
+    Nothing -> modify recordGoalAssists
+    Just n  -> nth n <$> gets (view $ database.dbPlayers)
+      >>= maybe
+      (return ())
+      (\p -> do
+        modify $ progMode.gameStateL.assistsBy %~ (++[p^.pName])
+        nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
+        when (nAssists >= maxAssists) $
+          modify recordGoalAssists)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
