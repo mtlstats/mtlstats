@@ -168,23 +168,25 @@ selectPlayerPrompt pStr callback = Prompt
       sel
     C.moveCursor row col
   , promptCharCheck = const True
-  , promptAction = \sStr -> do
-    players <- gets $ view $ database.dbPlayers
-    case playerSearchExact sStr players of
-      Just (n, _) -> callback $ Just n
-      Nothing -> do
-        mode <- gets $ view progMode
-        let
-          cps
-            = newCreatePlayerState
-            & cpsName .~ sStr
-            & cpsSuccessCallback .~ do
-              modify $ progMode .~ mode
-              callback (Just 0)
-            & cpsFailureCallback .~ do
-              modify $ progMode .~ mode
-              callback Nothing
-        modify $ progMode .~ CreatePlayer cps
+  , promptAction = \sStr -> if null sStr
+    then callback Nothing
+    else do
+      players <- gets $ view $ database.dbPlayers
+      case playerSearchExact sStr players of
+        Just (n, _) -> callback $ Just n
+        Nothing -> do
+          mode <- gets $ view progMode
+          let
+            cps
+              = newCreatePlayerState
+              & cpsName .~ sStr
+              & cpsSuccessCallback .~ do
+                modify $ progMode .~ mode
+                callback (Just 0)
+              & cpsFailureCallback .~ do
+                modify $ progMode .~ mode
+                callback Nothing
+          modify $ progMode .~ CreatePlayer cps
   , promptSpecialKey = \case
     C.KeyFunction n -> do
       sStr    <- gets $ view inputBuffer
