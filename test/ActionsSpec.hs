@@ -42,6 +42,7 @@ spec = describe "Mtlstats.Actions" $ do
   createPlayerSpec
   addPlayerSpec
   awardGoalSpec
+  awardAssistSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -407,6 +408,62 @@ awardGoalSpec = describe "awardGoal" $ do
     ps' = awardGoal (-1) ps
     in it "should not change the database" $
       ps'^.database `shouldBe` db
+
+awardAssistSpec :: Spec
+awardAssistSpec = describe "awardAssist" $ do
+  let
+    joe
+      = newPlayer 1 "Joe" "centre"
+      & pYtd.psAssists      .~ 1
+      & pLifetime.psAssists .~ 2
+    bob
+      = newPlayer 2 "Bob" "defense"
+      & pYtd.psAssists      .~ 3
+      & pLifetime.psAssists .~ 4
+    ps
+      = newProgState
+      & database.dbPlayers .~ [joe, bob]
+
+  context "Joe" $ do
+    let
+      ps'  = awardAssist 0 ps
+      joe' = head $ ps'^.database.dbPlayers
+      bob' = last $ ps'^.database.dbPlayers
+
+    it "should increment Joe's year-to-date assists" $
+      joe'^.pYtd.psAssists `shouldBe` 2
+
+    it "should increment Joe's lifetime assists" $
+      joe'^.pLifetime.psAssists `shouldBe` 3
+
+    it "should leave Bob's year-to-date assists alone" $
+      bob'^.pYtd.psAssists `shouldBe` 3
+
+    it "should leave Bob's lifetime assists alone" $
+      bob^.pLifetime.psAssists `shouldBe` 4
+
+  context "Bob" $ do
+    let
+      ps'  = awardAssist 1 ps
+      joe' = head $ ps'^.database.dbPlayers
+      bob' = last $ ps'^.database.dbPlayers
+
+    it "should leave Joe's year-to-date assists alone" $
+      joe'^.pYtd.psAssists `shouldBe` 1
+
+    it "should leave Joe's lifetime assists alone" $
+      joe'^.pLifetime.psAssists `shouldBe` 2
+
+    it "should increment Bob's year-to-date assists" $
+      bob'^.pYtd.psAssists `shouldBe` 4
+
+    it "should increment Bob's lifetime assists" $
+      bob'^.pLifetime.psAssists `shouldBe` 5
+
+  context "invalid index" $ let
+    ps' = awardAssist (-1) ps
+    in it "should not change anything" $
+      ps'^.database.dbPlayers `shouldBe` ps^.database.dbPlayers
 
 makePlayer :: IO Player
 makePlayer = Player

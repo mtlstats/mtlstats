@@ -34,6 +34,7 @@ module Mtlstats.Actions
   , addPlayer
   , recordGoalAssists
   , awardGoal
+  , awardAssist
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -167,4 +168,19 @@ awardGoal n ps = ps
        then p
          & pYtd.psGoals      %~ succ
          & pLifetime.psGoals %~ succ
+       else p) . zip [0..]
+
+-- | Awards an assist to a player
+awardAssist
+  :: Int
+  -- ^ The player's index number
+  -> ProgState
+  -> ProgState
+awardAssist n ps = ps
+  &  database.dbPlayers
+  %~ map
+     (\(i, p) -> if i == n
+       then p
+         & pYtd.psAssists      %~ succ
+         & pLifetime.psAssists %~ succ
        else p) . zip [0..]
