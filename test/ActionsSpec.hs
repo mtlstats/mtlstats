@@ -41,6 +41,7 @@ spec = describe "Mtlstats.Actions" $ do
   validateGameDateSpec
   createPlayerSpec
   addPlayerSpec
+  recordGoalAssistsSpec
   awardGoalSpec
   awardAssistSpec
 
@@ -358,6 +359,53 @@ addPlayerSpec = describe "addPlayer" $ do
     it "should not create the player" $ let
       s' = addPlayer $ s MainMenu
       in s'^.database.dbPlayers `shouldBe` [p2]
+
+recordGoalAssistsSpec :: Spec
+recordGoalAssistsSpec = describe "recordGoalAssists" $ do
+  let
+    joe   = newPlayer 1 "Joe"   "centre"
+    bob   = newPlayer 2 "Bob"   "defense"
+    steve = newPlayer 3 "Steve" "forward"
+    dave  = newPlayer 4 "Dave"  "somewhere"
+    ps
+      = newProgState
+      & database.dbPlayers .~ [joe, bob, steve, dave]
+      & progMode.gameStateL
+        %~ (goalBy    .~ "Joe")
+        .  (assistsBy .~ ["Bob", "Steve"])
+      & recordGoalAssists
+
+  mapM_
+    (\(name, n, ytdg, ltg, ytda, lta) -> context name $ do
+      let player = (ps^.database.dbPlayers) !! n
+
+      it ("should set the year-to-date goals to " ++ show ytdg) $
+        player^.pYtd.psGoals `shouldBe` ytdg
+
+      it ("should set the lifetime goals to " ++ show ltg) $
+        player^.pLifetime.psGoals `shouldBe` ltg
+
+      it ("should set the year-to-date assists to " ++ show ytda) $
+        player^.pYtd.psAssists `shouldBe` ytda
+
+      it ("should set the lifetime assists to " ++ show lta) $
+        player^.pLifetime.psAssists `shouldBe` lta)
+
+    --  name,    index, ytd goals, lt goals, ytd assists, lt assists
+    [ ( "Joe",   0,     1,         1,        0,           0          )
+    , ( "Bob",   1,     0,         0,        1,           1          )
+    , ( "Steve", 2,     0,         0,        1,           1          )
+    , ( "Dave",  3,     0,         0,        0,           0          )
+    ]
+
+  it "should clear the goalBy value" $
+    ps^.progMode.gameStateL.goalBy `shouldBe` ""
+
+  it "should clear the assistsBy list" $
+    ps^.progMode.gameStateL.assistsBy `shouldBe` []
+
+  it "should increment the pointsAccounted counter" $
+    ps^.progMode.gameStateL.pointsAccounted `shouldBe` 1
 
 awardGoalSpec :: Spec
 awardGoalSpec = describe "awardGoal" $ do
