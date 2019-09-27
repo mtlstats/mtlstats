@@ -57,6 +57,7 @@ spec = describe "Mtlstats.Types" $ do
   pPointsSpec
   playerSearchSpec
   playerSearchExactSpec
+  modifyPlayerSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -550,6 +551,31 @@ playerSearchExactSpec = describe "playerSearchExact" $ mapM_
   , ( "Steve", Just (2, steve) )
   , ( "Sam",   Nothing         )
   , ( "",      Nothing         )
+  ]
+
+modifyPlayerSpec :: Spec
+modifyPlayerSpec = describe "modifyPlayer" $ mapM_
+  (\(pName, j, b, s) -> let
+    modifier = pLifetime.psGoals .~ 1
+    players = modifyPlayer modifier pName [joe, bob, steve]
+    in context ("modify " ++ pName) $ do
+
+      context "Joe's lifetime goals" $
+        it ("should be " ++ show j) $
+          head players ^. pLifetime.psGoals `shouldBe` j
+
+      context "Bob's lifetime goals" $
+        it ("should be " ++ show b) $
+          (players !! 1) ^. pLifetime.psGoals `shouldBe` b
+
+      context "Steve's lifetime goals" $
+        it ("should be " ++ show s) $
+          last players ^. pLifetime.psGoals `shouldBe` s)
+  --  player name, Joe's goals, Bob's goals, Steve's goals
+  [ ( "Joe",       1,           0,           0             )
+  , ( "Bob",       0,           1,           0             )
+  , ( "Steve",     0,           0,           1             )
+  , ( "Sam",       0,           0,           0             )
   ]
 
 joe :: Player

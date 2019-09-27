@@ -32,7 +32,9 @@ module Mtlstats.Actions
   , validateGameDate
   , createPlayer
   , addPlayer
+  , recordGoalAssists
   , awardGoal
+  , awardAssist
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -149,6 +151,24 @@ addPlayer s = fromMaybe s $ do
   Just $ s & database.dbPlayers
     %~ (player:)
 
+-- | Awards the goal and assists to the players
+recordGoalAssists :: ProgState -> ProgState
+recordGoalAssists ps = fromMaybe ps $ do
+  let
+    gs      = ps^.progMode.gameStateL
+    players = ps^.database.dbPlayers
+  (goalId, _) <- playerSearchExact (gs^.goalBy) players
+  assistIds   <- mapM
+    (\name -> fst <$> playerSearchExact name players)
+    (gs^.assistsBy)
+  Just $ ps
+    & awardGoal goalId
+    & (\s -> foldr awardAssist s assistIds)
+    & progMode.gameStateL
+      %~ (goalBy          .~ "")
+      .  (assistsBy       .~ [])
+      .  (pointsAccounted %~ succ)
+
 -- | Awards a goal to a player
 awardGoal
   :: Int
@@ -162,4 +182,19 @@ awardGoal n ps = ps
        then p
          & pYtd.psGoals      %~ succ
          & pLifetime.psGoals %~ succ
+       else p) . zip [0..]
+
+-- | Awards an assist to a player
+awardAssist
+  :: Int
+  -- ^ The player's index number
+  -> ProgState
+  -> ProgState
+awardAssist n ps = ps
+  &  database.dbPlayers
+  %~ map
+     (\(i, p) -> if i == n
+       then p
+         & pYtd.psAssists      %~ succ
+         & pLifetime.psAssists %~ succ
        else p) . zip [0..]

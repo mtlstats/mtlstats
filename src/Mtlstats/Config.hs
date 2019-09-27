@@ -36,3 +36,7 @@ appName = "mtlstats"
 -- | The database filename
 dbFname :: String
 dbFname = "database.json"
+
+-- | The maximum number of assists
+maxAssists :: Int
+maxAssists = 2

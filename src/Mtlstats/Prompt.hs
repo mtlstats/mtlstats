@@ -38,6 +38,7 @@ module Mtlstats.Prompt (
   playerPosPrompt,
   selectPlayerPrompt,
   recordGoalPrompt,
+  recordAssistPrompt
 ) where
 
 import Control.Monad (when)
@@ -167,23 +168,25 @@ selectPlayerPrompt pStr callback = Prompt
       sel
     C.moveCursor row col
   , promptCharCheck = const True
-  , promptAction = \sStr -> do
-    players <- gets $ view $ database.dbPlayers
-    case playerSearchExact sStr players of
-      Just (n, _) -> callback $ Just n
-      Nothing -> do
-        mode <- gets $ view progMode
-        let
-          cps
-            = newCreatePlayerState
-            & cpsName .~ sStr
-            & cpsSuccessCallback .~ do
-              modify $ progMode .~ mode
-              callback (Just 0)
-            & cpsFailureCallback .~ do
-              modify $ progMode .~ mode
-              callback Nothing
-        modify $ progMode .~ CreatePlayer cps
+  , promptAction = \sStr -> if null sStr
+    then callback Nothing
+    else do
+      players <- gets $ view $ database.dbPlayers
+      case playerSearchExact sStr players of
+        Just (n, _) -> callback $ Just n
+        Nothing -> do
+          mode <- gets $ view progMode
+          let
+            cps
+              = newCreatePlayerState
+              & cpsName .~ sStr
+              & cpsSuccessCallback .~ do
+                modify $ progMode .~ mode
+                callback (Just 0)
+              & cpsFailureCallback .~ do
+                modify $ progMode .~ mode
+                callback Nothing
+          modify $ progMode .~ CreatePlayer cps
   , promptSpecialKey = \case
     C.KeyFunction n -> do
       sStr    <- gets $ view inputBuffer
@@ -205,13 +208,38 @@ recordGoalPrompt
   -- ^ The goal number
   -> Prompt
 recordGoalPrompt game goal = selectPlayerPrompt
-  ("*** GAME " ++ padNum 2 game ++ " ***\n" ++
-   "Who scored goal number " ++ show goal ++ "? ") $
-  \case
+  (  "*** GAME " ++ padNum 2 game ++ " ***\n"
+  ++ "Who scored goal number " ++ show goal ++ "? "
+  ) $ \case
     Nothing -> return ()
-    Just n  -> modify
-      $ awardGoal n
-      . (progMode.gameStateL.pointsAccounted %~ succ)
+    Just n  -> nth n <$> gets (view $ database.dbPlayers)
+      >>= maybe
+      (return ())
+      (\p -> modify $ progMode.gameStateL.goalBy .~ p^.pName)
+
+-- | Prompts for a player who assisted the goal
+recordAssistPrompt
+  :: Int
+  -- ^ The game number
+  -> Int
+  -- ^ The goal nuber
+  -> Int
+  -- ^ The assist number
+  -> Prompt
+recordAssistPrompt game goal assist = selectPlayerPrompt
+  (  "*** GAME " ++ padNum 2 game ++ " ***\n"
+  ++ "Goal: " ++ show goal ++ "\n"
+  ++ "Assist #" ++ show assist ++ ": "
+  ) $ \case
+    Nothing -> modify recordGoalAssists
+    Just n  -> nth n <$> gets (view $ database.dbPlayers)
+      >>= maybe
+      (return ())
+      (\p -> do
+        modify $ progMode.gameStateL.assistsBy %~ (++[p^.pName])
+        nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
+        when (nAssists >= maxAssists) $
+          modify recordGoalAssists)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

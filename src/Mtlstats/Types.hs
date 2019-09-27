@@ -56,6 +56,8 @@ module Mtlstats.Types (
   overtimeFlag,
   dataVerified,
   pointsAccounted,
+  goalBy,
+  assistsBy,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
@@ -124,7 +126,8 @@ module Mtlstats.Types (
   -- ** Player Helpers
   pPoints,
   playerSearch,
-  playerSearchExact
+  playerSearchExact,
+  modifyPlayer
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -203,6 +206,11 @@ data GameState = GameState
   , _dataVerified    :: Bool
   -- ^ Set to 'True' when the user confirms the entered data
   , _pointsAccounted :: Int
+  -- ^ The number of game points accounted for
+  , _goalBy          :: String
+  -- ^ The player who scored the most recently entered goal
+  , _assistsBy        :: [String]
+  -- ^ The players who have assisted the most recently entered goal
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -499,6 +507,8 @@ newGameState = GameState
   , _overtimeFlag    = Nothing
   , _dataVerified    = False
   , _pointsAccounted = 0
+  , _goalBy          = ""
+  , _assistsBy       = []
   }
 
 -- | Constructor for a 'CreatePlayerState'
@@ -683,3 +693,18 @@ playerSearchExact sStr =
   filter (match sStr) .
   zip [0..]
   where match sStr (_, p) = p^.pName == sStr
+
+-- | Modifies a player with a given name
+modifyPlayer
+  :: (Player -> Player)
+  -- ^ The modification function
+  -> String
+  -- ^ The player's name
+  -> [Player]
+  -- ^ The list of players to modify
+  -> [Player]
+  -- ^ The modified list
+modifyPlayer f n = map
+  (\p -> if p^.pName == n
+    then f p
+    else p)

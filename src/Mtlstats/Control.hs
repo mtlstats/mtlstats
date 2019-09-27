@@ -53,7 +53,7 @@ dispatch s = case s^.progMode of
     | null $ gs^.awayScore            -> awayScoreC
     | null $ gs^.overtimeFlag         -> overtimeFlagC
     | not $ gs^.dataVerified          -> verifyDataC
-    | fromJust (unaccountedPoints gs) -> recordGoalC
+    | fromJust (unaccountedPoints gs) -> goalInput gs
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
@@ -182,16 +182,30 @@ verifyDataC = Controller
     return True
   }
 
+goalInput :: GameState -> Controller
+goalInput gs
+  | null (gs^.goalBy) = recordGoalC
+  | otherwise         = recordAssistC
+
 recordGoalC :: Controller
 recordGoalC = Controller
   { drawController = \s -> let
-    game = s^.database.dbGames
-    goal = succ $ s^.progMode.gameStateL.pointsAccounted
+    (game, goal) = gameGoal s
     in drawPrompt (recordGoalPrompt game goal) s
   , handleController = \e -> do
-    game <- gets $ view $ database.dbGames
-    goal <- succ <$> gets (view $ progMode.gameStateL.pointsAccounted)
+    (game, goal) <- gets gameGoal
     promptHandler (recordGoalPrompt game goal) e
+    return True
+  }
+
+recordAssistC :: Controller
+recordAssistC = Controller
+  { drawController = \s -> let
+    (game, goal, assist) = gameGoalAssist s
+    in drawPrompt (recordAssistPrompt game goal assist) s
+  , handleController = \e -> do
+    (game, goal, assist) <- gets gameGoalAssist
+    promptHandler (recordAssistPrompt game goal assist) e
     return True
   }
 
@@ -258,3 +272,15 @@ confirmCreatePlayerC = Controller
       Nothing -> return ()
     return True
   }
+
+gameGoal :: ProgState -> (Int, Int)
+gameGoal s =
+  ( s^.database.dbGames
+  , succ $ s^.progMode.gameStateL.pointsAccounted
+  )
+
+gameGoalAssist :: ProgState -> (Int, Int, Int)
+gameGoalAssist s = let
+  (game, goal) = gameGoal s
+  assist       = succ $ length $ s^.progMode.gameStateL.assistsBy
+  in (game, goal, assist)

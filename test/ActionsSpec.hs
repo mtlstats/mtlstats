@@ -41,7 +41,9 @@ spec = describe "Mtlstats.Actions" $ do
   validateGameDateSpec
   createPlayerSpec
   addPlayerSpec
+  recordGoalAssistsSpec
   awardGoalSpec
+  awardAssistSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -358,6 +360,53 @@ addPlayerSpec = describe "addPlayer" $ do
       s' = addPlayer $ s MainMenu
       in s'^.database.dbPlayers `shouldBe` [p2]
 
+recordGoalAssistsSpec :: Spec
+recordGoalAssistsSpec = describe "recordGoalAssists" $ do
+  let
+    joe   = newPlayer 1 "Joe"   "centre"
+    bob   = newPlayer 2 "Bob"   "defense"
+    steve = newPlayer 3 "Steve" "forward"
+    dave  = newPlayer 4 "Dave"  "somewhere"
+    ps
+      = newProgState
+      & database.dbPlayers .~ [joe, bob, steve, dave]
+      & progMode.gameStateL
+        %~ (goalBy    .~ "Joe")
+        .  (assistsBy .~ ["Bob", "Steve"])
+      & recordGoalAssists
+
+  mapM_
+    (\(name, n, ytdg, ltg, ytda, lta) -> context name $ do
+      let player = (ps^.database.dbPlayers) !! n
+
+      it ("should set the year-to-date goals to " ++ show ytdg) $
+        player^.pYtd.psGoals `shouldBe` ytdg
+
+      it ("should set the lifetime goals to " ++ show ltg) $
+        player^.pLifetime.psGoals `shouldBe` ltg
+
+      it ("should set the year-to-date assists to " ++ show ytda) $
+        player^.pYtd.psAssists `shouldBe` ytda
+
+      it ("should set the lifetime assists to " ++ show lta) $
+        player^.pLifetime.psAssists `shouldBe` lta)
+
+    --  name,    index, ytd goals, lt goals, ytd assists, lt assists
+    [ ( "Joe",   0,     1,         1,        0,           0          )
+    , ( "Bob",   1,     0,         0,        1,           1          )
+    , ( "Steve", 2,     0,         0,        1,           1          )
+    , ( "Dave",  3,     0,         0,        0,           0          )
+    ]
+
+  it "should clear the goalBy value" $
+    ps^.progMode.gameStateL.goalBy `shouldBe` ""
+
+  it "should clear the assistsBy list" $
+    ps^.progMode.gameStateL.assistsBy `shouldBe` []
+
+  it "should increment the pointsAccounted counter" $
+    ps^.progMode.gameStateL.pointsAccounted `shouldBe` 1
+
 awardGoalSpec :: Spec
 awardGoalSpec = describe "awardGoal" $ do
   let
@@ -407,6 +456,62 @@ awardGoalSpec = describe "awardGoal" $ do
     ps' = awardGoal (-1) ps
     in it "should not change the database" $
       ps'^.database `shouldBe` db
+
+awardAssistSpec :: Spec
+awardAssistSpec = describe "awardAssist" $ do
+  let
+    joe
+      = newPlayer 1 "Joe" "centre"
+      & pYtd.psAssists      .~ 1
+      & pLifetime.psAssists .~ 2
+    bob
+      = newPlayer 2 "Bob" "defense"
+      & pYtd.psAssists      .~ 3
+      & pLifetime.psAssists .~ 4
+    ps
+      = newProgState
+      & database.dbPlayers .~ [joe, bob]
+
+  context "Joe" $ do
+    let
+      ps'  = awardAssist 0 ps
+      joe' = head $ ps'^.database.dbPlayers
+      bob' = last $ ps'^.database.dbPlayers
+
+    it "should increment Joe's year-to-date assists" $
+      joe'^.pYtd.psAssists `shouldBe` 2
+
+    it "should increment Joe's lifetime assists" $
+      joe'^.pLifetime.psAssists `shouldBe` 3
+
+    it "should leave Bob's year-to-date assists alone" $
+      bob'^.pYtd.psAssists `shouldBe` 3
+
+    it "should leave Bob's lifetime assists alone" $
+      bob^.pLifetime.psAssists `shouldBe` 4
+
+  context "Bob" $ do
+    let
+      ps'  = awardAssist 1 ps
+      joe' = head $ ps'^.database.dbPlayers
+      bob' = last $ ps'^.database.dbPlayers
+
+    it "should leave Joe's year-to-date assists alone" $
+      joe'^.pYtd.psAssists `shouldBe` 1
+
+    it "should leave Joe's lifetime assists alone" $
+      joe'^.pLifetime.psAssists `shouldBe` 2
+
+    it "should increment Bob's year-to-date assists" $
+      bob'^.pYtd.psAssists `shouldBe` 4
+
+    it "should increment Bob's lifetime assists" $
+      bob'^.pLifetime.psAssists `shouldBe` 5
+
+  context "invalid index" $ let
+    ps' = awardAssist (-1) ps
+    in it "should not change anything" $
+      ps'^.database.dbPlayers `shouldBe` ps^.database.dbPlayers
 
 makePlayer :: IO Player
 makePlayer = Player
