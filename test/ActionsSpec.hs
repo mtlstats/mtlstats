@@ -371,8 +371,8 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
       = newProgState
       & database.dbPlayers .~ [joe, bob, steve, dave]
       & progMode.gameStateL
-        %~ (goalBy    .~ "Joe")
-        .  (assistsBy .~ ["Bob", "Steve"])
+        %~ (goalBy    ?~ 0)
+        .  (assistsBy .~ [1, 2])
       & recordGoalAssists
 
   mapM_
@@ -399,7 +399,7 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
     ]
 
   it "should clear the goalBy value" $
-    ps^.progMode.gameStateL.goalBy `shouldBe` ""
+    ps^.progMode.gameStateL.goalBy `shouldBe` Nothing
 
   it "should clear the assistsBy list" $
     ps^.progMode.gameStateL.assistsBy `shouldBe` []
