@@ -182,7 +182,8 @@ selectPlayerPrompt pStr callback = Prompt
               & cpsName .~ sStr
               & cpsSuccessCallback .~ do
                 modify $ progMode .~ mode
-                callback (Just 0)
+                pIndex <- pred . length <$> gets (view $ database.dbPlayers)
+                callback $ Just pIndex
               & cpsFailureCallback .~ do
                 modify $ progMode .~ mode
                 callback Nothing
@@ -210,12 +211,7 @@ recordGoalPrompt
 recordGoalPrompt game goal = selectPlayerPrompt
   (  "*** GAME " ++ padNum 2 game ++ " ***\n"
   ++ "Who scored goal number " ++ show goal ++ "? "
-  ) $ \case
-    Nothing -> return ()
-    Just n  -> nth n <$> gets (view $ database.dbPlayers)
-      >>= maybe
-      (return ())
-      (\p -> modify $ progMode.gameStateL.goalBy .~ p^.pName)
+  ) $ modify . (progMode.gameStateL.goalBy .~)
 
 -- | Prompts for a player who assisted the goal
 recordAssistPrompt
@@ -232,14 +228,11 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
   ++ "Assist #" ++ show assist ++ ": "
   ) $ \case
     Nothing -> modify recordGoalAssists
-    Just n  -> nth n <$> gets (view $ database.dbPlayers)
-      >>= maybe
-      (return ())
-      (\p -> do
-        modify $ progMode.gameStateL.assistsBy %~ (++[p^.pName])
-        nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
-        when (nAssists >= maxAssists) $
-          modify recordGoalAssists)
+    Just n  -> do
+      modify $ progMode.gameStateL.assistsBy %~ (++[n])
+      nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
+      when (nAssists >= maxAssists) $
+        modify recordGoalAssists
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

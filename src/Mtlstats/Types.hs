@@ -207,10 +207,12 @@ data GameState = GameState
   -- ^ Set to 'True' when the user confirms the entered data
   , _pointsAccounted :: Int
   -- ^ The number of game points accounted for
-  , _goalBy          :: String
-  -- ^ The player who scored the most recently entered goal
-  , _assistsBy        :: [String]
-  -- ^ The players who have assisted the most recently entered goal
+  , _goalBy          :: Maybe Int
+  -- ^ The index number of the player who scored the most recently
+  -- entered goal
+  , _assistsBy       :: [Int]
+  -- ^ The index numbers of the players who have assisted the most
+  -- recently entered goal
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -507,7 +509,7 @@ newGameState = GameState
   , _overtimeFlag    = Nothing
   , _dataVerified    = False
   , _pointsAccounted = 0
-  , _goalBy          = ""
+  , _goalBy          = Nothing
   , _assistsBy       = []
   }
 

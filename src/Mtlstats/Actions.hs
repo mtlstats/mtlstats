@@ -149,23 +149,19 @@ addPlayer s = fromMaybe s $ do
     pos    = cps^.cpsPosition
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
-    %~ (player:)
+    %~ (++[player])
 
 -- | Awards the goal and assists to the players
 recordGoalAssists :: ProgState -> ProgState
 recordGoalAssists ps = fromMaybe ps $ do
-  let
-    gs      = ps^.progMode.gameStateL
-    players = ps^.database.dbPlayers
-  (goalId, _) <- playerSearchExact (gs^.goalBy) players
-  assistIds   <- mapM
-    (\name -> fst <$> playerSearchExact name players)
-    (gs^.assistsBy)
+  let gs = ps^.progMode.gameStateL
+  goalId <- gs^.goalBy
+  let assistIds = gs^.assistsBy
   Just $ ps
     & awardGoal goalId
     & (\s -> foldr awardAssist s assistIds)
     & progMode.gameStateL
-      %~ (goalBy          .~ "")
+      %~ (goalBy          .~ Nothing)
       .  (assistsBy       .~ [])
       .  (pointsAccounted %~ succ)
 

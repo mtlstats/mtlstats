@@ -342,7 +342,7 @@ addPlayerSpec = describe "addPlayer" $ do
     p1 = newPlayer 1 "Joe" "centre"
     p2 = newPlayer 2 "Bob" "defense"
     db = newDatabase
-      & dbPlayers .~ [p2]
+      & dbPlayers .~ [p1]
     s pm = newProgState
       & progMode .~ pm
       & database .~ db
@@ -350,15 +350,15 @@ addPlayerSpec = describe "addPlayer" $ do
   context "data available" $
     it "should create the player" $ let
       s' = addPlayer $ s $ CreatePlayer $ newCreatePlayerState
-        & cpsNumber   ?~ 1
-        & cpsName     .~ "Joe"
-        & cpsPosition .~ "centre"
+        & cpsNumber   ?~ 2
+        & cpsName     .~ "Bob"
+        & cpsPosition .~ "defense"
       in s'^.database.dbPlayers `shouldBe` [p1, p2]
 
   context "data unavailable" $
     it "should not create the player" $ let
       s' = addPlayer $ s MainMenu
-      in s'^.database.dbPlayers `shouldBe` [p2]
+      in s'^.database.dbPlayers `shouldBe` [p1]
 
 recordGoalAssistsSpec :: Spec
 recordGoalAssistsSpec = describe "recordGoalAssists" $ do
@@ -371,8 +371,8 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
       = newProgState
       & database.dbPlayers .~ [joe, bob, steve, dave]
       & progMode.gameStateL
-        %~ (goalBy    .~ "Joe")
-        .  (assistsBy .~ ["Bob", "Steve"])
+        %~ (goalBy    ?~ 0)
+        .  (assistsBy .~ [1, 2])
       & recordGoalAssists
 
   mapM_
@@ -399,7 +399,7 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
     ]
 
   it "should clear the goalBy value" $
-    ps^.progMode.gameStateL.goalBy `shouldBe` ""
+    ps^.progMode.gameStateL.goalBy `shouldBe` Nothing
 
   it "should clear the assistsBy list" $
     ps^.progMode.gameStateL.assistsBy `shouldBe` []
