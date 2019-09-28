@@ -182,7 +182,8 @@ selectPlayerPrompt pStr callback = Prompt
               & cpsName .~ sStr
               & cpsSuccessCallback .~ do
                 modify $ progMode .~ mode
-                callback (Just 0)
+                pIndex <- pred . length <$> gets (view $ database.dbPlayers)
+                callback $ Just pIndex
               & cpsFailureCallback .~ do
                 modify $ progMode .~ mode
                 callback Nothing

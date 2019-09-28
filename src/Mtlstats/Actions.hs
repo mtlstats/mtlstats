@@ -149,7 +149,7 @@ addPlayer s = fromMaybe s $ do
     pos    = cps^.cpsPosition
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
-    %~ (player:)
+    %~ (++[player])
 
 -- | Awards the goal and assists to the players
 recordGoalAssists :: ProgState -> ProgState
