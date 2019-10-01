@@ -371,8 +371,9 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
       = newProgState
       & database.dbPlayers .~ [joe, bob, steve, dave]
       & progMode.gameStateL
-        %~ (goalBy    ?~ 0)
-        .  (assistsBy .~ [1, 2])
+        %~ (goalBy              ?~ 0)
+        .  (assistsBy           .~ [1, 2])
+        .  (confirmGoalDataFlag .~ True)
       & recordGoalAssists
 
   mapM_
@@ -406,6 +407,9 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
 
   it "should increment the pointsAccounted counter" $
     ps^.progMode.gameStateL.pointsAccounted `shouldBe` 1
+
+  it "should clear the confirmGoalDataFlag" $
+    ps^.progMode.gameStateL.confirmGoalDataFlag `shouldBe` False
 
 awardGoalSpec :: Spec
 awardGoalSpec = describe "awardGoal" $ do

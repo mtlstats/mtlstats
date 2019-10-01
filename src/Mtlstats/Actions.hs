@@ -161,9 +161,10 @@ recordGoalAssists ps = fromMaybe ps $ do
     & awardGoal goalId
     & (\s -> foldr awardAssist s assistIds)
     & progMode.gameStateL
-      %~ (goalBy          .~ Nothing)
-      .  (assistsBy       .~ [])
-      .  (pointsAccounted %~ succ)
+      %~ (goalBy              .~ Nothing)
+      .  (assistsBy           .~ [])
+      .  (pointsAccounted     %~ succ)
+      .  (confirmGoalDataFlag .~ False)
 
 -- | Awards a goal to a player
 awardGoal
