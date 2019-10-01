@@ -128,7 +128,8 @@ module Mtlstats.Types (
   pPoints,
   playerSearch,
   playerSearchExact,
-  modifyPlayer
+  modifyPlayer,
+  playerSummary
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -713,3 +714,7 @@ modifyPlayer f n = map
   (\p -> if p^.pName == n
     then f p
     else p)
+
+-- | Provides a short summary string for a player
+playerSummary :: Player -> String
+playerSummary = undefined

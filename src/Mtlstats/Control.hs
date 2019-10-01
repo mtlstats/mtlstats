@@ -36,6 +36,7 @@ import Mtlstats.Menu
 import Mtlstats.Prompt
 import Mtlstats.Report
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Reads the program state and returs the apropriate controller to
 -- run
@@ -184,8 +185,9 @@ verifyDataC = Controller
 
 goalInput :: GameState -> Controller
 goalInput gs
-  | null (gs^.goalBy) = recordGoalC
-  | otherwise         = recordAssistC
+  | null (gs^.goalBy            ) = recordGoalC
+  | not (gs^.confirmGoalDataFlag) = recordAssistC
+  | otherwise                     = confirmGoalDataC
 
 recordGoalC :: Controller
 recordGoalC = Controller
@@ -206,6 +208,34 @@ recordAssistC = Controller
   , handleController = \e -> do
     (game, goal, assist) <- gets gameGoalAssist
     promptHandler (recordAssistPrompt game goal assist) e
+    return True
+  }
+
+confirmGoalDataC :: Controller
+confirmGoalDataC = Controller
+  { drawController = \s -> do
+    let
+      (game, goal) = gameGoal s
+      gs           = s^.progMode.gameStateL
+      players      = s^.database.dbPlayers
+      msg          = unlines $
+        [ "          Game: " ++ padNum 2 game
+        , "          Goal: " ++ show goal
+        , "Goal scored by: " ++
+          playerSummary (fromJust $ gs^.goalBy >>= flip nth players)
+        ] ++
+        map
+          (\pid -> "   Assisted by: " ++
+            playerSummary (fromJust $ nth pid players))
+          (gs^.assistsBy) ++
+        [ "Is the above information correct? (Y/N)" ]
+    C.drawString msg
+    return C.CursorInvisible
+  , handleController = \e -> do
+    case ynHandler e of
+      Just True  -> modify recordGoalAssists
+      Just False -> modify resetGoalData
+      Nothing    -> return ()
     return True
   }
 

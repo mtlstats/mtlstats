@@ -35,6 +35,7 @@ module Mtlstats.Actions
   , recordGoalAssists
   , awardGoal
   , awardAssist
+  , resetGoalData
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -195,3 +196,7 @@ awardAssist n ps = ps
          & pYtd.psAssists      %~ succ
          & pLifetime.psAssists %~ succ
        else p) . zip [0..]
+
+-- | Resets the entered data for the current goal
+resetGoalData :: ProgState -> ProgState
+resetGoalData = undefined
