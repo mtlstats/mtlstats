@@ -58,6 +58,7 @@ module Mtlstats.Types (
   pointsAccounted,
   goalBy,
   assistsBy,
+  confirmGoalDataFlag,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
@@ -187,32 +188,33 @@ instance Show ProgMode where
 
 -- | The game state
 data GameState = GameState
-  { _gameYear        :: Maybe Int
+  { _gameYear            :: Maybe Int
   -- ^ The year the game took place
-  , _gameMonth       :: Maybe Int
+  , _gameMonth           :: Maybe Int
   -- ^ The month the game took place
-  , _gameDay         :: Maybe Int
+  , _gameDay             :: Maybe Int
   -- ^ The day of the month the game took place
-  , _gameType        :: Maybe GameType
+  , _gameType            :: Maybe GameType
   -- ^ The type of game (home/away)
-  , _otherTeam       :: String
+  , _otherTeam           :: String
   -- ^ The name of the other team
-  , _homeScore       :: Maybe Int
+  , _homeScore           :: Maybe Int
   -- ^ The home team's score
-  , _awayScore       :: Maybe Int
+  , _awayScore           :: Maybe Int
   -- ^ The away team's score
-  , _overtimeFlag    :: Maybe Bool
+  , _overtimeFlag        :: Maybe Bool
   -- ^ Indicates whether or not the game went into overtime
-  , _dataVerified    :: Bool
+  , _dataVerified        :: Bool
   -- ^ Set to 'True' when the user confirms the entered data
-  , _pointsAccounted :: Int
+  , _pointsAccounted     :: Int
   -- ^ The number of game points accounted for
-  , _goalBy          :: Maybe Int
+  , _goalBy              :: Maybe Int
   -- ^ The index number of the player who scored the most recently
   -- entered goal
-  , _assistsBy       :: [Int]
+  , _assistsBy           :: [Int]
   -- ^ The index numbers of the players who have assisted the most
   -- recently entered goal
+  , _confirmGoalDataFlag :: Bool
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -499,18 +501,19 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameYear        = Nothing
-  , _gameMonth       = Nothing
-  , _gameDay         = Nothing
-  , _gameType        = Nothing
-  , _otherTeam       = ""
-  , _homeScore       = Nothing
-  , _awayScore       = Nothing
-  , _overtimeFlag    = Nothing
-  , _dataVerified    = False
-  , _pointsAccounted = 0
-  , _goalBy          = Nothing
-  , _assistsBy       = []
+  { _gameYear            = Nothing
+  , _gameMonth           = Nothing
+  , _gameDay             = Nothing
+  , _gameType            = Nothing
+  , _otherTeam           = ""
+  , _homeScore           = Nothing
+  , _awayScore           = Nothing
+  , _overtimeFlag        = Nothing
+  , _dataVerified        = False
+  , _pointsAccounted     = 0
+  , _goalBy              = Nothing
+  , _assistsBy           = []
+  , _confirmGoalDataFlag = False
   }
 
 -- | Constructor for a 'CreatePlayerState'
