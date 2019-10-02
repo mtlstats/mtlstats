@@ -35,6 +35,7 @@ module Mtlstats.Actions
   , recordGoalAssists
   , awardGoal
   , awardAssist
+  , resetGoalData
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -161,9 +162,10 @@ recordGoalAssists ps = fromMaybe ps $ do
     & awardGoal goalId
     & (\s -> foldr awardAssist s assistIds)
     & progMode.gameStateL
-      %~ (goalBy          .~ Nothing)
-      .  (assistsBy       .~ [])
-      .  (pointsAccounted %~ succ)
+      %~ (goalBy              .~ Nothing)
+      .  (assistsBy           .~ [])
+      .  (pointsAccounted     %~ succ)
+      .  (confirmGoalDataFlag .~ False)
 
 -- | Awards a goal to a player
 awardGoal
@@ -194,3 +196,10 @@ awardAssist n ps = ps
          & pYtd.psAssists      %~ succ
          & pLifetime.psAssists %~ succ
        else p) . zip [0..]
+
+-- | Resets the entered data for the current goal
+resetGoalData :: ProgState -> ProgState
+resetGoalData ps = ps & progMode.gameStateL
+  %~ (goalBy              .~ Nothing)
+  .  (assistsBy           .~ [])
+  .  (confirmGoalDataFlag .~ False)

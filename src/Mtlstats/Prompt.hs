@@ -227,12 +227,12 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
   ++ "Goal: " ++ show goal ++ "\n"
   ++ "Assist #" ++ show assist ++ ": "
   ) $ \case
-    Nothing -> modify recordGoalAssists
+    Nothing -> modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
     Just n  -> do
       modify $ progMode.gameStateL.assistsBy %~ (++[n])
       nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
       when (nAssists >= maxAssists) $
-        modify recordGoalAssists
+        modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
