@@ -228,7 +228,9 @@ confirmGoalDataC = Controller
           (\pid -> "   Assisted by: " ++
             playerSummary (fromJust $ nth pid players))
           (gs^.assistsBy) ++
-        [ "Is the above information correct? (Y/N)" ]
+        [ ""
+        , "Is the above information correct? (Y/N)"
+        ]
     C.drawString msg
     return C.CursorInvisible
   , handleController = \e -> do
