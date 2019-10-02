@@ -717,4 +717,5 @@ modifyPlayer f n = map
 
 -- | Provides a short summary string for a player
 playerSummary :: Player -> String
-playerSummary = undefined
+playerSummary p =
+  p^.pName ++ " (" ++ show (p^.pNumber) ++ ") " ++ p^.pPosition

@@ -58,6 +58,7 @@ spec = describe "Mtlstats.Types" $ do
   playerSearchSpec
   playerSearchExactSpec
   modifyPlayerSpec
+  playerSummarySpec
   Menu.spec
 
 playerSpec :: Spec
@@ -577,6 +578,11 @@ modifyPlayerSpec = describe "modifyPlayer" $ mapM_
   , ( "Steve",     0,           0,           1             )
   , ( "Sam",       0,           0,           0             )
   ]
+
+playerSummarySpec :: Spec
+playerSummarySpec = describe "playerSummary" $
+  it "should be \"Joe (2) center\"" $
+    playerSummary joe `shouldBe` "Joe (2) center"
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"
