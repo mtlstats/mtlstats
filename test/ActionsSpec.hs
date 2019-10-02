@@ -24,7 +24,7 @@ module ActionsSpec (spec) where
 import Control.Monad (replicateM)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
-import Test.Hspec (Spec, context, describe, it, shouldBe, shouldNotBe)
+import Test.Hspec (Spec, context, describe, it, runIO, shouldBe, shouldNotBe)
 
 import Mtlstats.Actions
 import Mtlstats.Types
@@ -44,6 +44,7 @@ spec = describe "Mtlstats.Actions" $ do
   recordGoalAssistsSpec
   awardGoalSpec
   awardAssistSpec
+  resetGoalDataSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -516,6 +517,30 @@ awardAssistSpec = describe "awardAssist" $ do
     ps' = awardAssist (-1) ps
     in it "should not change anything" $
       ps'^.database.dbPlayers `shouldBe` ps^.database.dbPlayers
+
+resetGoalDataSpec :: Spec
+resetGoalDataSpec = describe "resetGoalData" $ do
+  players <- runIO $ replicateM 5 makePlayer
+  let
+    gs
+      = newGameState
+      & goalBy              ?~ 1
+      & assistsBy           .~ [2, 3]
+      & confirmGoalDataFlag .~ True
+    ps
+      = newProgState
+      & database.dbPlayers  .~ players
+      & progMode.gameStateL .~ gs
+      & resetGoalData
+
+  it "should clear the goalBy value" $
+    ps^.progMode.gameStateL.goalBy `shouldBe` Nothing
+
+  it "should clear the assists by list" $
+    ps^.progMode.gameStateL.assistsBy `shouldBe` []
+
+  it "should clear confirmGoalDataFlag" $
+    ps^.progMode.gameStateL.confirmGoalDataFlag `shouldBe` False
 
 makePlayer :: IO Player
 makePlayer = Player

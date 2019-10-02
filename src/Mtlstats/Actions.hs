@@ -199,4 +199,7 @@ awardAssist n ps = ps
 
 -- | Resets the entered data for the current goal
 resetGoalData :: ProgState -> ProgState
-resetGoalData = undefined
+resetGoalData ps = ps & progMode.gameStateL
+  %~ (goalBy              .~ Nothing)
+  .  (assistsBy           .~ [])
+  .  (confirmGoalDataFlag .~ False)
