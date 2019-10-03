@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
+import qualified Data.Map as M
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, runIO, shouldBe, shouldNotBe)
@@ -426,31 +427,34 @@ awardGoalSpec = describe "awardGoal" $ do
     db
       = newDatabase
       & dbPlayers .~ [joe, bob]
+    joeStats
+      = newPlayerStats
+      & psGoals .~ 1
     ps
       = newProgState
+      & progMode.gameStateL.gamePlayerStats .~ M.singleton 0 joeStats
       & database .~ db
 
-  context "Joe" $ do
-    let
-      ps'    = awardGoal 0 ps
-      player = head $ ps'^.database.dbPlayers
+  mapM_
+    (\(pName, pid, ytd, lt, game) ->
+      context pName $ do
+        let
+          ps'    = awardGoal pid ps
+          player = (ps'^.database.dbPlayers) !! pid
+          gStats = (ps'^.progMode.gameStateL.gamePlayerStats) M.! pid
 
-    it "should increment Joe's year-to-date goals" $
-      player^.pYtd.psGoals `shouldBe` 2
+        it ("should increment " ++ pName ++ "'s year-to-date goals") $
+          player^.pYtd.psGoals `shouldBe` ytd
 
-    it "should increment Joe's lifetime goals" $
-      player^.pLifetime.psGoals `shouldBe` 3
+        it ("should increment " ++ pName ++ "'s lifetime goals") $
+          player^.pLifetime.psGoals `shouldBe` lt
 
-  context "Bob" $ do
-    let
-      ps' = awardGoal 1 ps
-      player = last $ ps'^.database.dbPlayers
-
-    it "should increment Bob's year-to-data goals" $
-      player^.pYtd.psGoals `shouldBe` 4
-
-    it "should increment Bob's lifetime goals" $
-      player^.pLifetime.psGoals `shouldBe` 5
+        it ("should increment " ++ pName ++ "'s game goals") $
+          gStats^.psGoals `shouldBe` game)
+    --  player name, player id, ytd goals, lifetime goals, game goals
+    [ ( "Joe",       0,         2,         3,              2          )
+    , ( "Bob",       1,         4,         5,              1          )
+    ]
 
   context "invalid index" $ let
     ps' = awardGoal 2 ps

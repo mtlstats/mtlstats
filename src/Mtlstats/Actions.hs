@@ -39,6 +39,7 @@ module Mtlstats.Actions
   ) where
 
 import Control.Monad.Trans.State (modify)
+import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Data.Time.Calendar (fromGregorianValid)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
@@ -174,13 +175,16 @@ awardGoal
   -> ProgState
   -> ProgState
 awardGoal n ps = ps
-  &  database.dbPlayers
-  %~ map
-     (\(i, p) -> if i == n
-       then p
-         & pYtd.psGoals      %~ succ
-         & pLifetime.psGoals %~ succ
-       else p) . zip [0..]
+  & progMode.gameStateL.gamePlayerStats %~
+    (\m -> let
+      stats = M.findWithDefault newPlayerStats n m
+      in M.insert n (stats & psGoals %~ succ) m)
+  & database.dbPlayers %~ map
+    (\(i, p) -> if i == n
+      then p
+        & pYtd.psGoals      %~ succ
+        & pLifetime.psGoals %~ succ
+      else p) . zip [0..]
 
 -- | Awards an assist to a player
 awardAssist
