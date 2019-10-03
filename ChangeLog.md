@@ -1,5 +1,10 @@
 # Changelog for mtlstats
 
+## v0.3.0
+
+- Record goals and assists
+- Track goals for and goals against
+
 ## v0.2.0
 
 - Overtime losses don't count in the loss column
