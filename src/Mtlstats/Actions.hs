@@ -193,13 +193,16 @@ awardAssist
   -> ProgState
   -> ProgState
 awardAssist n ps = ps
-  &  database.dbPlayers
-  %~ map
-     (\(i, p) -> if i == n
-       then p
-         & pYtd.psAssists      %~ succ
-         & pLifetime.psAssists %~ succ
-       else p) . zip [0..]
+  & progMode.gameStateL.gamePlayerStats %~
+    (\m -> let
+      stats = M.findWithDefault newPlayerStats n m
+      in M.insert n (stats & psAssists %~ succ) m)
+  & database.dbPlayers %~ map
+    (\(i, p) -> if i == n
+      then p
+        & pYtd.psAssists      %~ succ
+        & pLifetime.psAssists %~ succ
+      else p) . zip [0..]
 
 -- | Resets the entered data for the current goal
 resetGoalData :: ProgState -> ProgState

@@ -477,45 +477,34 @@ awardAssistSpec = describe "awardAssist" $ do
       = newPlayer 2 "Bob" "defense"
       & pYtd.psAssists      .~ 3
       & pLifetime.psAssists .~ 4
+    joeStats
+      = newPlayerStats
+      & psAssists .~ 1
     ps
       = newProgState
+      & progMode.gameStateL.gamePlayerStats .~ M.singleton 0 joeStats
       & database.dbPlayers .~ [joe, bob]
 
-  context "Joe" $ do
-    let
-      ps'  = awardAssist 0 ps
-      joe' = head $ ps'^.database.dbPlayers
-      bob' = last $ ps'^.database.dbPlayers
+  mapM_
+    (\(pName, pid, ytd, lt, game) ->
+      context pName $ do
+        let
+          ps' = awardAssist pid ps
+          player = (ps'^.database.dbPlayers) !! pid
+          gStats = (ps'^.progMode.gameStateL.gamePlayerStats) M.! pid
 
-    it "should increment Joe's year-to-date assists" $
-      joe'^.pYtd.psAssists `shouldBe` 2
+        it ("should increment " ++ pName ++ "'s year-to-date assists") $
+          player^.pYtd.psAssists `shouldBe` ytd
 
-    it "should increment Joe's lifetime assists" $
-      joe'^.pLifetime.psAssists `shouldBe` 3
+        it ("should increment " ++ pName ++ "'s lifetime assists") $
+          player^.pLifetime.psAssists `shouldBe` lt
 
-    it "should leave Bob's year-to-date assists alone" $
-      bob'^.pYtd.psAssists `shouldBe` 3
-
-    it "should leave Bob's lifetime assists alone" $
-      bob^.pLifetime.psAssists `shouldBe` 4
-
-  context "Bob" $ do
-    let
-      ps'  = awardAssist 1 ps
-      joe' = head $ ps'^.database.dbPlayers
-      bob' = last $ ps'^.database.dbPlayers
-
-    it "should leave Joe's year-to-date assists alone" $
-      joe'^.pYtd.psAssists `shouldBe` 1
-
-    it "should leave Joe's lifetime assists alone" $
-      joe'^.pLifetime.psAssists `shouldBe` 2
-
-    it "should increment Bob's year-to-date assists" $
-      bob'^.pYtd.psAssists `shouldBe` 4
-
-    it "should increment Bob's lifetime assists" $
-      bob'^.pLifetime.psAssists `shouldBe` 5
+        it ("should increment " ++ pName ++ "'s game assists") $
+          gStats^.psAssists `shouldBe` game)
+    --  player name, player id, ytd assists, lifetime assists, game assists
+    [ ( "Joe",       0,         2,           3,                2            )
+    , ( "Bob",       1,         4,           5,                1            )
+    ]
 
   context "invalid index" $ let
     ps' = awardAssist (-1) ps
