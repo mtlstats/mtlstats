@@ -21,12 +21,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Report (report, gameDate) where
 
+import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
 
 import Mtlstats.Config
 import Mtlstats.Format
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Generates the report
 report
@@ -37,18 +39,24 @@ report
   -> String
 report width s = unlines $ fromMaybe [] $ do
   let
-    db     = s^.database
-    gs     = s^.progMode.gameStateL
-    gNum   = db^.dbGames
-    date   = gameDate gs
-    hTeam  = homeTeam gs
-    aTeam  = awayTeam gs
-    hStats = db^.dbHomeGameStats
-    aStats = db^.dbAwayGameStats
-    tStats = addGameStats hStats aStats
+    db      = s^.database
+    gs      = s^.progMode.gameStateL
+    gNum    = db^.dbGames
+    date    = gameDate gs
+    hTeam   = homeTeam gs
+    aTeam   = awayTeam gs
+    hStats  = db^.dbHomeGameStats
+    aStats  = db^.dbAwayGameStats
+    tStats  = addGameStats hStats aStats
+    players = db^.dbPlayers
   hScore <- gs^.homeScore
   aScore <- gs^.awayScore
-  Just
+  pStats <- mapM
+    (\(n, stats) -> do
+      player <- nth n players
+      Just (player, stats))
+    (M.toList $ gs^.gamePlayerStats)
+  Just $
     [ overlay
       ("GAME NUMBER " ++ padNum 2 gNum)
       (centre width
@@ -78,7 +86,26 @@ report width s = unlines $ fromMaybe [] $ do
     , centre width
       $  left 11 "TOTALS"
       ++ showStats tStats
-    ]
+    , ""
+    , centre width "GAME STATISTICS"
+    , ""
+    , centre width
+      $  "NO. "
+      ++ left 20 "PLAYER"
+      ++ right 3 "G"
+      ++ right 6 "A"
+      ++ right 6 "P"
+      ++ right 6 "PM"
+    ] ++ map
+      (\(p, stats) -> centre width
+        $  right 2 (show $ p^.pNumber)
+        ++ "  "
+        ++ left 20 (p^.pName)
+        ++ right 3 (show $ stats^.psGoals)
+        ++ right 6 (show $ stats^.psAssists)
+        ++ right 6 (show $ pPoints stats)
+        ++ right 6 (show $ stats^.psPMin))
+      pStats
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do

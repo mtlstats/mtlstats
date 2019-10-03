@@ -58,6 +58,7 @@ module Mtlstats.Types (
   pointsAccounted,
   goalBy,
   assistsBy,
+  gamePlayerStats,
   confirmGoalDataFlag,
   -- ** CreatePlayerState Lenses
   cpsNumber,
@@ -146,6 +147,7 @@ import Data.Aeson
   , (.=)
   )
 import Data.List (isInfixOf)
+import qualified Data.Map as M
 import Data.Maybe (listToMaybe)
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
@@ -215,7 +217,10 @@ data GameState = GameState
   , _assistsBy           :: [Int]
   -- ^ The index numbers of the players who have assisted the most
   -- recently entered goal
+  , _gamePlayerStats     :: M.Map Int PlayerStats
+  -- ^ The player stats accumulated over the game
   , _confirmGoalDataFlag :: Bool
+  -- ^ Set when the user confirms the goal data
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -514,6 +519,7 @@ newGameState = GameState
   , _pointsAccounted     = 0
   , _goalBy              = Nothing
   , _assistsBy           = []
+  , _gamePlayerStats     = M.empty
   , _confirmGoalDataFlag = False
   }
 

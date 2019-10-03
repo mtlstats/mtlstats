@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
+import qualified Data.Map as M
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, runIO, shouldBe, shouldNotBe)
@@ -368,9 +369,10 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
     bob   = newPlayer 2 "Bob"   "defense"
     steve = newPlayer 3 "Steve" "forward"
     dave  = newPlayer 4 "Dave"  "somewhere"
+    frank = newPlayer 5 "Frank" "elsewhere"
     ps
       = newProgState
-      & database.dbPlayers .~ [joe, bob, steve, dave]
+      & database.dbPlayers .~ [joe, bob, steve, dave, frank]
       & progMode.gameStateL
         %~ (goalBy              ?~ 0)
         .  (assistsBy           .~ [1, 2])
@@ -378,26 +380,35 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
       & recordGoalAssists
 
   mapM_
-    (\(name, n, ytdg, ltg, ytda, lta) -> context name $ do
-      let player = (ps^.database.dbPlayers) !! n
+    (\(name, n, goals, assists) -> context name $ do
+      let
+        player = (ps^.database.dbPlayers) !! n
+        stats  = M.findWithDefault newPlayerStats n $
+          ps^.progMode.gameStateL.gamePlayerStats
 
-      it ("should set the year-to-date goals to " ++ show ytdg) $
-        player^.pYtd.psGoals `shouldBe` ytdg
+      it ("should set the year-to-date goals to " ++ show goals) $
+        player^.pYtd.psGoals `shouldBe` goals
 
-      it ("should set the lifetime goals to " ++ show ltg) $
-        player^.pLifetime.psGoals `shouldBe` ltg
+      it ("should set the lifetime goals to " ++ show goals) $
+        player^.pLifetime.psGoals `shouldBe` goals
 
-      it ("should set the year-to-date assists to " ++ show ytda) $
-        player^.pYtd.psAssists `shouldBe` ytda
+      it ("should set the game goals to " ++ show goals) $
+        stats^.psAssists `shouldBe` assists
 
-      it ("should set the lifetime assists to " ++ show lta) $
-        player^.pLifetime.psAssists `shouldBe` lta)
+      it ("should set the year-to-date assists to " ++ show assists) $
+        player^.pYtd.psAssists `shouldBe` assists
 
-    --  name,    index, ytd goals, lt goals, ytd assists, lt assists
-    [ ( "Joe",   0,     1,         1,        0,           0          )
-    , ( "Bob",   1,     0,         0,        1,           1          )
-    , ( "Steve", 2,     0,         0,        1,           1          )
-    , ( "Dave",  3,     0,         0,        0,           0          )
+      it ("should set the lifetime assists to " ++ show assists) $
+        player^.pLifetime.psAssists `shouldBe` assists
+
+      it ("should set the game assists to " ++ show assists) $
+        stats^.psAssists `shouldBe` assists)
+
+    --  name,    index, goals, assists
+    [ ( "Joe",   0,     1,     0       )
+    , ( "Bob",   1,     0,     1       )
+    , ( "Steve", 2,     0,     1       )
+    , ( "Dave",  3,     0,     0       )
     ]
 
   it "should clear the goalBy value" $
@@ -426,31 +437,34 @@ awardGoalSpec = describe "awardGoal" $ do
     db
       = newDatabase
       & dbPlayers .~ [joe, bob]
+    joeStats
+      = newPlayerStats
+      & psGoals .~ 1
     ps
       = newProgState
+      & progMode.gameStateL.gamePlayerStats .~ M.singleton 0 joeStats
       & database .~ db
 
-  context "Joe" $ do
-    let
-      ps'    = awardGoal 0 ps
-      player = head $ ps'^.database.dbPlayers
+  mapM_
+    (\(pName, pid, ytd, lt, game) ->
+      context pName $ do
+        let
+          ps'    = awardGoal pid ps
+          player = (ps'^.database.dbPlayers) !! pid
+          gStats = (ps'^.progMode.gameStateL.gamePlayerStats) M.! pid
 
-    it "should increment Joe's year-to-date goals" $
-      player^.pYtd.psGoals `shouldBe` 2
+        it ("should increment " ++ pName ++ "'s year-to-date goals") $
+          player^.pYtd.psGoals `shouldBe` ytd
 
-    it "should increment Joe's lifetime goals" $
-      player^.pLifetime.psGoals `shouldBe` 3
+        it ("should increment " ++ pName ++ "'s lifetime goals") $
+          player^.pLifetime.psGoals `shouldBe` lt
 
-  context "Bob" $ do
-    let
-      ps' = awardGoal 1 ps
-      player = last $ ps'^.database.dbPlayers
-
-    it "should increment Bob's year-to-data goals" $
-      player^.pYtd.psGoals `shouldBe` 4
-
-    it "should increment Bob's lifetime goals" $
-      player^.pLifetime.psGoals `shouldBe` 5
+        it ("should increment " ++ pName ++ "'s game goals") $
+          gStats^.psGoals `shouldBe` game)
+    --  player name, player id, ytd goals, lifetime goals, game goals
+    [ ( "Joe",       0,         2,         3,              2          )
+    , ( "Bob",       1,         4,         5,              1          )
+    ]
 
   context "invalid index" $ let
     ps' = awardGoal 2 ps
@@ -473,45 +487,34 @@ awardAssistSpec = describe "awardAssist" $ do
       = newPlayer 2 "Bob" "defense"
       & pYtd.psAssists      .~ 3
       & pLifetime.psAssists .~ 4
+    joeStats
+      = newPlayerStats
+      & psAssists .~ 1
     ps
       = newProgState
+      & progMode.gameStateL.gamePlayerStats .~ M.singleton 0 joeStats
       & database.dbPlayers .~ [joe, bob]
 
-  context "Joe" $ do
-    let
-      ps'  = awardAssist 0 ps
-      joe' = head $ ps'^.database.dbPlayers
-      bob' = last $ ps'^.database.dbPlayers
+  mapM_
+    (\(pName, pid, ytd, lt, game) ->
+      context pName $ do
+        let
+          ps' = awardAssist pid ps
+          player = (ps'^.database.dbPlayers) !! pid
+          gStats = (ps'^.progMode.gameStateL.gamePlayerStats) M.! pid
 
-    it "should increment Joe's year-to-date assists" $
-      joe'^.pYtd.psAssists `shouldBe` 2
+        it ("should increment " ++ pName ++ "'s year-to-date assists") $
+          player^.pYtd.psAssists `shouldBe` ytd
 
-    it "should increment Joe's lifetime assists" $
-      joe'^.pLifetime.psAssists `shouldBe` 3
+        it ("should increment " ++ pName ++ "'s lifetime assists") $
+          player^.pLifetime.psAssists `shouldBe` lt
 
-    it "should leave Bob's year-to-date assists alone" $
-      bob'^.pYtd.psAssists `shouldBe` 3
-
-    it "should leave Bob's lifetime assists alone" $
-      bob^.pLifetime.psAssists `shouldBe` 4
-
-  context "Bob" $ do
-    let
-      ps'  = awardAssist 1 ps
-      joe' = head $ ps'^.database.dbPlayers
-      bob' = last $ ps'^.database.dbPlayers
-
-    it "should leave Joe's year-to-date assists alone" $
-      joe'^.pYtd.psAssists `shouldBe` 1
-
-    it "should leave Joe's lifetime assists alone" $
-      joe'^.pLifetime.psAssists `shouldBe` 2
-
-    it "should increment Bob's year-to-date assists" $
-      bob'^.pYtd.psAssists `shouldBe` 4
-
-    it "should increment Bob's lifetime assists" $
-      bob'^.pLifetime.psAssists `shouldBe` 5
+        it ("should increment " ++ pName ++ "'s game assists") $
+          gStats^.psAssists `shouldBe` game)
+    --  player name, player id, ytd assists, lifetime assists, game assists
+    [ ( "Joe",       0,         2,           3,                2            )
+    , ( "Bob",       1,         4,           5,                1            )
+    ]
 
   context "invalid index" $ let
     ps' = awardAssist (-1) ps
