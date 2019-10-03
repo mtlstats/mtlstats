@@ -369,9 +369,10 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
     bob   = newPlayer 2 "Bob"   "defense"
     steve = newPlayer 3 "Steve" "forward"
     dave  = newPlayer 4 "Dave"  "somewhere"
+    frank = newPlayer 5 "Frank" "elsewhere"
     ps
       = newProgState
-      & database.dbPlayers .~ [joe, bob, steve, dave]
+      & database.dbPlayers .~ [joe, bob, steve, dave, frank]
       & progMode.gameStateL
         %~ (goalBy              ?~ 0)
         .  (assistsBy           .~ [1, 2])
@@ -379,26 +380,35 @@ recordGoalAssistsSpec = describe "recordGoalAssists" $ do
       & recordGoalAssists
 
   mapM_
-    (\(name, n, ytdg, ltg, ytda, lta) -> context name $ do
-      let player = (ps^.database.dbPlayers) !! n
+    (\(name, n, goals, assists) -> context name $ do
+      let
+        player = (ps^.database.dbPlayers) !! n
+        stats  = M.findWithDefault newPlayerStats n $
+          ps^.progMode.gameStateL.gamePlayerStats
 
-      it ("should set the year-to-date goals to " ++ show ytdg) $
-        player^.pYtd.psGoals `shouldBe` ytdg
+      it ("should set the year-to-date goals to " ++ show goals) $
+        player^.pYtd.psGoals `shouldBe` goals
 
-      it ("should set the lifetime goals to " ++ show ltg) $
-        player^.pLifetime.psGoals `shouldBe` ltg
+      it ("should set the lifetime goals to " ++ show goals) $
+        player^.pLifetime.psGoals `shouldBe` goals
 
-      it ("should set the year-to-date assists to " ++ show ytda) $
-        player^.pYtd.psAssists `shouldBe` ytda
+      it ("should set the game goals to " ++ show goals) $
+        stats^.psAssists `shouldBe` assists
 
-      it ("should set the lifetime assists to " ++ show lta) $
-        player^.pLifetime.psAssists `shouldBe` lta)
+      it ("should set the year-to-date assists to " ++ show assists) $
+        player^.pYtd.psAssists `shouldBe` assists
 
-    --  name,    index, ytd goals, lt goals, ytd assists, lt assists
-    [ ( "Joe",   0,     1,         1,        0,           0          )
-    , ( "Bob",   1,     0,         0,        1,           1          )
-    , ( "Steve", 2,     0,         0,        1,           1          )
-    , ( "Dave",  3,     0,         0,        0,           0          )
+      it ("should set the lifetime assists to " ++ show assists) $
+        player^.pLifetime.psAssists `shouldBe` assists
+
+      it ("should set the game assists to " ++ show assists) $
+        stats^.psAssists `shouldBe` assists)
+
+    --  name,    index, goals, assists
+    [ ( "Joe",   0,     1,     0       )
+    , ( "Bob",   1,     0,     1       )
+    , ( "Steve", 2,     0,     1       )
+    , ( "Dave",  3,     0,     0       )
     ]
 
   it "should clear the goalBy value" $
