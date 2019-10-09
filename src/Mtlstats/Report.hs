@@ -37,26 +37,26 @@ report
   -> ProgState
   -- ^ The program state
   -> String
-report width s = unlines $ fromMaybe [] $ do
+report width s
+  =  standingsReport width s
+  ++ "\n"
+  ++ gameStatsReport width s
+
+standingsReport :: Int -> ProgState -> String
+standingsReport width s = unlines $ fromMaybe [] $ do
   let
-    db      = s^.database
-    gs      = s^.progMode.gameStateL
-    gNum    = db^.dbGames
-    date    = gameDate gs
-    hTeam   = homeTeam gs
-    aTeam   = awayTeam gs
-    hStats  = db^.dbHomeGameStats
-    aStats  = db^.dbAwayGameStats
-    tStats  = addGameStats hStats aStats
-    players = db^.dbPlayers
+    db     = s^.database
+    gs     = s^.progMode.gameStateL
+    gNum   = db^.dbGames
+    date   = gameDate gs
+    hTeam  = homeTeam gs
+    aTeam  = awayTeam gs
+    hStats = db^.dbHomeGameStats
+    aStats = db^.dbAwayGameStats
+    tStats = addGameStats hStats aStats
   hScore <- gs^.homeScore
   aScore <- gs^.awayScore
-  pStats <- mapM
-    (\(n, stats) -> do
-      player <- nth n players
-      Just (player, stats))
-    (M.toList $ gs^.gamePlayerStats)
-  Just $
+  Just
     [ overlay
       ("GAME NUMBER " ++ padNum 2 gNum)
       (centre width
@@ -86,12 +86,25 @@ report width s = unlines $ fromMaybe [] $ do
     , centre width
       $  left 11 "TOTALS"
       ++ showStats tStats
-    , ""
-    , centre width "GAME STATISTICS"
+    ]
+
+gameStatsReport :: Int -> ProgState -> String
+gameStatsReport width s = unlines $ fromMaybe [] $ do
+  pStats <- mapM
+    (\(pid, stats) -> do
+      p <- nth pid $ s^.database.dbPlayers
+      Just (p, stats))
+    (M.toList $ s^.progMode.gameStateL.gamePlayerStats)
+  let
+    nameWidth = succ $ maximum $ 10 : map
+      (length . (^.pName) . fst)
+      pStats
+  Just $
+    [ centre width "GAME STATISTICS"
     , ""
     , centre width
       $  "NO. "
-      ++ left 20 "PLAYER"
+      ++ left nameWidth "PLAYER"
       ++ right 3 "G"
       ++ right 6 "A"
       ++ right 6 "P"
@@ -100,7 +113,7 @@ report width s = unlines $ fromMaybe [] $ do
       (\(p, stats) -> centre width
         $  right 2 (show $ p^.pNumber)
         ++ "  "
-        ++ left 20 (p^.pName)
+        ++ left nameWidth (p^.pName)
         ++ right 3 (show $ stats^.psGoals)
         ++ right 6 (show $ stats^.psAssists)
         ++ right 6 (show $ pPoints stats)
