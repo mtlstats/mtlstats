@@ -59,6 +59,7 @@ spec = describe "Mtlstats.Types" $ do
   playerSearchExactSpec
   modifyPlayerSpec
   playerSummarySpec
+  addPlayerStatsSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -583,6 +584,33 @@ playerSummarySpec :: Spec
 playerSummarySpec = describe "playerSummary" $
   it "should be \"Joe (2) center\"" $
     playerSummary joe `shouldBe` "Joe (2) center"
+
+addPlayerStatsSpec :: Spec
+addPlayerStatsSpec = describe "addPlayerStats" $ do
+  let
+    s1
+      = newPlayerStats
+      & psGoals   .~ 1
+      & psAssists .~ 2
+      & psPMin    .~ 3
+    s2
+      = newPlayerStats
+      & psGoals   .~ 4
+      & psAssists .~ 5
+      & psPMin    .~ 6
+    s3 = addPlayerStats s1 s2
+
+  describe "psGoals" $
+    it "should be 5" $
+      s3^.psGoals `shouldBe` 5
+
+  describe "psAssists" $
+    it "should be 7" $
+      s3^.psAssists `shouldBe` 7
+
+  describe "psPMin" $
+    it "should be 9" $
+      s3^.psPMin `shouldBe` 9
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"

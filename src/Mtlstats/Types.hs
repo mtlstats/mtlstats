@@ -130,7 +130,9 @@ module Mtlstats.Types (
   playerSearch,
   playerSearchExact,
   modifyPlayer,
-  playerSummary
+  playerSummary,
+  -- ** PlayerStats Helpers
+  addPlayerStats
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -725,3 +727,10 @@ modifyPlayer f n = map
 playerSummary :: Player -> String
 playerSummary p =
   p^.pName ++ " (" ++ show (p^.pNumber) ++ ") " ++ p^.pPosition
+
+-- | Adds two 'PlayerStats' together
+addPlayerStats :: PlayerStats -> PlayerStats -> PlayerStats
+addPlayerStats s1 s2 = newPlayerStats
+  & psGoals   .~ s1^.psGoals + s2^.psGoals
+  & psAssists .~ s1^.psAssists + s2^.psAssists
+  & psPMin    .~ s1^.psPMin + s2^.psPMin
