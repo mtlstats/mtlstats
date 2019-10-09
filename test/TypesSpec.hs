@@ -54,11 +54,11 @@ spec = describe "Mtlstats.Types" $ do
   gmsGamesSpec
   gmsPointsSpec
   addGameStatsSpec
-  pPointsSpec
   playerSearchSpec
   playerSearchExactSpec
   modifyPlayerSpec
   playerSummarySpec
+  psPointsSpec
   addPlayerStatsSpec
   Menu.spec
 
@@ -510,24 +510,6 @@ addGameStatsSpec = describe "addGameStats" $
 
     in addGameStats s1 s2 `shouldBe` expected
 
-pPointsSpec :: Spec
-pPointsSpec = describe "pPoints" $ mapM_
-  (\(goals, assists, points) -> let
-    desc = "goals: " ++ show goals ++
-      ", assists: " ++ show assists
-    stats = newPlayerStats &
-      psGoals   .~ goals &
-      psAssists .~ assists
-    in context desc $
-      it ("should be " ++ show points) $
-        pPoints stats `shouldBe` points)
-  --  goals, assists, points
-  [ ( 0,     0,       0      )
-  , ( 1,     0,       1      )
-  , ( 0,     1,       1      )
-  , ( 2,     3,       5      )
-  ]
-
 playerSearchSpec :: Spec
 playerSearchSpec = describe "playerSearch" $ mapM_
   (\(sStr, expected) -> context sStr $
@@ -584,6 +566,24 @@ playerSummarySpec :: Spec
 playerSummarySpec = describe "playerSummary" $
   it "should be \"Joe (2) center\"" $
     playerSummary joe `shouldBe` "Joe (2) center"
+
+psPointsSpec :: Spec
+psPointsSpec = describe "psPoints" $ mapM_
+  (\(goals, assists, points) -> let
+    desc = "goals: " ++ show goals ++
+      ", assists: " ++ show assists
+    stats = newPlayerStats &
+      psGoals   .~ goals &
+      psAssists .~ assists
+    in context desc $
+      it ("should be " ++ show points) $
+        psPoints stats `shouldBe` points)
+  --  goals, assists, points
+  [ ( 0,     0,       0      )
+  , ( 1,     0,       1      )
+  , ( 0,     1,       1      )
+  , ( 2,     3,       5      )
+  ]
 
 addPlayerStatsSpec :: Spec
 addPlayerStatsSpec = describe "addPlayerStats" $ do

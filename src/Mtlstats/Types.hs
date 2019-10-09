@@ -126,12 +126,12 @@ module Mtlstats.Types (
   gmsPoints,
   addGameStats,
   -- ** Player Helpers
-  pPoints,
   playerSearch,
   playerSearchExact,
   modifyPlayer,
   playerSummary,
   -- ** PlayerStats Helpers
+  psPoints,
   addPlayerStats
 ) where
 
@@ -677,10 +677,6 @@ addGameStats s1 s2 = GameStats
   , _gmsGoalsAgainst = s1^.gmsGoalsAgainst + s2^.gmsGoalsAgainst
   }
 
--- | Calculates a player's points
-pPoints :: PlayerStats -> Int
-pPoints s = s^.psGoals + s^.psAssists
-
 -- | Searches through a list of players
 playerSearch
   :: String
@@ -727,6 +723,10 @@ modifyPlayer f n = map
 playerSummary :: Player -> String
 playerSummary p =
   p^.pName ++ " (" ++ show (p^.pNumber) ++ ") " ++ p^.pPosition
+
+-- | Calculates a player's points
+psPoints :: PlayerStats -> Int
+psPoints s = s^.psGoals + s^.psAssists
 
 -- | Adds two 'PlayerStats' together
 addPlayerStats :: PlayerStats -> PlayerStats -> PlayerStats

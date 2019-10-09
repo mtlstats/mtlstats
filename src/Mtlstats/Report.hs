@@ -117,7 +117,7 @@ gameStatsReport width s = unlines $ fromMaybe [] $ do
         ++ left nameWidth (p^.pName)
         ++ right 3 (show $ stats^.psGoals)
         ++ right 6 (show $ stats^.psAssists)
-        ++ right 6 (show $ pPoints stats)
+        ++ right 6 (show $ psPoints stats)
         ++ right 6 (show $ stats^.psPMin))
       pStats ++
     [ centre width
@@ -129,7 +129,7 @@ gameStatsReport width s = unlines $ fromMaybe [] $ do
         $  replicate (4 + nameWidth) ' '
         ++ right 3 (show $ tStats^.psGoals)
         ++ right 6 (show $ tStats^.psAssists)
-        ++ right 6 (show $ pPoints tStats)
+        ++ right 6 (show $ psPoints tStats)
         ++ right 6 (show $ tStats^.psPMin)
       )
     ]
