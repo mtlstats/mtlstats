@@ -24,7 +24,7 @@ module Mtlstats.Control (dispatch) where
 import Control.Monad (join, when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust)
 import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
@@ -55,6 +55,8 @@ dispatch s = case s^.progMode of
     | null $ gs^.overtimeFlag         -> overtimeFlagC
     | not $ gs^.dataVerified          -> verifyDataC
     | fromJust (unaccountedPoints gs) -> goalInput gs
+    | isJust $ gs^.selectedPlayer     -> getPMinsC
+    | not $ gs^.pMinsRecorded         -> pMinPlayerC
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
@@ -240,6 +242,12 @@ confirmGoalDataC = Controller
       Nothing    -> return ()
     return True
   }
+
+pMinPlayerC :: Controller
+pMinPlayerC = undefined
+
+getPMinsC :: Controller
+getPMinsC = undefined
 
 reportC :: Controller
 reportC = Controller
