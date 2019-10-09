@@ -38,7 +38,8 @@ module Mtlstats.Prompt (
   playerPosPrompt,
   selectPlayerPrompt,
   recordGoalPrompt,
-  recordAssistPrompt
+  recordAssistPrompt,
+  pMinPlayerPrompt
 ) where
 
 import Control.Monad (when)
@@ -233,6 +234,9 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
       nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
       when (nAssists >= maxAssists) $
         modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
+
+pMinPlayerPrompt :: Prompt
+pMinPlayerPrompt = undefined
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

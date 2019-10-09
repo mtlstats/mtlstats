@@ -244,7 +244,14 @@ confirmGoalDataC = Controller
   }
 
 pMinPlayerC :: Controller
-pMinPlayerC = undefined
+pMinPlayerC = Controller
+  { drawController = \s -> do
+    header s
+    drawPrompt pMinPlayerPrompt s
+  , handleController = \e -> do
+    promptHandler pMinPlayerPrompt e
+    return True
+  }
 
 getPMinsC :: Controller
 getPMinsC = undefined
