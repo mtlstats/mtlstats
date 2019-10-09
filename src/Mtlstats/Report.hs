@@ -99,6 +99,7 @@ gameStatsReport width s = unlines $ fromMaybe [] $ do
     nameWidth = succ $ maximum $ 10 : map
       (length . (^.pName) . fst)
       pStats
+    tStats = foldr (addPlayerStats . snd) newPlayerStats pStats
   Just $
     [ centre width "GAME STATISTICS"
     , ""
@@ -118,7 +119,20 @@ gameStatsReport width s = unlines $ fromMaybe [] $ do
         ++ right 6 (show $ stats^.psAssists)
         ++ right 6 (show $ pPoints stats)
         ++ right 6 (show $ stats^.psPMin))
-      pStats
+      pStats ++
+    [ centre width
+      $  replicate (4 + nameWidth) ' '
+      ++ replicate (3 + 3 * 6) '-'
+    , overlay
+      "GAME TOTALS"
+      ( centre width
+        $  replicate (4 + nameWidth) ' '
+        ++ right 3 (show $ tStats^.psGoals)
+        ++ right 6 (show $ tStats^.psAssists)
+        ++ right 6 (show $ pPoints tStats)
+        ++ right 6 (show $ tStats^.psPMin)
+      )
+    ]
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
