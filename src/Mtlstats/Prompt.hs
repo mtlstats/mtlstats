@@ -236,7 +236,11 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
         modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
 
 pMinPlayerPrompt :: Prompt
-pMinPlayerPrompt = undefined
+pMinPlayerPrompt = selectPlayerPrompt
+  "Assign penalty minutes to: " $
+  \case
+    Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
+    Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
