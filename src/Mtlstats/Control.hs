@@ -24,7 +24,7 @@ module Mtlstats.Control (dispatch) where
 import Control.Monad (join, when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
-import Data.Maybe (fromJust, isJust)
+import Data.Maybe (fromJust, fromMaybe, isJust)
 import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
@@ -254,7 +254,18 @@ pMinPlayerC = Controller
   }
 
 getPMinsC :: Controller
-getPMinsC = undefined
+getPMinsC = Controller
+  { drawController = \s -> do
+    header s
+    C.drawString $ fromMaybe "" $ do
+      pid    <- s^.progMode.gameStateL.selectedPlayer
+      player <- nth pid $ s^.database.dbPlayers
+      Just $ playerSummary player ++ "\n"
+    drawPrompt assignPMinsPrompt s
+  , handleController = \e -> do
+    promptHandler assignPMinsPrompt e
+    return True
+  }
 
 reportC :: Controller
 reportC = Controller

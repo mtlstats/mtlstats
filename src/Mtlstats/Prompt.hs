@@ -39,7 +39,8 @@ module Mtlstats.Prompt (
   selectPlayerPrompt,
   recordGoalPrompt,
   recordAssistPrompt,
-  pMinPlayerPrompt
+  pMinPlayerPrompt,
+  assignPMinsPrompt
 ) where
 
 import Control.Monad (when)
@@ -241,6 +242,9 @@ pMinPlayerPrompt = selectPlayerPrompt
   \case
     Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
     Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
+
+assignPMinsPrompt :: Prompt
+assignPMinsPrompt = undefined
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
