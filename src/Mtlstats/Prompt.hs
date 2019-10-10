@@ -244,7 +244,8 @@ pMinPlayerPrompt = selectPlayerPrompt
     Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
 
 assignPMinsPrompt :: Prompt
-assignPMinsPrompt = undefined
+assignPMinsPrompt = numPrompt "Penalty minutes: " $
+  modify . assignPMins
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

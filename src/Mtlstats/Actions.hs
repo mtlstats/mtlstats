@@ -36,6 +36,7 @@ module Mtlstats.Actions
   , awardGoal
   , awardAssist
   , resetGoalData
+  , assignPMins
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -210,3 +211,11 @@ resetGoalData ps = ps & progMode.gameStateL
   %~ (goalBy              .~ Nothing)
   .  (assistsBy           .~ [])
   .  (confirmGoalDataFlag .~ False)
+
+-- | Adds penalty minutes to a player
+assignPMins
+  :: Int
+  -- ^ The number of minutes to add
+  -> ProgState
+  -> ProgState
+assignPMins = undefined
