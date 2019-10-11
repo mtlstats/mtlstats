@@ -60,6 +60,8 @@ module Mtlstats.Types (
   assistsBy,
   gamePlayerStats,
   confirmGoalDataFlag,
+  selectedPlayer,
+  pMinsRecorded,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
@@ -223,6 +225,10 @@ data GameState = GameState
   -- ^ The player stats accumulated over the game
   , _confirmGoalDataFlag :: Bool
   -- ^ Set when the user confirms the goal data
+  , _selectedPlayer      :: Maybe Int
+  -- ^ Index number of the selected 'Player'
+  , _pMinsRecorded       :: Bool
+  -- ^ Set when the penalty mintes have been recorded
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -523,6 +529,8 @@ newGameState = GameState
   , _assistsBy           = []
   , _gamePlayerStats     = M.empty
   , _confirmGoalDataFlag = False
+  , _selectedPlayer      = Nothing
+  , _pMinsRecorded       = False
   }
 
 -- | Constructor for a 'CreatePlayerState'

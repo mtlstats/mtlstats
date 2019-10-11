@@ -21,13 +21,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module UtilSpec (spec) where
 
+import qualified Data.Map as M
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Util
 
 spec :: Spec
-spec = describe "Mtlstats.Util"
+spec = describe "Mtlstats.Util" $ do
   nthSpec
+  modifyNthSpec
+  updateMapSpec
 
 nthSpec :: Spec
 nthSpec = describe "nth" $ mapM_
@@ -42,3 +45,33 @@ nthSpec = describe "nth" $ mapM_
   , ( 3,     Nothing    )
   , ( -1,    Nothing    )
   ]
+
+modifyNthSpec  :: Spec
+modifyNthSpec = describe "modifyNth" $ do
+
+  context "in bounds" $
+    it "should modify the value" $
+      modifyNth 1 succ [1, 2, 3] `shouldBe` [1, 3, 3]
+
+  context "out of bounds" $
+    it "should not modify the value" $
+      modifyNth 3 succ [1, 2, 3] `shouldBe` [1, 2, 3]
+
+  context "negative index" $
+    it "should not modify the value" $
+      modifyNth (-1) succ [1, 2, 3] `shouldBe` [1, 2, 3]
+
+updateMapSpec :: Spec
+updateMapSpec = describe "updateMap" $ do
+  let
+    input = M.fromList [(1, 2), (3, 5)]
+
+  context "key found" $ let
+    expected = M.fromList [(1, 3), (3, 5)]
+    in it "should update the value" $
+      updateMap 1 10 succ input `shouldBe` expected
+
+  context "key not found" $ let
+    expected = M.fromList [(1, 2), (3, 5), (10, 11)]
+    in it "should create a new value and update the default" $
+      updateMap 10 10 succ input `shouldBe` expected

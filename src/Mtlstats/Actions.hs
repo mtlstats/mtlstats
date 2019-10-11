@@ -36,6 +36,7 @@ module Mtlstats.Actions
   , awardGoal
   , awardAssist
   , resetGoalData
+  , assignPMins
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -45,6 +46,7 @@ import Data.Time.Calendar (fromGregorianValid)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
 
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState
@@ -210,3 +212,20 @@ resetGoalData ps = ps & progMode.gameStateL
   %~ (goalBy              .~ Nothing)
   .  (assistsBy           .~ [])
   .  (confirmGoalDataFlag .~ False)
+
+-- | Adds penalty minutes to a player
+assignPMins
+  :: Int
+  -- ^ The number of minutes to add
+  -> ProgState
+  -> ProgState
+assignPMins mins s = fromMaybe s $ do
+  n <- s^.progMode.gameStateL.selectedPlayer
+  Just $ s
+    & database.dbPlayers %~ modifyNth n
+      (((pYtd.psPMin) +~ mins) . ((pLifetime.psPMin) +~ mins))
+    & progMode.gameStateL
+      %~ ( gamePlayerStats %~ updateMap n newPlayerStats
+           (psPMin +~ mins)
+         )
+      .  (selectedPlayer .~ Nothing)

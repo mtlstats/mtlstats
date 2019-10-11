@@ -24,7 +24,7 @@ module Mtlstats.Control (dispatch) where
 import Control.Monad (join, when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, fromMaybe, isJust)
 import Lens.Micro ((^.), (.~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
@@ -55,6 +55,8 @@ dispatch s = case s^.progMode of
     | null $ gs^.overtimeFlag         -> overtimeFlagC
     | not $ gs^.dataVerified          -> verifyDataC
     | fromJust (unaccountedPoints gs) -> goalInput gs
+    | isJust $ gs^.selectedPlayer     -> getPMinsC
+    | not $ gs^.pMinsRecorded         -> pMinPlayerC
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
@@ -238,6 +240,30 @@ confirmGoalDataC = Controller
       Just True  -> modify recordGoalAssists
       Just False -> modify resetGoalData
       Nothing    -> return ()
+    return True
+  }
+
+pMinPlayerC :: Controller
+pMinPlayerC = Controller
+  { drawController = \s -> do
+    header s
+    drawPrompt pMinPlayerPrompt s
+  , handleController = \e -> do
+    promptHandler pMinPlayerPrompt e
+    return True
+  }
+
+getPMinsC :: Controller
+getPMinsC = Controller
+  { drawController = \s -> do
+    header s
+    C.drawString $ fromMaybe "" $ do
+      pid    <- s^.progMode.gameStateL.selectedPlayer
+      player <- nth pid $ s^.database.dbPlayers
+      Just $ playerSummary player ++ "\n"
+    drawPrompt assignPMinsPrompt s
+  , handleController = \e -> do
+    promptHandler assignPMinsPrompt e
     return True
   }
 

@@ -38,7 +38,9 @@ module Mtlstats.Prompt (
   playerPosPrompt,
   selectPlayerPrompt,
   recordGoalPrompt,
-  recordAssistPrompt
+  recordAssistPrompt,
+  pMinPlayerPrompt,
+  assignPMinsPrompt
 ) where
 
 import Control.Monad (when)
@@ -233,6 +235,17 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
       nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
       when (nAssists >= maxAssists) $
         modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
+
+pMinPlayerPrompt :: Prompt
+pMinPlayerPrompt = selectPlayerPrompt
+  "Assign penalty minutes to: " $
+  \case
+    Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
+    Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
+
+assignPMinsPrompt :: Prompt
+assignPMinsPrompt = numPrompt "Penalty minutes: " $
+  modify . assignPMins
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
