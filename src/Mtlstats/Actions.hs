@@ -46,6 +46,7 @@ import Data.Time.Calendar (fromGregorianValid)
 import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
 
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState
@@ -218,4 +219,13 @@ assignPMins
   -- ^ The number of minutes to add
   -> ProgState
   -> ProgState
-assignPMins = undefined
+assignPMins mins s = fromMaybe s $ do
+  n <- s^.progMode.gameStateL.selectedPlayer
+  Just $ s
+    & database.dbPlayers %~ modifyNth n
+      (((pYtd.psPMin) +~ mins) . ((pLifetime.psPMin) +~ mins))
+    & progMode.gameStateL
+      %~ ( gamePlayerStats %~ updateMap n newPlayerStats
+           (psPMin +~ mins)
+         )
+      .  (selectedPlayer .~ Nothing)

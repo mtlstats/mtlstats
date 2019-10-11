@@ -23,12 +23,14 @@ module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
 import qualified Data.Map as M
+import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, runIO, shouldBe, shouldNotBe)
 
 import Mtlstats.Actions
 import Mtlstats.Types
+import Mtlstats.Util
 
 spec :: Spec
 spec = describe "Mtlstats.Actions" $ do
@@ -46,6 +48,7 @@ spec = describe "Mtlstats.Actions" $ do
   awardGoalSpec
   awardAssistSpec
   resetGoalDataSpec
+  assignPMinsSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -544,6 +547,62 @@ resetGoalDataSpec = describe "resetGoalData" $ do
 
   it "should clear confirmGoalDataFlag" $
     ps^.progMode.gameStateL.confirmGoalDataFlag `shouldBe` False
+
+assignPMinsSpec :: Spec
+assignPMinsSpec = describe "assignPMins" $ let
+
+  bob = newPlayer 2 "Bob" "centre"
+    & pYtd.psPMin      .~ 3
+    & pLifetime.psPMin .~ 4
+
+  joe = newPlayer 3 "Joe" "defense"
+    & pYtd.psPMin      .~ 5
+    & pLifetime.psPMin .~ 6
+
+  ps pid = newProgState
+    & database.dbPlayers .~ [bob, joe]
+    & progMode.gameStateL
+      %~ (gamePlayerStats .~ M.fromList [(0, newPlayerStats & psPMin .~ 2)])
+      .  (selectedPlayer  .~ pid)
+
+  in mapM_
+    (\(pid, bobLt, bobYtd, bobGame, joeLt, joeYtd, joeGame) ->
+      context ("selectedPlayer = " ++ show pid) $ do
+        let ps' = assignPMins 2 $ ps pid
+
+        mapM_
+          (\(name, pid', lt, ytd, game) -> context name $ do
+            let
+              player = fromJust $ nth pid' $ ps'^.database.dbPlayers
+              gStats = ps'^.progMode.gameStateL.gamePlayerStats
+              pStats = M.findWithDefault newPlayerStats pid' gStats
+
+            context "lifetime penalty minutes" $
+              it ("should be " ++ show lt) $
+                player^.pLifetime.psPMin `shouldBe` lt
+
+            context "year-to-date penalty minutes" $
+              it ("should be " ++ show ytd) $
+                player^.pYtd.psPMin `shouldBe` ytd
+
+            context "game penalty minutes" $
+              it ("should be " ++ show game) $
+                pStats^.psPMin `shouldBe` game)
+
+          --  name,  index, lifetime, ytd,    game
+          [ ( "Bob", 0,     bobLt,    bobYtd, bobGame )
+          , ( "Joe", 1,     joeLt,    joeYtd, joeGame )
+          ]
+
+        it "should set selectedPlayer to Nothing" $
+          ps'^.progMode.gameStateL.selectedPlayer `shouldBe` Nothing)
+
+    --  index,   bob lt, bob ytd, bob game, joe lt, joe ytd, joe game
+    [ ( Just 0,  6,      5,       4,        6,      5,       0        )
+    , ( Just 1,  4,      3,       2,        8,      7,       2        )
+    , ( Just 2,  4,      3,       2,        6,      5,       0        )
+    , ( Nothing, 4,      3,       2,        6,      5,       0        )
+    ]
 
 makePlayer :: IO Player
 makePlayer = Player

@@ -19,11 +19,48 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Util (nth) where
+module Mtlstats.Util (nth, modifyNth, updateMap) where
 
-nth :: Int -> [a] -> Maybe a
+import qualified Data.Map as M
+
+-- | Attempt to select the element from a list at a given index
+nth
+  :: Int
+  -- ^ The index
+  -> [a]
+  -- ^ The list
+  -> Maybe a
 nth _ [] = Nothing
 nth n (x:xs)
   | n == 0    = Just x
   | n < 0     = Nothing
   | otherwise = nth (pred n) xs
+
+-- | Attempt to modify the index at a given index in a list
+modifyNth
+  :: Int
+  -- ^ The index
+  -> (a -> a)
+  -- ^ The modification function
+  -> [a]
+  -- ^ The list
+  -> [a]
+modifyNth n f = map (\(i, x) -> if i == n then f x else x)
+  . zip [0..]
+
+-- | Modify a value indexed by a given key in a map using a default
+-- initial value if not present
+updateMap
+  :: Ord k
+  => k
+  -- ^ The key
+  -> a
+  -- ^ The default initial value
+  -> (a -> a)
+  -- ^ The modification function
+  -> M.Map k a
+  -- ^ The map
+  -> M.Map k a
+updateMap k def f m = let
+  x = M.findWithDefault def k m
+  in M.insert k (f x) m
