@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
@@ -26,7 +28,16 @@ import qualified Data.Map as M
 import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
-import Test.Hspec (Spec, context, describe, it, runIO, shouldBe, shouldNotBe)
+import Test.Hspec
+  ( Spec
+  , context
+  , describe
+  , it
+  , runIO
+  , shouldBe
+  , shouldNotBe
+  , shouldSatisfy
+  )
 
 import Mtlstats.Actions
 import Mtlstats.Types
@@ -49,6 +60,7 @@ spec = describe "Mtlstats.Actions" $ do
   awardAssistSpec
   resetGoalDataSpec
   assignPMinsSpec
+  backHomeSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -640,3 +652,23 @@ makeNum = randomRIO (1, 10)
 
 makeName :: IO String
 makeName = replicateM 10 $ randomRIO ('A', 'Z')
+
+backHomeSpec :: Spec
+backHomeSpec = describe "backHome" $ do
+  let
+    input = newProgState
+      & progMode.gameStateL .~ newGameState
+      & inputBuffer         .~ "foo"
+      & scrollOffset        .~ 123
+    result = backHome input
+
+  it "should set the program mode back to MainMenu" $
+    result^.progMode `shouldSatisfy` \case
+      MainMenu -> True
+      _        -> False
+
+  it "should clear the input buffer" $
+    result^.inputBuffer `shouldBe` ""
+
+  it "should reset the scroll offset" $
+    result^.scrollOffset `shouldBe` 0

@@ -36,14 +36,14 @@ report
   -- ^ The number of columns for the report
   -> ProgState
   -- ^ The program state
-  -> String
+  -> [String]
 report width s
   =  standingsReport width s
-  ++ "\n"
+  ++ [""]
   ++ gameStatsReport width s
 
-standingsReport :: Int -> ProgState -> String
-standingsReport width s = unlines $ fromMaybe [] $ do
+standingsReport :: Int -> ProgState -> [String]
+standingsReport width s = fromMaybe [] $ do
   let
     db     = s^.database
     gs     = s^.progMode.gameStateL
@@ -88,8 +88,8 @@ standingsReport width s = unlines $ fromMaybe [] $ do
       ++ showStats tStats
     ]
 
-gameStatsReport :: Int -> ProgState -> String
-gameStatsReport width s = unlines $ fromMaybe [] $ do
+gameStatsReport :: Int -> ProgState -> [String]
+gameStatsReport width s = fromMaybe [] $ do
   pStats <- mapM
     (\(pid, stats) -> do
       p <- nth pid $ s^.database.dbPlayers

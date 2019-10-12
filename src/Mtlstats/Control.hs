@@ -25,7 +25,7 @@ import Control.Monad (join, when)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (toUpper)
 import Data.Maybe (fromJust, fromMaybe, isJust)
-import Lens.Micro ((^.), (.~))
+import Lens.Micro ((^.), (.~), (%~))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
@@ -270,16 +270,20 @@ getPMinsC = Controller
 reportC :: Controller
 reportC = Controller
   { drawController = \s -> do
-    (_, cols) <- C.windowSize
-    C.drawString $ report (fromInteger $ pred cols) s
+    (rows, cols) <- C.windowSize
+    C.drawString $ unlines $ slice
+      (s^.scrollOffset)
+      (fromInteger $ pred rows)
+      (report (fromInteger $ pred cols) s)
     return C.CursorInvisible
   , handleController = \e -> do
-    when
-      (case e of
-        C.EventCharacter _  -> True
-        C.EventSpecialKey _ -> True
-        _                   -> False) $
-      modify $ progMode .~ MainMenu
+    case e of
+      C.EventSpecialKey C.KeyUpArrow   -> modify $ scrollOffset %~ pred
+      C.EventSpecialKey C.KeyDownArrow -> modify $ scrollOffset %~ succ
+      C.EventSpecialKey C.KeyHome      -> modify $ scrollOffset .~ 0
+      C.EventSpecialKey _              -> modify backHome
+      C.EventCharacter _               -> modify backHome
+      _                                -> return ()
     return True
   }
 
