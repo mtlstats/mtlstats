@@ -42,6 +42,7 @@ module Mtlstats.Types (
   database,
   progMode,
   inputBuffer,
+  scrollOffset,
   -- ** ProgMode Lenses
   gameStateL,
   createPlayerStateL,
@@ -172,12 +173,14 @@ type Action a = StateT ProgState C.Curses a
 
 -- | Represents the program state
 data ProgState = ProgState
-  { _database    :: Database
+  { _database     :: Database
   -- ^ The data to be saved
-  , _progMode    :: ProgMode
+  , _progMode     :: ProgMode
   -- ^ The program's mode
-  , _inputBuffer :: String
+  , _inputBuffer  :: String
   -- ^ Buffer for user input
+  , _scrollOffset :: Int
+  -- ^ The scrolling offset for the display
   }
 
 -- | The program mode
@@ -507,9 +510,10 @@ createPlayerStateL = lens
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
 newProgState = ProgState
-  { _database    = newDatabase
-  , _progMode    = MainMenu
-  , _inputBuffer = ""
+  { _database     = newDatabase
+  , _progMode     = MainMenu
+  , _inputBuffer  = ""
+  , _scrollOffset = 0
   }
 
 -- | Constructor for a 'GameState'
