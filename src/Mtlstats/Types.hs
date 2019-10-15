@@ -133,6 +133,7 @@ module Mtlstats.Types (
   playerSearchExact,
   modifyPlayer,
   playerSummary,
+  playerIsActive,
   -- ** PlayerStats Helpers
   psPoints,
   addPlayerStats
@@ -735,6 +736,16 @@ modifyPlayer f n = map
 playerSummary :: Player -> String
 playerSummary p =
   p^.pName ++ " (" ++ show (p^.pNumber) ++ ") " ++ p^.pPosition
+
+-- | Determines whether or not a player has been active in the current
+-- season/year
+playerIsActive :: Player -> Bool
+playerIsActive = do
+  stats <- (^.pYtd)
+  return
+    $  stats^.psGoals   /= 0
+    || stats^.psAssists /= 0
+    || stats^.psPMin    /= 0
 
 -- | Calculates a player's points
 psPoints :: PlayerStats -> Int
