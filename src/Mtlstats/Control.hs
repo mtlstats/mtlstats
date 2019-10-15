@@ -278,8 +278,8 @@ reportC = Controller
     return C.CursorInvisible
   , handleController = \e -> do
     case e of
-      C.EventSpecialKey C.KeyUpArrow   -> modify $ scrollOffset %~ pred
-      C.EventSpecialKey C.KeyDownArrow -> modify $ scrollOffset %~ succ
+      C.EventSpecialKey C.KeyUpArrow   -> modify scrollUp
+      C.EventSpecialKey C.KeyDownArrow -> modify scrollDown
       C.EventSpecialKey C.KeyHome      -> modify $ scrollOffset .~ 0
       C.EventSpecialKey _              -> modify backHome
       C.EventCharacter _               -> modify backHome

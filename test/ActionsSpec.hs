@@ -61,6 +61,8 @@ spec = describe "Mtlstats.Actions" $ do
   resetGoalDataSpec
   assignPMinsSpec
   backHomeSpec
+  scrollUpSpec
+  scrollDownSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -672,3 +674,29 @@ backHomeSpec = describe "backHome" $ do
 
   it "should reset the scroll offset" $
     result^.scrollOffset `shouldBe` 0
+
+scrollUpSpec :: Spec
+scrollUpSpec = describe "scrollUp" $ do
+
+  context "scrolled down" $
+    it "should decrease the scroll offset by one" $ let
+      ps  = newProgState & scrollOffset .~ 10
+      ps' = scrollUp ps
+      in ps'^.scrollOffset `shouldBe` 9
+
+  context "at top" $
+    it "should keep the scroll offset at zero" $ let
+      ps = scrollUp newProgState
+      in ps^.scrollOffset `shouldBe` 0
+
+  context "above top" $
+    it "should return the scroll offset to zero" $ let
+      ps  = newProgState & scrollOffset .~ (-10)
+      ps' = scrollUp ps
+      in ps'^.scrollOffset `shouldBe` 0
+
+scrollDownSpec = describe "scrollDown" $
+  it "should increase the scroll offset" $ let
+    ps  = newProgState & scrollOffset .~ 10
+    ps' = scrollDown ps
+    in ps'^.scrollOffset `shouldBe` 11

@@ -38,6 +38,8 @@ module Mtlstats.Actions
   , resetGoalData
   , assignPMins
   , backHome
+  , scrollUp
+  , scrollDown
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -237,3 +239,11 @@ backHome
   = (progMode     .~ MainMenu)
   . (inputBuffer  .~ "")
   . (scrollOffset .~ 0)
+
+-- | Scrolls the display up
+scrollUp :: ProgState -> ProgState
+scrollUp = scrollOffset %~ max 0 . pred
+
+-- | Scrolls the display down
+scrollDown :: ProgState -> ProgState
+scrollDown = scrollOffset %~ succ
