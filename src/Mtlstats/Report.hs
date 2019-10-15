@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Report (report, gameDate) where
+module Mtlstats.Report (report, gameDate, playerNameColWidth) where
 
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
@@ -140,6 +140,11 @@ gameDate gs = fromMaybe "" $ do
   month <- month <$> gs^.gameMonth
   day   <- padNum 2 <$> gs^.gameDay
   Just $ month ++ " " ++ day ++ " " ++ year
+
+playerNameColWidth :: [Player] -> Int
+playerNameColWidth = foldr
+  (\player current -> max current $ length $ player^.pName)
+  10
 
 showStats :: GameStats -> String
 showStats gs
