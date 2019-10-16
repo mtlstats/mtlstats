@@ -89,19 +89,26 @@ standingsReport width s = fromMaybe [] $ do
     ]
 
 gameStatsReport :: Int -> ProgState -> [String]
-gameStatsReport width s = fromMaybe [] $ do
-  pStats <- mapM
+gameStatsReport width s = maybe [] (playerReport width "GAME") $
+  mapM
     (\(pid, stats) -> do
       p <- nth pid $ s^.database.dbPlayers
       Just (p, stats))
     (M.toList $ s^.progMode.gameStateL.gamePlayerStats)
-  let
-    nameWidth = succ $ maximum $ 10 : map
-      (length . (^.pName) . fst)
-      pStats
-    tStats = foldr (addPlayerStats . snd) newPlayerStats pStats
-  Just $
-    [ centre width "GAME STATISTICS"
+
+gameDate :: GameState -> String
+gameDate gs = fromMaybe "" $ do
+  year  <- show <$> gs^.gameYear
+  month <- month <$> gs^.gameMonth
+  day   <- padNum 2 <$> gs^.gameDay
+  Just $ month ++ " " ++ day ++ " " ++ year
+
+playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
+playerReport width label ps = let
+  nameWidth = playerNameColWidth $ map fst ps
+  tStats    = foldr (addPlayerStats . snd) newPlayerStats ps
+  in
+    [ centre width (label ++ " STATISTICS")
     , ""
     , centre width
       $  "NO. "
@@ -119,12 +126,12 @@ gameStatsReport width s = fromMaybe [] $ do
         ++ right 6 (show $ stats^.psAssists)
         ++ right 6 (show $ psPoints stats)
         ++ right 6 (show $ stats^.psPMin))
-      pStats ++
+      ps ++
     [ centre width
       $  replicate (4 + nameWidth) ' '
       ++ replicate (3 + 3 * 6) '-'
     , overlay
-      "GAME TOTALS"
+      (label ++ " TOTALS")
       ( centre width
         $  replicate (4 + nameWidth) ' '
         ++ right 3 (show $ tStats^.psGoals)
@@ -133,13 +140,6 @@ gameStatsReport width s = fromMaybe [] $ do
         ++ right 6 (show $ tStats^.psPMin)
       )
     ]
-
-gameDate :: GameState -> String
-gameDate gs = fromMaybe "" $ do
-  year  <- show <$> gs^.gameYear
-  month <- month <$> gs^.gameMonth
-  day   <- padNum 2 <$> gs^.gameDay
-  Just $ month ++ " " ++ day ++ " " ++ year
 
 playerNameColWidth :: [Player] -> Int
 playerNameColWidth = foldr
