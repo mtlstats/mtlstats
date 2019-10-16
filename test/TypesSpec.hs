@@ -58,6 +58,7 @@ spec = describe "Mtlstats.Types" $ do
   playerSearchExactSpec
   modifyPlayerSpec
   playerSummarySpec
+  playerIsActiveSpec
   psPointsSpec
   addPlayerStatsSpec
   Menu.spec
@@ -566,6 +567,26 @@ playerSummarySpec :: Spec
 playerSummarySpec = describe "playerSummary" $
   it "should be \"Joe (2) center\"" $
     playerSummary joe `shouldBe` "Joe (2) center"
+
+playerIsActiveSpec :: Spec
+playerIsActiveSpec = describe "playerIsActive" $ do
+  let
+    pState = newPlayerStats
+      & psGoals   .~ 10
+      & psAssists .~ 11
+      & psPMin    .~ 12
+    player = newPlayer 1 "Joe" "centre" & pLifetime .~ pState
+
+  mapM_
+    (\(label, player', expected) -> context label $
+      it ("should be " ++ show expected) $
+        playerIsActive player' `shouldBe` expected)
+    --  label,                player,                       expected
+    [ ( "not active",         player,                       False    )
+    , ( "has goal",           player & pYtd.psGoals   .~ 1, True     )
+    , ( "has assist",         player & pYtd.psAssists .~ 1, True     )
+    , ( "has penalty minute", player & pYtd.psPMin    .~ 1, True     )
+    ]
 
 psPointsSpec :: Spec
 psPointsSpec = describe "psPoints" $ mapM_

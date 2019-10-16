@@ -31,6 +31,7 @@ spec = describe "Mtlstats.Util" $ do
   nthSpec
   modifyNthSpec
   updateMapSpec
+  sliceSpec
 
 nthSpec :: Spec
 nthSpec = describe "nth" $ mapM_
@@ -75,3 +76,19 @@ updateMapSpec = describe "updateMap" $ do
     expected = M.fromList [(1, 2), (3, 5), (10, 11)]
     in it "should create a new value and update the default" $
       updateMap 10 10 succ input `shouldBe` expected
+
+sliceSpec :: Spec
+sliceSpec = describe "slice" $ do
+  let list = [2, 4, 6, 8]
+
+  context "sublist" $
+    it "should return the sublist" $
+      slice 1 2 list `shouldBe` [4, 6]
+
+  context "too large" $
+    it "should return as much of the list as possible" $
+      slice 1 100 list `shouldBe` [4, 6, 8]
+
+  context "negative offset" $
+    it "should return the correct number of elements from the beginning" $
+      slice (-10) 2 list `shouldBe` [2, 4]

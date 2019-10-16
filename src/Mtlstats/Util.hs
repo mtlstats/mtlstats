@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Util (nth, modifyNth, updateMap) where
+module Mtlstats.Util (nth, modifyNth, updateMap, slice) where
 
 import qualified Data.Map as M
 
@@ -64,3 +64,14 @@ updateMap
 updateMap k def f m = let
   x = M.findWithDefault def k m
   in M.insert k (f x) m
+
+-- | Selects a section of a list
+slice
+  :: Int
+  -- ^ The index to start at
+  -> Int
+  -- ^ The number of elements to take
+  -> [a]
+  -- ^ The list to take a subset of
+  -> [a]
+slice offset len = take len . drop offset

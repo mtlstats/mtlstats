@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Report (report, gameDate) where
+module Mtlstats.Report (report, gameDate, playerNameColWidth) where
 
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
@@ -36,14 +36,16 @@ report
   -- ^ The number of columns for the report
   -> ProgState
   -- ^ The program state
-  -> String
+  -> [String]
 report width s
   =  standingsReport width s
-  ++ "\n"
+  ++ [""]
   ++ gameStatsReport width s
+  ++ [""]
+  ++ yearToDateStatsReport width s
 
-standingsReport :: Int -> ProgState -> String
-standingsReport width s = unlines $ fromMaybe [] $ do
+standingsReport :: Int -> ProgState -> [String]
+standingsReport width s = fromMaybe [] $ do
   let
     db     = s^.database
     gs     = s^.progMode.gameStateL
@@ -88,20 +90,32 @@ standingsReport width s = unlines $ fromMaybe [] $ do
       ++ showStats tStats
     ]
 
-gameStatsReport :: Int -> ProgState -> String
-gameStatsReport width s = unlines $ fromMaybe [] $ do
-  pStats <- mapM
+gameStatsReport :: Int -> ProgState -> [String]
+gameStatsReport width s = playerReport width "GAME" $
+  fromMaybe [] $ mapM
     (\(pid, stats) -> do
       p <- nth pid $ s^.database.dbPlayers
       Just (p, stats))
     (M.toList $ s^.progMode.gameStateL.gamePlayerStats)
-  let
-    nameWidth = succ $ maximum $ 10 : map
-      (length . (^.pName) . fst)
-      pStats
-    tStats = foldr (addPlayerStats . snd) newPlayerStats pStats
-  Just $
-    [ centre width "GAME STATISTICS"
+
+yearToDateStatsReport :: Int -> ProgState -> [String]
+yearToDateStatsReport width s = playerReport width "YEAR TO DATE" $
+  map (\p -> (p, p^.pYtd)) $
+  filter playerIsActive $ s^.database.dbPlayers
+
+gameDate :: GameState -> String
+gameDate gs = fromMaybe "" $ do
+  year  <- show <$> gs^.gameYear
+  month <- month <$> gs^.gameMonth
+  day   <- padNum 2 <$> gs^.gameDay
+  Just $ month ++ " " ++ day ++ " " ++ year
+
+playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
+playerReport width label ps = let
+  nameWidth = playerNameColWidth $ map fst ps
+  tStats    = foldr (addPlayerStats . snd) newPlayerStats ps
+  in
+    [ centre width (label ++ " STATISTICS")
     , ""
     , centre width
       $  "NO. "
@@ -119,12 +133,12 @@ gameStatsReport width s = unlines $ fromMaybe [] $ do
         ++ right 6 (show $ stats^.psAssists)
         ++ right 6 (show $ psPoints stats)
         ++ right 6 (show $ stats^.psPMin))
-      pStats ++
+      ps ++
     [ centre width
       $  replicate (4 + nameWidth) ' '
       ++ replicate (3 + 3 * 6) '-'
     , overlay
-      "GAME TOTALS"
+      (label ++ " TOTALS")
       ( centre width
         $  replicate (4 + nameWidth) ' '
         ++ right 3 (show $ tStats^.psGoals)
@@ -134,12 +148,10 @@ gameStatsReport width s = unlines $ fromMaybe [] $ do
       )
     ]
 
-gameDate :: GameState -> String
-gameDate gs = fromMaybe "" $ do
-  year  <- show <$> gs^.gameYear
-  month <- month <$> gs^.gameMonth
-  day   <- padNum 2 <$> gs^.gameDay
-  Just $ month ++ " " ++ day ++ " " ++ year
+playerNameColWidth :: [Player] -> Int
+playerNameColWidth = foldr
+  (\player current -> max current $ succ $ length $ player^.pName)
+  10
 
 showStats :: GameStats -> String
 showStats gs

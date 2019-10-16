@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
@@ -26,7 +28,16 @@ import qualified Data.Map as M
 import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import System.Random (randomRIO)
-import Test.Hspec (Spec, context, describe, it, runIO, shouldBe, shouldNotBe)
+import Test.Hspec
+  ( Spec
+  , context
+  , describe
+  , it
+  , runIO
+  , shouldBe
+  , shouldNotBe
+  , shouldSatisfy
+  )
 
 import Mtlstats.Actions
 import Mtlstats.Types
@@ -49,6 +60,9 @@ spec = describe "Mtlstats.Actions" $ do
   awardAssistSpec
   resetGoalDataSpec
   assignPMinsSpec
+  backHomeSpec
+  scrollUpSpec
+  scrollDownSpec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -640,3 +654,49 @@ makeNum = randomRIO (1, 10)
 
 makeName :: IO String
 makeName = replicateM 10 $ randomRIO ('A', 'Z')
+
+backHomeSpec :: Spec
+backHomeSpec = describe "backHome" $ do
+  let
+    input = newProgState
+      & progMode.gameStateL .~ newGameState
+      & inputBuffer         .~ "foo"
+      & scrollOffset        .~ 123
+    result = backHome input
+
+  it "should set the program mode back to MainMenu" $
+    result^.progMode `shouldSatisfy` \case
+      MainMenu -> True
+      _        -> False
+
+  it "should clear the input buffer" $
+    result^.inputBuffer `shouldBe` ""
+
+  it "should reset the scroll offset" $
+    result^.scrollOffset `shouldBe` 0
+
+scrollUpSpec :: Spec
+scrollUpSpec = describe "scrollUp" $ do
+
+  context "scrolled down" $
+    it "should decrease the scroll offset by one" $ let
+      ps  = newProgState & scrollOffset .~ 10
+      ps' = scrollUp ps
+      in ps'^.scrollOffset `shouldBe` 9
+
+  context "at top" $
+    it "should keep the scroll offset at zero" $ let
+      ps = scrollUp newProgState
+      in ps^.scrollOffset `shouldBe` 0
+
+  context "above top" $
+    it "should return the scroll offset to zero" $ let
+      ps  = newProgState & scrollOffset .~ (-10)
+      ps' = scrollUp ps
+      in ps'^.scrollOffset `shouldBe` 0
+
+scrollDownSpec = describe "scrollDown" $
+  it "should increase the scroll offset" $ let
+    ps  = newProgState & scrollOffset .~ 10
+    ps' = scrollDown ps
+    in ps'^.scrollOffset `shouldBe` 11

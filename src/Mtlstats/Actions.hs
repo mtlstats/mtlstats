@@ -37,6 +37,9 @@ module Mtlstats.Actions
   , awardAssist
   , resetGoalData
   , assignPMins
+  , backHome
+  , scrollUp
+  , scrollDown
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -229,3 +232,18 @@ assignPMins mins s = fromMaybe s $ do
            (psPMin +~ mins)
          )
       .  (selectedPlayer .~ Nothing)
+
+-- | Resets the program state back to the main menu
+backHome :: ProgState -> ProgState
+backHome
+  = (progMode     .~ MainMenu)
+  . (inputBuffer  .~ "")
+  . (scrollOffset .~ 0)
+
+-- | Scrolls the display up
+scrollUp :: ProgState -> ProgState
+scrollUp = scrollOffset %~ max 0 . pred
+
+-- | Scrolls the display down
+scrollDown :: ProgState -> ProgState
+scrollDown = scrollOffset %~ succ
