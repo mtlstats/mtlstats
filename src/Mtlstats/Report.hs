@@ -91,8 +91,8 @@ standingsReport width s = fromMaybe [] $ do
     ]
 
 gameStatsReport :: Int -> ProgState -> [String]
-gameStatsReport width s = maybe [] (playerReport width "GAME") $
-  mapM
+gameStatsReport width s = playerReport width "GAME" $
+  fromMaybe [] $ mapM
     (\(pid, stats) -> do
       p <- nth pid $ s^.database.dbPlayers
       Just (p, stats))
