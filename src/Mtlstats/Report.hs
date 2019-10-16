@@ -150,7 +150,7 @@ playerReport width label ps = let
 
 playerNameColWidth :: [Player] -> Int
 playerNameColWidth = foldr
-  (\player current -> max current $ length $ player^.pName)
+  (\player current -> max current $ succ $ length $ player^.pName)
   10
 
 showStats :: GameStats -> String

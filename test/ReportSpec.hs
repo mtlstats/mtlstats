@@ -61,5 +61,5 @@ playerNameColWidthSpec = describe "playerNameColWidth" $ do
     --  label,         players,          expected
     [ ( "empty list",  [],               10       )
     , ( "short names", [short1, short2], 10       )
-    , ( "long name",   [short1, long],   15       )
+    , ( "long name",   [short1, long],   16       )
     ]
