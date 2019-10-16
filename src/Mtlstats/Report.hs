@@ -41,6 +41,8 @@ report width s
   =  standingsReport width s
   ++ [""]
   ++ gameStatsReport width s
+  ++ [""]
+  ++ yearToDateStatsReport width s
 
 standingsReport :: Int -> ProgState -> [String]
 standingsReport width s = fromMaybe [] $ do
@@ -95,6 +97,11 @@ gameStatsReport width s = maybe [] (playerReport width "GAME") $
       p <- nth pid $ s^.database.dbPlayers
       Just (p, stats))
     (M.toList $ s^.progMode.gameStateL.gamePlayerStats)
+
+yearToDateStatsReport :: Int -> ProgState -> [String]
+yearToDateStatsReport width s = playerReport width "YEAR TO DATE" $
+  map (\p -> (p, p^.pYtd)) $
+  filter playerIsActive $ s^.database.dbPlayers
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
