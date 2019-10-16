@@ -1,5 +1,11 @@
 # Changelog for mtlstats
 
+## current
+
+- Record penalty minutes
+- Calculate total game statistics
+- Generate year-to-date statistics report
+
 ## v0.3.0
 
 - Record goals and assists
