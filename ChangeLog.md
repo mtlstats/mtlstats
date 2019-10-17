@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## v0.4.0
 
 - Record penalty minutes
 - Calculate total game statistics
