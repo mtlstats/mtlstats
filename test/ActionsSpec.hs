@@ -117,14 +117,12 @@ resetYtdSpec = describe "resetYtd" $
         ytd ^. gsGames        `shouldBe`    0
         ytd ^. gsMinsPlayed   `shouldBe`    0
         ytd ^. gsGoalsAllowed `shouldBe`    0
-        ytd ^. gsGoalsAgainst `shouldBe`    0
         ytd ^. gsWins         `shouldBe`    0
         ytd ^. gsLosses       `shouldBe`    0
         ytd ^. gsTies         `shouldBe`    0
         lt ^. gsGames         `shouldNotBe` 0
         lt ^. gsMinsPlayed    `shouldNotBe` 0
         lt ^. gsGoalsAllowed  `shouldNotBe` 0
-        lt ^. gsGoalsAgainst  `shouldNotBe` 0
         lt ^. gsWins          `shouldNotBe` 0
         lt ^. gsLosses        `shouldNotBe` 0
         lt ^. gsTies          `shouldNotBe` 0) $
@@ -642,7 +640,6 @@ makePlayerStats = PlayerStats
 makeGoalieStats :: IO GoalieStats
 makeGoalieStats = GoalieStats
   <$> makeNum
-  <*> makeNum
   <*> makeNum
   <*> makeNum
   <*> makeNum

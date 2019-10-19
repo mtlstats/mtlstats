@@ -94,7 +94,6 @@ module Mtlstats.Types (
   gsGames,
   gsMinsPlayed,
   gsGoalsAllowed,
-  gsGoalsAgainst,
   gsWins,
   gsLosses,
   gsTies,
@@ -396,8 +395,6 @@ data GoalieStats = GoalieStats
   -- ^ The number of minutes played
   , _gsGoalsAllowed :: Int
   -- ^ The number of goals allowed
-  , _gsGoalsAgainst :: Int
-  -- ^ The number of goals against
   , _gsWins         :: Int
   -- ^ The number of wins
   , _gsLosses       :: Int
@@ -411,28 +408,25 @@ instance FromJSON GoalieStats where
     <$> v .: "games"
     <*> v .: "mins_played"
     <*> v .: "goals_allowed"
-    <*> v .: "goals_against"
     <*> v .: "wins"
     <*> v .: "losses"
     <*> v .: "ties"
 
 instance ToJSON GoalieStats where
-  toJSON (GoalieStats g m al ag w l t) = object
+  toJSON (GoalieStats g m a w l t) = object
     [ "games"         .= g
     , "mins_played"   .= m
-    , "goals_allowed" .= al
-    , "goals_against" .= ag
+    , "goals_allowed" .= a
     , "wins"          .= w
     , "losses"        .= l
     , "ties"          .= t
     ]
-  toEncoding (GoalieStats g m al ag w l t) = pairs $
-      "games"         .= g  <>
-      "mins_played"   .= m  <>
-      "goals_allowed" .= al <>
-      "goals_against" .= ag <>
-      "wins"          .= w  <>
-      "losses"        .= l  <>
+  toEncoding (GoalieStats g m a w l t) = pairs $
+      "games"         .= g <>
+      "mins_played"   .= m <>
+      "goals_allowed" .= a <>
+      "wins"          .= w <>
+      "losses"        .= l <>
       "ties"          .= t
 
 -- | Game statistics
@@ -603,7 +597,6 @@ newGoalieStats = GoalieStats
   { _gsGames        = 0
   , _gsMinsPlayed   = 0
   , _gsGoalsAllowed = 0
-  , _gsGoalsAgainst = 0
   , _gsWins         = 0
   , _gsLosses       = 0
   , _gsTies         = 0
