@@ -64,6 +64,7 @@ module Mtlstats.Types (
   selectedPlayer,
   pMinsRecorded,
   -- ** CreatePlayerState Lenses
+  cpsAbortable,
   cpsNumber,
   cpsName,
   cpsPosition,
@@ -243,7 +244,9 @@ data GameType
 
 -- | Player creation status
 data CreatePlayerState = CreatePlayerState
-  { _cpsNumber          :: Maybe Int
+  { _cpsAbortable       :: Bool
+  -- ^ Set to 'True' when player creation is abortable
+  , _cpsNumber          :: Maybe Int
   -- ^ The player's number
   , _cpsName            :: String
   -- ^ The player's name
@@ -541,7 +544,8 @@ newGameState = GameState
 -- | Constructor for a 'CreatePlayerState'
 newCreatePlayerState :: CreatePlayerState
 newCreatePlayerState = CreatePlayerState
-  { _cpsNumber          = Nothing
+  { _cpsAbortable       = True
+  , _cpsNumber          = Nothing
   , _cpsName            = ""
   , _cpsPosition        = ""
   , _cpsSuccessCallback = return ()

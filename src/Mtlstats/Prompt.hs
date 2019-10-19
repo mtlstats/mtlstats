@@ -179,9 +179,9 @@ selectPlayerPrompt pStr callback = Prompt
         Nothing -> do
           mode <- gets $ view progMode
           let
-            cps
-              = newCreatePlayerState
-              & cpsName .~ sStr
+            cps = newCreatePlayerState
+              & cpsAbortable .~ False
+              & cpsName      .~ sStr
               & cpsSuccessCallback .~ do
                 modify $ progMode .~ mode
                 pIndex <- pred . length <$> gets (view $ database.dbPlayers)
