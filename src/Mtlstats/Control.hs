@@ -64,6 +64,10 @@ dispatch s = case s^.progMode of
     | null $ cps^.cpsName     -> getPlayerNameC
     | null $ cps^.cpsPosition -> getPlayerPosC
     | otherwise               -> confirmCreatePlayerC
+  CreateGoalie cgs
+    | null $ cgs^.cgsNumber -> getGoalieNumC
+    | null $ cgs^.cgsName   -> getGoalieNameC
+    | otherwise             -> confirmCreateGoalieC
 
 mainMenuC :: Controller
 mainMenuC = Controller
@@ -335,6 +339,15 @@ confirmCreatePlayerC = Controller
       Nothing -> return ()
     return True
   }
+
+getGoalieNumC :: Controller
+getGoalieNumC = undefined
+
+getGoalieNameC :: Controller
+getGoalieNameC = undefined
+
+confirmCreateGoalieC :: Controller
+confirmCreateGoalieC = undefined
 
 gameGoal :: ProgState -> (Int, Int)
 gameGoal s =

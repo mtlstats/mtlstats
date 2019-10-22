@@ -196,12 +196,14 @@ data ProgMode
   | NewSeason
   | NewGame GameState
   | CreatePlayer CreatePlayerState
+  | CreateGoalie CreateGoalieState
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
   show NewSeason        = "NewSeason"
   show (NewGame _)      = "NewGame"
   show (CreatePlayer _) = "CreatePlayer"
+  show (CreateGoalie _) = "CreateGoalie"
 
 -- | The game state
 data GameState = GameState
