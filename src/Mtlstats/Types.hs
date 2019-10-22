@@ -30,6 +30,7 @@ module Mtlstats.Types (
   GameState (..),
   GameType (..),
   CreatePlayerState (..),
+  CreateGoalieState (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -69,6 +70,11 @@ module Mtlstats.Types (
   cpsPosition,
   cpsSuccessCallback,
   cpsFailureCallback,
+  -- ** CreateGoalieState Lenses
+  cgsNumber,
+  cgsName,
+  cgsSuccessCallback,
+  cgsFailureCallback,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -107,6 +113,7 @@ module Mtlstats.Types (
   newProgState,
   newGameState,
   newCreatePlayerState,
+  newCreateGoalieState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -251,6 +258,18 @@ data CreatePlayerState = CreatePlayerState
   , _cpsSuccessCallback :: Action ()
   -- ^ The function to call on success
   , _cpsFailureCallback :: Action ()
+  -- ^ The function to call on failure
+  }
+
+-- | Goalie creation status
+data CreateGoalieState = CreateGoalieState
+  { _cgsNumber    :: Maybe Int
+  -- ^ The goalie's number
+  , _cgsName      :: String
+  -- ^ The goalie's name
+  , _cgsSuccessCallback :: Action ()
+  -- ^ The function to call on success
+  , _cgsFailureCallback :: Action ()
   -- ^ The function to call on failure
   }
 
@@ -481,6 +500,7 @@ data Prompt = Prompt
 makeLenses ''ProgState
 makeLenses ''GameState
 makeLenses ''CreatePlayerState
+makeLenses ''CreateGoalieState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
@@ -540,6 +560,15 @@ newCreatePlayerState = CreatePlayerState
   , _cpsPosition        = ""
   , _cpsSuccessCallback = return ()
   , _cpsFailureCallback = return ()
+  }
+
+-- | Constructor for a 'CreateGoalieState'
+newCreateGoalieState :: CreateGoalieState
+newCreateGoalieState = CreateGoalieState
+  { _cgsNumber          = Nothing
+  , _cgsName            = ""
+  , _cgsSuccessCallback = return ()
+  , _cgsFailureCallback = return ()
   }
 
 -- | Constructor for a 'Database'
