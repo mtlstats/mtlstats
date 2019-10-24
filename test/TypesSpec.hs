@@ -642,3 +642,34 @@ bob = newPlayer 3 "Bob" "defense"
 
 steve :: Player
 steve = newPlayer 5 "Steve" "forward"
+
+instance Comparable GameState where
+  compareTest actual expected =
+    it ("should be " ++ show expected) $
+      actual `shouldBe` expected
+
+instance Comparable CreatePlayerState where
+  compareTest actual expected = do
+
+    describe "cpsNumber" $
+      it ("should be " ++ show (expected^.cpsNumber)) $
+        actual^.cpsNumber `shouldBe` expected^.cpsNumber
+
+    describe "cpsName" $
+      it ("should be " ++ expected^.cpsName) $
+        actual^.cpsName `shouldBe` expected^.cpsName
+
+    describe "cpsPosition" $
+      it ("should be " ++ expected^.cpsPosition) $
+        actual^.cpsPosition `shouldBe` expected^.cpsPosition
+
+instance Comparable CreateGoalieState where
+  compareTest actual expected = do
+
+    describe "cgsNuber" $
+      it("should be " ++ show (expected^.cgsNumber)) $
+        actual^.cgsNumber `shouldBe` expected^.cgsNumber
+
+    describe "cgsName" $
+      it ("should be " ++ expected^.cgsName) $
+        actual^.cgsName `shouldBe` expected^.cgsName
