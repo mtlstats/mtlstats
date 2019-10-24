@@ -96,7 +96,8 @@ gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   where gs t = newGameState & gameType ?~ t
 
 createPlayerStateLSpec :: Spec
-createPlayerStateLSpec = describe "createPlayerStateL" $ lensSpec createPlayerStateL
+createPlayerStateLSpec = describe "createPlayerStateL" $
+  lensSpec createPlayerStateL
   -- getters
   [ ( "missing state", MainMenu,          newCreatePlayerState )
   , ( "with state",    CreatePlayer cps1, cps1                 )
