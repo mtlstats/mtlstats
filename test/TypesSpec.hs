@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
-module TypesSpec (spec) where
+module TypesSpec (Comparable (..), spec) where
 
 import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
@@ -34,6 +34,9 @@ import Mtlstats.Config
 import Mtlstats.Types
 
 import qualified Types.MenuSpec as Menu
+
+class Comparable a where
+  compareTest :: a -> a -> Spec
 
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
