@@ -82,13 +82,16 @@ databaseSpec = describe "Database" $ jsonSpec db dbJSON
 gameStateLSpec :: Spec
 gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   -- getters
-  [ ( MainMenu,              newGameState )
-  , ( NewGame $ gs HomeGame, gs HomeGame  )
+  [ ( "missing state", MainMenu,              newGameState )
+  , ( "home game",     NewGame $ gs HomeGame, gs HomeGame  )
+  , ( "away game",     NewGame $ gs AwayGame, gs AwayGame  )
   ]
   -- setters
-  [ ( MainMenu,              gs HomeGame  )
-  , ( NewGame $ gs HomeGame, gs AwayGame  )
-  , ( NewGame $ gs HomeGame, newGameState )
+  [ ( "set home",     MainMenu,              gs HomeGame  )
+  , ( "home to away", NewGame $ gs HomeGame, gs AwayGame  )
+  , ( "away to home", NewGame $ gs AwayGame, gs HomeGame  )
+  , ( "clear home",   NewGame $ gs HomeGame, newGameState )
+  , ( "clear away",   NewGame $ gs AwayGame, newGameState )
   ]
   where gs t = newGameState & gameType ?~ t
 
@@ -180,24 +183,23 @@ jsonSpec x j = do
       decode (encode x) `shouldBe` Just x
 
 lensSpec
-  :: (Eq a, Show s, Show a)
+  :: Comparable a
   => Lens' s a
-  -> [(s, a)]
-  -> [(s, a)]
+  -> [(String, s, a)]
+  -> [(String, s, a)]
   -> Spec
-lensSpec l gs ss = do
+lensSpec lens getters setters = do
 
   context "getters" $ mapM_
-    (\(s, x) -> context (show s) $
-      it ("should be " ++ show x) $
-        s ^. l `shouldBe` x)
-    gs
+    (\(label, s, x) -> context label $
+      compareTest (s^.lens) x)
+    getters
 
   context "setters" $ mapM_
-    (\(s, x) -> context (show s) $
-      it ("should set to " ++ show x) $
-        (s & l .~ x) ^. l `shouldBe` x)
-    ss
+    (\(label, s, x) -> context label $ let
+      s' = s & lens .~ x
+      in compareTest (s'^.lens) x)
+    setters
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
