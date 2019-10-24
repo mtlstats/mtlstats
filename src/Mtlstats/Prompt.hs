@@ -40,7 +40,8 @@ module Mtlstats.Prompt (
   recordGoalPrompt,
   recordAssistPrompt,
   pMinPlayerPrompt,
-  assignPMinsPrompt
+  assignPMinsPrompt,
+  goalieNumPrompt
 ) where
 
 import Control.Monad (when)
@@ -244,6 +245,9 @@ pMinPlayerPrompt = selectPlayerPrompt
 assignPMinsPrompt :: Prompt
 assignPMinsPrompt = numPrompt "Penalty minutes: " $
   modify . assignPMins
+
+goalieNumPrompt :: Prompt
+goalieNumPrompt = undefined
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
