@@ -96,32 +96,25 @@ gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   where gs t = newGameState & gameType ?~ t
 
 createPlayerStateLSpec :: Spec
-createPlayerStateLSpec = describe "createPlayerStateL" $ do
-  context "getters" $ do
-    context "state missing" $ let
-      pm  = MainMenu
-      cps = pm^.createPlayerStateL
-      in it "should not have a number" $
-        cps^.cpsNumber `shouldBe` Nothing
-
-    context "existing state" $ let
-      pm  = CreatePlayer $ newCreatePlayerState & cpsNumber ?~ 1
-      cps = pm^.createPlayerStateL
-      in it "should have a number of 1" $
-        cps^.cpsNumber `shouldBe` Just 1
-
-  context "setters" $ do
-    context "state missing" $ let
-      pm  = MainMenu
-      pm' = pm & createPlayerStateL.cpsNumber ?~ 1
-      in it "should set the player number to 1" $
-        pm'^.createPlayerStateL.cpsNumber `shouldBe` Just 1
-
-    context "existing state" $ let
-      pm  = CreatePlayer $ newCreatePlayerState & cpsNumber ?~ 1
-      pm' = pm & createPlayerStateL.cpsNumber ?~ 2
-      in it "should set the player number to 2" $
-        pm'^.createPlayerStateL.cpsNumber `shouldBe` Just 2
+createPlayerStateLSpec = describe "createPlayerStateL" $ lensSpec createPlayerStateL
+  -- getters
+  [ ( "missing state", MainMenu,          newCreatePlayerState )
+  , ( "with state",    CreatePlayer cps1, cps1                 )
+  ]
+  -- setters
+  [ ( "missing state", MainMenu,          cps1                 )
+  , ( "change state",  CreatePlayer cps1, cps2                 )
+  , ( "clear state",   CreatePlayer cps1, newCreatePlayerState )
+  ]
+  where
+    cps1 = newCreatePlayerState
+      & cpsNumber    ?~ 1
+      & cpsName      .~ "Joe"
+      & cpsPosition  .~ "centre"
+    cps2 = newCreatePlayerState
+      & cpsNumber   ?~ 2
+      & cpsName     .~ "Bob"
+      & cpsPosition .~ "defense"
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
