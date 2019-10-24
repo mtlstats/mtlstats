@@ -46,6 +46,7 @@ spec = describe "Mtlstats.Types" $ do
   databaseSpec
   gameStateLSpec
   createPlayerStateLSpec
+  createGoalieStateLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -116,6 +117,26 @@ createPlayerStateLSpec = describe "createPlayerStateL" $
       & cpsNumber   ?~ 2
       & cpsName     .~ "Bob"
       & cpsPosition .~ "defense"
+
+createGoalieStateLSpec :: Spec
+createGoalieStateLSpec = describe "createGoalieStateL" $
+  lensSpec createGoalieStateL
+  -- getters
+  [ ( "missing state", MainMenu,          newCreateGoalieState )
+  , ( "with state",    CreateGoalie cgs1, cgs1                 )
+  ]
+  -- setters
+  [ ( "set state",    MainMenu,          cgs1                 )
+  , ( "change state", CreateGoalie cgs1, cgs2                 )
+  , ( "clear state",  CreateGoalie cgs1, newCreateGoalieState )
+  ]
+  where
+    cgs1 = newCreateGoalieState
+      & cgsNumber    ?~ 1
+      & cgsName      .~ "Joe"
+    cgs2 = newCreateGoalieState
+      & cgsNumber ?~ 2
+      & cgsName   .~ "Bob"
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
