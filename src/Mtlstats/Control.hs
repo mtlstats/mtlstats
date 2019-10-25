@@ -357,7 +357,26 @@ getGoalieNameC = Controller
   }
 
 confirmCreateGoalieC :: Controller
-confirmCreateGoalieC = undefined
+confirmCreateGoalieC = Controller
+  { drawController = \s -> do
+    let cgs = s^.progMode.createGoalieStateL
+    C.drawString $ unlines
+      [ "Goalie number: " ++ show (fromJust $ cgs^.cgsNumber)
+      , "  Goalie name: " ++ cgs^.cgsName
+      , ""
+      , "Create goalie: are you sure?  (Y/N)"
+      ]
+    return C.CursorInvisible
+  , handleController = \e -> do
+    case ynHandler e of
+      Just True -> do
+        modify addGoalie
+        join $ gets (^.progMode.createGoalieStateL.cgsSuccessCallback)
+      Just False ->
+        join $ gets (^.progMode.createGoalieStateL.cgsFailureCallback)
+      Nothing -> return ()
+    return True
+  }
 
 gameGoal :: ProgState -> (Int, Int)
 gameGoal s =

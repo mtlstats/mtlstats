@@ -33,6 +33,7 @@ module Mtlstats.Actions
   , createPlayer
   , createGoalie
   , addPlayer
+  , addGoalie
   , recordGoalAssists
   , awardGoal
   , awardAssist
@@ -166,6 +167,10 @@ addPlayer s = fromMaybe s $ do
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
     %~ (++[player])
+
+-- | Adds the entered goalie to the roster
+addGoalie :: ProgState -> ProgState
+addGoalie = undefined
 
 -- | Awards the goal and assists to the players
 recordGoalAssists :: ProgState -> ProgState
