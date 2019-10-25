@@ -349,7 +349,12 @@ getGoalieNumC = Controller
   }
 
 getGoalieNameC :: Controller
-getGoalieNameC = undefined
+getGoalieNameC = Controller
+  { drawController = drawPrompt goalieNamePrompt
+  , handleController = \e -> do
+    promptHandler goalieNamePrompt e
+    return True
+  }
 
 confirmCreateGoalieC :: Controller
 confirmCreateGoalieC = undefined
