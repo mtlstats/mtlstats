@@ -34,6 +34,8 @@ module Mtlstats.Actions
   , createGoalie
   , addPlayer
   , addGoalie
+  , resetCreatePlayerState
+  , resetCreateGoalieState
   , recordGoalAssists
   , awardGoal
   , awardAssist
@@ -171,6 +173,19 @@ addPlayer s = fromMaybe s $ do
 -- | Adds the entered goalie to the roster
 addGoalie :: ProgState -> ProgState
 addGoalie = undefined
+
+-- | Resets the 'CreatePlayerState' value
+resetCreatePlayerState :: ProgState -> ProgState
+resetCreatePlayerState = progMode.createPlayerStateL
+  %~ (cpsNumber   .~ Nothing)
+  .  (cpsName     .~ "")
+  .  (cpsPosition .~ "")
+
+-- | Resets the 'CreateGoalieState' value
+resetCreateGoalieState :: ProgState -> ProgState
+resetCreateGoalieState = progMode.createGoalieStateL
+  %~ (cgsNumber .~ Nothing)
+  .  (cgsName   .~ "")
 
 -- | Awards the goal and assists to the players
 recordGoalAssists :: ProgState -> ProgState

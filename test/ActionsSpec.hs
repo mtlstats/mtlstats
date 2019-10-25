@@ -43,6 +43,8 @@ import Mtlstats.Actions
 import Mtlstats.Types
 import Mtlstats.Util
 
+import qualified TypesSpec as TS
+
 spec :: Spec
 spec = describe "Mtlstats.Actions" $ do
   startNewSeasonSpec
@@ -56,6 +58,8 @@ spec = describe "Mtlstats.Actions" $ do
   createPlayerSpec
   createGoalieSpec
   addPlayerSpec
+  resetCreatePlayerStateSpec
+  resetCreateGoalieStateSpec
   recordGoalAssistsSpec
   awardGoalSpec
   awardAssistSpec
@@ -383,6 +387,25 @@ addPlayerSpec = describe "addPlayer" $ do
     it "should not create the player" $ let
       s' = addPlayer $ s MainMenu
       in s'^.database.dbPlayers `shouldBe` [p1]
+
+resetCreatePlayerStateSpec :: Spec
+resetCreatePlayerStateSpec = describe "resetCreatePlayerState" $ let
+  cps = newCreatePlayerState
+    & cpsNumber   ?~ 1
+    & cpsName     .~ "Joe"
+    & cpsPosition .~ "centre"
+  ps  = resetCreatePlayerState $
+    newProgState & progMode.createPlayerStateL .~ cps
+  in TS.compareTest (ps^.progMode.createPlayerStateL) newCreatePlayerState
+
+resetCreateGoalieStateSpec :: Spec
+resetCreateGoalieStateSpec = describe "resetCreateGoalieState" $ let
+  cgs = newCreateGoalieState
+    & cgsNumber ?~ 1
+    & cgsName   .~ "Joe"
+  ps = resetCreateGoalieState $
+    newProgState & progMode.createGoalieStateL .~ cgs
+  in TS.compareTest (ps^.progMode.createGoalieStateL) newCreateGoalieState
 
 recordGoalAssistsSpec :: Spec
 recordGoalAssistsSpec = describe "recordGoalAssists" $ do
