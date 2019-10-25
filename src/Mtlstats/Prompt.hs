@@ -247,7 +247,8 @@ assignPMinsPrompt = numPrompt "Penalty minutes: " $
   modify . assignPMins
 
 goalieNumPrompt :: Prompt
-goalieNumPrompt = undefined
+goalieNumPrompt = numPrompt "Goalie number: " $
+  modify . (progMode.createGoalieStateL.cgsNumber ?~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
