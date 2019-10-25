@@ -1,5 +1,9 @@
 # Changelog for mtlstats
 
+## current
+
+- Fixed player creation bug
+
 ## v0.4.0
 
 - Record penalty minutes
