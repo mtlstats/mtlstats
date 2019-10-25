@@ -31,6 +31,7 @@ module Mtlstats.Actions
   , updateGameStats
   , validateGameDate
   , createPlayer
+  , createGoalie
   , addPlayer
   , recordGoalAssists
   , awardGoal
@@ -139,12 +140,20 @@ validateGameDate s = fromMaybe s $ do
 -- | Starts player creation mode
 createPlayer :: ProgState -> ProgState
 createPlayer = let
-  cb = modify $ progMode .~ MainMenu
-  cps
-    = newCreatePlayerState
-    & cpsSuccessCallback .~ cb
-    & cpsFailureCallback .~ cb
+  callback = modify $ progMode .~ MainMenu
+  cps = newCreatePlayerState
+    & cpsSuccessCallback .~ callback
+    & cpsFailureCallback .~ callback
   in progMode .~ CreatePlayer cps
+
+-- | Starts goalie creation mode
+createGoalie :: ProgState -> ProgState
+createGoalie = let
+  callback = modify $ progMode .~ MainMenu
+  cgs = newCreateGoalieState
+    & cgsSuccessCallback .~ callback
+    & cgsFailureCallback .~ callback
+  in progMode .~ CreateGoalie cgs
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
