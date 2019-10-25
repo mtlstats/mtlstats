@@ -236,6 +236,7 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
       when (nAssists >= maxAssists) $
         modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
 
+-- | Prompts for the player to assign penalty minutes to
 pMinPlayerPrompt :: Prompt
 pMinPlayerPrompt = selectPlayerPrompt
   "Assign penalty minutes to: " $
@@ -243,14 +244,17 @@ pMinPlayerPrompt = selectPlayerPrompt
     Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
     Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
 
+-- | Prompts for the number of penalty mintues to assign to the player
 assignPMinsPrompt :: Prompt
 assignPMinsPrompt = numPrompt "Penalty minutes: " $
   modify . assignPMins
 
+-- | Prompts tor the goalie's number
 goalieNumPrompt :: Prompt
 goalieNumPrompt = numPrompt "Goalie number: " $
   modify . (progMode.createGoalieStateL.cgsNumber ?~)
 
+-- | Prompts for the goalie's name
 goalieNamePrompt :: Prompt
 goalieNamePrompt = strPrompt "Goalie name: " $
   modify . (progMode.createGoalieStateL.cgsName .~)
