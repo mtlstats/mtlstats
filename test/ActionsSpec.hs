@@ -58,6 +58,7 @@ spec = describe "Mtlstats.Actions" $ do
   createPlayerSpec
   createGoalieSpec
   addPlayerSpec
+  addGoalieSpec
   resetCreatePlayerStateSpec
   resetCreateGoalieStateSpec
   recordGoalAssistsSpec
@@ -387,6 +388,29 @@ addPlayerSpec = describe "addPlayer" $ do
     it "should not create the player" $ let
       s' = addPlayer $ s MainMenu
       in s'^.database.dbPlayers `shouldBe` [p1]
+
+addGoalieSpec :: Spec
+addGoalieSpec = describe "addGoalie" $ do
+  let
+    g1 = newGoalie 2 "Joe"
+    g2 = newGoalie 3 "Bob"
+    db = newDatabase
+      & dbGoalies .~ [g1]
+    s pm = newProgState
+      & database .~ db
+      & progMode .~ pm
+
+  context "data available" $
+    it "should create the goalie" $ let
+      s' = addGoalie $ s $ CreateGoalie $ newCreateGoalieState
+        & cgsNumber ?~ 3
+        & cgsName   .~ "Bob"
+      in s'^.database.dbGoalies `shouldBe` [g1, g2]
+
+  context "data unavailable" $
+    it "should not create the goalie" $ let
+      s' = addGoalie $ s MainMenu
+      in s'^.database.dbGoalies `shouldBe` [g1]
 
 resetCreatePlayerStateSpec :: Spec
 resetCreatePlayerStateSpec = describe "resetCreatePlayerState" $ let

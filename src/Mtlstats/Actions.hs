@@ -172,7 +172,14 @@ addPlayer s = fromMaybe s $ do
 
 -- | Adds the entered goalie to the roster
 addGoalie :: ProgState -> ProgState
-addGoalie = undefined
+addGoalie s = fromMaybe s $ do
+  let cgs = s^.progMode.createGoalieStateL
+  num <- cgs^.cgsNumber
+  let
+    name   = cgs^.cgsName
+    goalie = newGoalie num name
+  Just $ s & database.dbGoalies
+    %~ (++[goalie])
 
 -- | Resets the 'CreatePlayerState' value
 resetCreatePlayerState :: ProgState -> ProgState
