@@ -21,8 +21,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.GoalieInput (goalieInput) where
 
+import Lens.Micro ((^.))
+
 import Mtlstats.Types
 
 -- | The dispatcher for handling goalie input
 goalieInput :: GameState -> Controller
-goalieInput = undefined
+goalieInput gs
+  | null $ gs^.gameSelectedGoalie   = selectGoalieC
+  | null $ gs^.goalieMinsPlayed = minsPlayedC
+  | otherwise                   = goalsAllowedC
+
+selectGoalieC :: Controller
+selectGoalieC = undefined
+
+minsPlayedC :: Controller
+minsPlayedC = undefined
+
+goalsAllowedC :: Controller
+goalsAllowedC = undefined
