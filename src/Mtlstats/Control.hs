@@ -31,6 +31,7 @@ import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Control.GoalieInput
 import Mtlstats.Format
 import Mtlstats.Handlers
 import Mtlstats.Menu
@@ -58,6 +59,7 @@ dispatch s = case s^.progMode of
     | fromJust (unaccountedPoints gs) -> goalInput gs
     | isJust $ gs^.selectedPlayer     -> getPMinsC
     | not $ gs^.pMinsRecorded         -> pMinPlayerC
+    | not $ gs^.goaliesRecorded       -> goalieInput gs
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
