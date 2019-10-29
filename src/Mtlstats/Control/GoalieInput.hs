@@ -23,17 +23,23 @@ module Mtlstats.Control.GoalieInput (goalieInput) where
 
 import Lens.Micro ((^.))
 
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | The dispatcher for handling goalie input
 goalieInput :: GameState -> Controller
 goalieInput gs
-  | null $ gs^.gameSelectedGoalie   = selectGoalieC
-  | null $ gs^.goalieMinsPlayed = minsPlayedC
-  | otherwise                   = goalsAllowedC
+  | null $ gs^.gameSelectedGoalie = selectGoalieC
+  | null $ gs^.goalieMinsPlayed   = minsPlayedC
+  | otherwise                     = goalsAllowedC
 
 selectGoalieC :: Controller
-selectGoalieC = undefined
+selectGoalieC = Controller
+  { drawController   = drawPrompt selectGameGoaliePrompt
+  , handleController = \e -> do
+    promptHandler selectGameGoaliePrompt e
+    return True
+  }
 
 minsPlayedC :: Controller
 minsPlayedC = undefined
