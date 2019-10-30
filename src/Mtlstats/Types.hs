@@ -38,6 +38,7 @@ module Mtlstats.Types (
   GoalieStats (..),
   GameStats (..),
   Prompt (..),
+  SelectParams (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
@@ -515,6 +516,24 @@ data Prompt = Prompt
   -- ^ Action to perform when the value is entered
   , promptSpecialKey :: C.Key -> Action ()
   -- ^ Action to perform when a special key is pressed
+  }
+
+-- | Parameters for a search prompt
+data SelectParams a = SelectParams
+  { spPrompt       :: String
+  -- ^ The search prompt
+  , spSearchHeader :: String
+  -- ^ The header to display at the top of the search list
+  , spSearch       :: String -> Database -> [(Int, a)]
+  -- ^ The search function
+  , spSearchExact  :: String -> Database -> Maybe Int
+  -- ^ Search function looking for an exact match
+  , spElemDesc     :: a -> String
+  -- ^ Provides a string description of an element
+  , spCallback     :: Maybe Int -> Action ()
+  -- ^ The function when the selection is made
+  , spNotFound     :: String -> Action ()
+  -- ^ The function to call when the selection doesn't exist
   }
 
 makeLenses ''ProgState

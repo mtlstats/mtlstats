@@ -27,6 +27,7 @@ module Mtlstats.Prompt (
   promptHandler,
   strPrompt,
   numPrompt,
+  selectPrompt,
   -- * Individual prompts
   gameYearPrompt,
   gameDayPrompt,
@@ -48,6 +49,7 @@ module Mtlstats.Prompt (
 ) where
 
 import Control.Monad (when)
+import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
@@ -110,6 +112,43 @@ numPrompt pStr act = Prompt
   , promptCharCheck  = isDigit
   , promptAction     = \inStr -> forM_ (readMaybe inStr) act
   , promptSpecialKey = const $ return ()
+  }
+
+-- | Builds a selection prompt
+selectPrompt :: SelectParams a -> Prompt
+selectPrompt params = Prompt
+  { promptDrawer = \s -> do
+    let sStr = s^.inputBuffer
+    C.drawString $ spPrompt params ++ sStr
+    (row, col) <- C.cursorPosition
+    C.drawString $ "\n\n" ++ spSearchHeader params ++ "\n"
+    let results = zip [1..maxFunKeys] $ spSearch params sStr (s^.database)
+    C.drawString $ unlines $ map
+      (\(n, (_, x)) -> let
+        desc = spElemDesc params x
+        in "F" ++ show n ++ ") " ++ desc)
+      results
+    C.moveCursor row col
+  , promptCharCheck = const True
+  , promptAction = \sStr -> if null sStr
+    then spCallback params Nothing
+    else do
+      db <- gets (^.database)
+      case spSearchExact params sStr db of
+        Nothing -> spNotFound params sStr
+        Just n  -> spCallback params $ Just n
+  , promptSpecialKey = \case
+    C.KeyFunction rawK -> do
+      sStr <- gets (^.inputBuffer)
+      db   <- gets (^.database)
+      let
+        n       = pred $ fromInteger rawK
+        results = spSearch params sStr db
+      when (n < maxFunKeys) $
+        whenJust (nth n results) $ \(n, _) -> do
+          modify $ inputBuffer .~ ""
+          spCallback params $ Just n
+    _ -> return ()
   }
 
 -- | Prompts for the game year
