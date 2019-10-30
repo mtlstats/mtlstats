@@ -475,7 +475,7 @@ instance ToJSON GameStats where
 -- | Defines a user prompt
 data Prompt = Prompt
   { promptDrawer     :: ProgState -> C.Update ()
-  -- ^ Draws the prompt to thr screen
+  -- ^ Draws the prompt to the screen
   , promptCharCheck  :: Char -> Bool
   -- ^ Determines whether or not the character is valid
   , promptAction     :: String -> Action ()
