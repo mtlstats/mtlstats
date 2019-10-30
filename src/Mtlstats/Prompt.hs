@@ -37,6 +37,7 @@ module Mtlstats.Prompt (
   playerNamePrompt,
   playerPosPrompt,
   selectPlayerPrompt,
+  selectGoaliePrompt,
   recordGoalPrompt,
   recordAssistPrompt,
   pMinPlayerPrompt,
@@ -204,6 +205,16 @@ selectPlayerPrompt pStr callback = Prompt
     _ -> return ()
   }
 
+-- | Selects a goalie (creating one if necessary)
+selectGoaliePrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the goalie as
+  -- input)
+  -> Prompt
+selectGoaliePrompt = undefined
+
 -- | Prompts for the player who scored the goal
 recordGoalPrompt
   :: Int
@@ -262,7 +273,10 @@ goalieNamePrompt = strPrompt "Goalie name: " $
 
 -- | Prompts for a goalie who played in the game
 selectGameGoaliePrompt :: Prompt
-selectGameGoaliePrompt = undefined
+selectGameGoaliePrompt = selectGoaliePrompt "Select goalie: " $
+  \case
+    Nothing -> modify $ progMode.gameStateL.goaliesRecorded .~ True
+    Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
