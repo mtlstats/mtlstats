@@ -180,7 +180,6 @@ selectPlayerPrompt pStr callback = Prompt
           mode <- gets $ view progMode
           let
             cps = newCreatePlayerState
-              & cpsAbortable .~ False
               & cpsName      .~ sStr
               & cpsSuccessCallback .~ do
                 modify $ progMode .~ mode
@@ -188,7 +187,6 @@ selectPlayerPrompt pStr callback = Prompt
                 callback $ Just pIndex
               & cpsFailureCallback .~ do
                 modify $ progMode .~ mode
-                callback Nothing
           modify $ progMode .~ CreatePlayer cps
   , promptSpecialKey = \case
     C.KeyFunction n -> do
