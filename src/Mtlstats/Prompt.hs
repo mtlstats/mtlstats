@@ -199,49 +199,24 @@ selectPlayerPrompt
   -- ^ The callback to run (takes the index number of the payer as
   -- input)
   -> Prompt
-selectPlayerPrompt pStr callback = Prompt
-  { promptDrawer = \s -> do
-    let sStr = s^.inputBuffer
-    C.drawString pStr
-    C.drawString sStr
-    (row, col) <- C.cursorPosition
-    C.drawString "\n\nPlayer select:\n"
-    let sel = zip [1..maxFunKeys] $ playerSearch sStr $ s^.database.dbPlayers
-    mapM_
-      (\(n, (_, p)) -> C.drawString $
-        "F" ++ show n ++ ") " ++ p^.pName ++ " (" ++ show (p^.pNumber) ++ ")\n")
-      sel
-    C.moveCursor row col
-  , promptCharCheck = const True
-  , promptAction = \sStr -> if null sStr
-    then callback Nothing
-    else do
-      players <- gets $ view $ database.dbPlayers
-      case playerSearchExact sStr players of
-        Just (n, _) -> callback $ Just n
-        Nothing -> do
-          mode <- gets $ view progMode
-          let
-            cps = newCreatePlayerState
-              & cpsName      .~ sStr
-              & cpsSuccessCallback .~ do
-                modify $ progMode .~ mode
-                pIndex <- pred . length <$> gets (view $ database.dbPlayers)
-                callback $ Just pIndex
-              & cpsFailureCallback .~ do
-                modify $ progMode .~ mode
-          modify $ progMode .~ CreatePlayer cps
-  , promptSpecialKey = \case
-    C.KeyFunction n -> do
-      sStr    <- gets $ view inputBuffer
-      players <- gets $ view $ database.dbPlayers
-      modify $ inputBuffer .~ ""
-      let
-        fKey    = pred $ fromIntegral n
-        options = playerSearch sStr players
-        sel     = fst <$> nth fKey options
-      callback sel
-    _ -> return ()
+selectPlayerPrompt pStr callback = selectPrompt SelectParams
+  { spPrompt       = pStr
+  , spSearchHeader = "Player select:"
+  , spSearch       = \sStr db -> playerSearch sStr (db^.dbPlayers)
+  , spSearchExact  = \sStr db -> fst <$> playerSearchExact sStr (db^.dbPlayers)
+  , spElemDesc     = playerSummary
+  , spCallback     = callback
+  , spNotFound     = \sStr -> do
+    mode <- gets (^.progMode)
+    let
+      cps = newCreatePlayerState
+        & cpsName .~ sStr
+        & cpsSuccessCallback .~ do
+          modify $ progMode .~ mode
+          index <- pred . length <$> gets (^.database.dbPlayers)
+          callback $ Just index
+        & cpsFailureCallback .~ modify (progMode .~ mode)
+    modify $ progMode .~ CreatePlayer cps
   }
 
 -- | Selects a goalie (creating one if necessary)
