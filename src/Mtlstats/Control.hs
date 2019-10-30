@@ -331,12 +331,7 @@ confirmCreatePlayerC = Controller
         modify addPlayer
         join $ gets $ view $ progMode.createPlayerStateL.cpsSuccessCallback
       Just False ->
-        ifM (gets $ view $ progMode.createPlayerStateL.cpsAbortable)
-          (join $ gets $ view $ progMode.createPlayerStateL.cpsFailureCallback)
-          (modify $ progMode.createPlayerStateL
-            %~ (cpsNumber   .~ Nothing)
-            .  (cpsName     .~ "")
-            .  (cpsPosition .~ ""))
+        join $ gets $ view $ progMode.createPlayerStateL.cpsFailureCallback
       Nothing -> return ()
     return True
   }
