@@ -854,7 +854,12 @@ goalieSearchExact
   -- ^ The list to search
   -> Maybe (Int, Goalie)
   -- ^ The result with its index number
-goalieSearchExact = undefined
+goalieSearchExact sStr goalies = let
+  results = filter (\(_, goalie) -> sStr == goalie^.gName) $
+    zip [0..] goalies
+  in case results of
+    []       -> Nothing
+    result:_ -> Just result
 
 -- | Provides a description string for a 'Goalie'
 goalieSummary :: Goalie -> String
