@@ -45,7 +45,8 @@ module Mtlstats.Prompt (
   assignPMinsPrompt,
   goalieNumPrompt,
   goalieNamePrompt,
-  selectGameGoaliePrompt
+  selectGameGoaliePrompt,
+  goalieMinsPlayedPrompt
 ) where
 
 import Control.Monad (when)
@@ -309,6 +310,10 @@ selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
   \case
     Nothing -> modify $ progMode.gameStateL.goaliesRecorded .~ True
     Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
+
+-- | Prompts for the number of minutes the goalie has played
+goalieMinsPlayedPrompt :: Prompt
+goalieMinsPlayedPrompt = undefined
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

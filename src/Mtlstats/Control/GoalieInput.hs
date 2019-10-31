@@ -21,10 +21,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.GoalieInput (goalieInput) where
 
+import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
+import qualified UI.NCurses as C
 
+import Mtlstats.Format
 import Mtlstats.Prompt
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | The dispatcher for handling goalie input
 goalieInput :: GameState -> Controller
@@ -42,7 +46,23 @@ selectGoalieC = Controller
   }
 
 minsPlayedC :: Controller
-minsPlayedC = undefined
+minsPlayedC = Controller
+  { drawController = \s -> do
+    C.drawString $ header s
+    drawPrompt goalieMinsPlayedPrompt s
+  , handleController = \e -> do
+    promptHandler goalieMinsPlayedPrompt e
+    return True
+  }
 
 goalsAllowedC :: Controller
 goalsAllowedC = undefined
+
+header :: ProgState -> String
+header s = unlines
+  [ "*** GAME " ++ padNum 2 (s^.database.dbGames) ++ " ***"
+  , fromMaybe "" $ do
+    n <- s^.progMode.gameStateL.gameSelectedGoalie
+    g <- nth n $ s^.database.dbGoalies
+    Just $ goalieSummary g
+  ]
