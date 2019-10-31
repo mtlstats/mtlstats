@@ -227,7 +227,25 @@ selectGoaliePrompt
   -- ^ The callback to run (takes the index number of the goalie as
   -- input)
   -> Prompt
-selectGoaliePrompt = undefined
+selectGoaliePrompt pStr callback = selectPrompt SelectParams
+  { spPrompt       = pStr
+  , spSearchHeader = "Goalie select:"
+  , spSearch       = \sStr db -> goalieSearch sStr (db^.dbGoalies)
+  , spSearchExact  = \sStr db -> fst <$> goalieSearchExact sStr (db^.dbGoalies)
+  , spElemDesc     = goalieSummary
+  , spCallback     = callback
+  , spNotFound     = \sStr -> do
+    mode <- gets (^.progMode)
+    let
+      cgs = newCreateGoalieState
+        & cgsName .~ sStr
+        & cgsSuccessCallback .~ do
+          modify $ progMode .~ mode
+          index <- pred . length <$> gets (^.database.dbGoalies)
+          callback $ Just index
+        & cgsFailureCallback .~ modify (progMode .~ mode)
+    modify $ progMode .~ CreateGoalie cgs
+  }
 
 -- | Prompts for the player who scored the goal
 recordGoalPrompt
@@ -287,7 +305,7 @@ goalieNamePrompt = strPrompt "Goalie name: " $
 
 -- | Prompts for a goalie who played in the game
 selectGameGoaliePrompt :: Prompt
-selectGameGoaliePrompt = selectGoaliePrompt "Select goalie: " $
+selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
   \case
     Nothing -> modify $ progMode.gameStateL.goaliesRecorded .~ True
     Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n

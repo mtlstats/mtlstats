@@ -149,7 +149,11 @@ module Mtlstats.Types (
   playerIsActive,
   -- ** PlayerStats Helpers
   psPoints,
-  addPlayerStats
+  addPlayerStats,
+  -- ** Goalie Helpers
+  goalieSearch,
+  goalieSearchExact,
+  goalieSummary
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -830,3 +834,27 @@ addPlayerStats s1 s2 = newPlayerStats
   & psGoals   .~ s1^.psGoals + s2^.psGoals
   & psAssists .~ s1^.psAssists + s2^.psAssists
   & psPMin    .~ s1^.psPMin + s2^.psPMin
+
+-- | Searches a list of goalies
+goalieSearch
+  :: String
+  -- ^ The search string
+  -> [Goalie]
+  -- ^ The list to search
+  -> [(Int, Goalie)]
+  -- ^ The search results with their corresponding index numbers
+goalieSearch = undefined
+
+-- | Searches a list of goalies for an exact match
+goalieSearchExact
+  :: String
+  -- ^ The search string
+  -> [Goalie]
+  -- ^ The list to search
+  -> Maybe (Int, Goalie)
+  -- ^ The result with its index number
+goalieSearchExact = undefined
+
+-- | Provides a description string for a 'Goalie'
+goalieSummary :: Goalie -> String
+goalieSummary = undefined
