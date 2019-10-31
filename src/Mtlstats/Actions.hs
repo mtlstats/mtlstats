@@ -41,6 +41,7 @@ module Mtlstats.Actions
   , awardAssist
   , resetGoalData
   , assignPMins
+  , recordGoalieStats
   , backHome
   , scrollUp
   , scrollDown
@@ -268,6 +269,10 @@ assignPMins mins s = fromMaybe s $ do
            (psPMin +~ mins)
          )
       .  (selectedPlayer .~ Nothing)
+
+-- | Records the goalie's game stats
+recordGoalieStats :: ProgState -> ProgState
+recordGoalieStats = undefined
 
 -- | Resets the program state back to the main menu
 backHome :: ProgState -> ProgState

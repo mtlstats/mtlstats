@@ -55,6 +55,7 @@ import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
+import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
@@ -319,7 +320,12 @@ goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
 
 -- | Prompts for the number of goals the goalie allowed
 goalsAllowedPrompt :: Prompt
-goalsAllowedPrompt = undefined
+goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
+  modify (progMode.gameStateL.goalsAllowed ?~ n)
+  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.goalieMinsPlayed)
+  when (mins >= gameLength) $
+    modify $ progMode.gameStateL.goaliesRecorded .~ True
+  modify recordGoalieStats
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
