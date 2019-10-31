@@ -56,7 +56,14 @@ minsPlayedC = Controller
   }
 
 goalsAllowedC :: Controller
-goalsAllowedC = undefined
+goalsAllowedC = Controller
+  { drawController = \s -> do
+    C.drawString $ header s
+    drawPrompt goalsAllowedPrompt s
+  , handleController = \e -> do
+    promptHandler goalsAllowedPrompt e
+    return True
+  }
 
 header :: ProgState -> String
 header s = unlines
