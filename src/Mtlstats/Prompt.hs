@@ -313,7 +313,8 @@ selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
 
 -- | Prompts for the number of minutes the goalie has played
 goalieMinsPlayedPrompt :: Prompt
-goalieMinsPlayedPrompt = undefined
+goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
+  modify . (progMode.gameStateL.goalieMinsPlayed ?~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
