@@ -863,4 +863,4 @@ goalieSearchExact sStr goalies = let
 
 -- | Provides a description string for a 'Goalie'
 goalieSummary :: Goalie -> String
-goalieSummary = undefined
+goalieSummary g = g^.gName ++ " (" ++ show (g^.gNumber) ++ ")"

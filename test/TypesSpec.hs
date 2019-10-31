@@ -67,6 +67,7 @@ spec = describe "Mtlstats.Types" $ do
   addPlayerStatsSpec
   goalieSearchSpec
   goalieSearchExactSpec
+  goalieSummarySpec
   Menu.spec
 
 playerSpec :: Spec
@@ -698,6 +699,11 @@ goalieSearchExactSpec = describe "goalieSearchExact" $ do
   context "Greg" $
     it "should return Nothing" $
       goalieSearchExact "Greg" goalies `shouldBe` Nothing
+
+goalieSummarySpec :: Spec
+goalieSummarySpec = describe "goalieSummary" $
+  it "should provide a summary string" $
+    goalieSummary (newGoalie 2 "Joe") `shouldBe` "Joe (2)"
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"
