@@ -31,6 +31,7 @@ module Mtlstats.Types (
   GameType (..),
   CreatePlayerState (..),
   CreateGoalieState (..),
+  EditPlayerState (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -208,6 +209,7 @@ data ProgMode
   | NewGame GameState
   | CreatePlayer CreatePlayerState
   | CreateGoalie CreateGoalieState
+  | EditPlayer EditPlayerState
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
@@ -297,6 +299,9 @@ data CreateGoalieState = CreateGoalieState
   , _cgsFailureCallback :: Action ()
   -- ^ The function to call on failure
   }
+
+-- | Player edit status
+data EditPlayerState = EditPlayerState
 
 -- | Represents the database
 data Database = Database
