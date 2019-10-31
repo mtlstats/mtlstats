@@ -843,7 +843,8 @@ goalieSearch
   -- ^ The list to search
   -> [(Int, Goalie)]
   -- ^ The search results with their corresponding index numbers
-goalieSearch = undefined
+goalieSearch sStr = filter (\(_, goalie) -> sStr `isInfixOf` (goalie^.gName)) .
+  zip [0..]
 
 -- | Searches a list of goalies for an exact match
 goalieSearchExact
