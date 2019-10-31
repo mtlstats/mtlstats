@@ -272,7 +272,28 @@ assignPMins mins s = fromMaybe s $ do
 
 -- | Records the goalie's game stats
 recordGoalieStats :: ProgState -> ProgState
-recordGoalieStats = undefined
+recordGoalieStats s = fromMaybe s $ do
+  let gs = s^.progMode.gameStateL
+  gid    <- gs^.gameSelectedGoalie
+  goalie <- nth gid $ s^.database.dbGoalies
+  mins   <- gs^.goalieMinsPlayed
+  goals  <- gs^.goalsAllowed
+
+  let
+    bumpStats gs = gs
+      & gsMinsPlayed   +~ mins
+      & gsGoalsAllowed +~ goals
+
+  Just $ s
+    & progMode.gameStateL
+      %~ (gameGoalieStats    %~ updateMap gid newGoalieStats bumpStats)
+      .  (gameSelectedGoalie .~ Nothing)
+      .  (goalieMinsPlayed   .~ Nothing)
+      .  (goalsAllowed       .~ Nothing)
+    & database.dbGoalies
+      %~ modifyNth gid (\goalie -> goalie
+         & gYtd      %~ bumpStats
+         & gLifetime %~ bumpStats)
 
 -- | Resets the program state back to the main menu
 backHome :: ProgState -> ProgState
