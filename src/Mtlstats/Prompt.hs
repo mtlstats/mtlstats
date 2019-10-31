@@ -27,6 +27,7 @@ module Mtlstats.Prompt (
   promptHandler,
   strPrompt,
   numPrompt,
+  selectPrompt,
   -- * Individual prompts
   gameYearPrompt,
   gameDayPrompt,
@@ -37,16 +38,24 @@ module Mtlstats.Prompt (
   playerNamePrompt,
   playerPosPrompt,
   selectPlayerPrompt,
+  selectGoaliePrompt,
   recordGoalPrompt,
   recordAssistPrompt,
   pMinPlayerPrompt,
-  assignPMinsPrompt
+  assignPMinsPrompt,
+  goalieNumPrompt,
+  goalieNamePrompt,
+  selectGameGoaliePrompt,
+  goalieMinsPlayedPrompt,
+  goalsAllowedPrompt
 ) where
 
 import Control.Monad (when)
+import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
+import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
@@ -108,6 +117,43 @@ numPrompt pStr act = Prompt
   , promptSpecialKey = const $ return ()
   }
 
+-- | Builds a selection prompt
+selectPrompt :: SelectParams a -> Prompt
+selectPrompt params = Prompt
+  { promptDrawer = \s -> do
+    let sStr = s^.inputBuffer
+    C.drawString $ spPrompt params ++ sStr
+    (row, col) <- C.cursorPosition
+    C.drawString $ "\n\n" ++ spSearchHeader params ++ "\n"
+    let results = zip [1..maxFunKeys] $ spSearch params sStr (s^.database)
+    C.drawString $ unlines $ map
+      (\(n, (_, x)) -> let
+        desc = spElemDesc params x
+        in "F" ++ show n ++ ") " ++ desc)
+      results
+    C.moveCursor row col
+  , promptCharCheck = const True
+  , promptAction = \sStr -> if null sStr
+    then spCallback params Nothing
+    else do
+      db <- gets (^.database)
+      case spSearchExact params sStr db of
+        Nothing -> spNotFound params sStr
+        Just n  -> spCallback params $ Just n
+  , promptSpecialKey = \case
+    C.KeyFunction rawK -> do
+      sStr <- gets (^.inputBuffer)
+      db   <- gets (^.database)
+      let
+        n       = pred $ fromInteger rawK
+        results = spSearch params sStr db
+      when (n < maxFunKeys) $
+        whenJust (nth n results) $ \(n, _) -> do
+          modify $ inputBuffer .~ ""
+          spCallback params $ Just n
+    _ -> return ()
+  }
+
 -- | Prompts for the game year
 gameYearPrompt :: Prompt
 gameYearPrompt = numPrompt "Game year: " $
@@ -156,49 +202,52 @@ selectPlayerPrompt
   -- ^ The callback to run (takes the index number of the payer as
   -- input)
   -> Prompt
-selectPlayerPrompt pStr callback = Prompt
-  { promptDrawer = \s -> do
-    let sStr = s^.inputBuffer
-    C.drawString pStr
-    C.drawString sStr
-    (row, col) <- C.cursorPosition
-    C.drawString "\n\nPlayer select:\n"
-    let sel = zip [1..maxFunKeys] $ playerSearch sStr $ s^.database.dbPlayers
-    mapM_
-      (\(n, (_, p)) -> C.drawString $
-        "F" ++ show n ++ ") " ++ p^.pName ++ " (" ++ show (p^.pNumber) ++ ")\n")
-      sel
-    C.moveCursor row col
-  , promptCharCheck = const True
-  , promptAction = \sStr -> if null sStr
-    then callback Nothing
-    else do
-      players <- gets $ view $ database.dbPlayers
-      case playerSearchExact sStr players of
-        Just (n, _) -> callback $ Just n
-        Nothing -> do
-          mode <- gets $ view progMode
-          let
-            cps = newCreatePlayerState
-              & cpsName      .~ sStr
-              & cpsSuccessCallback .~ do
-                modify $ progMode .~ mode
-                pIndex <- pred . length <$> gets (view $ database.dbPlayers)
-                callback $ Just pIndex
-              & cpsFailureCallback .~ do
-                modify $ progMode .~ mode
-          modify $ progMode .~ CreatePlayer cps
-  , promptSpecialKey = \case
-    C.KeyFunction n -> do
-      sStr    <- gets $ view inputBuffer
-      players <- gets $ view $ database.dbPlayers
-      modify $ inputBuffer .~ ""
-      let
-        fKey    = pred $ fromIntegral n
-        options = playerSearch sStr players
-        sel     = fst <$> nth fKey options
-      callback sel
-    _ -> return ()
+selectPlayerPrompt pStr callback = selectPrompt SelectParams
+  { spPrompt       = pStr
+  , spSearchHeader = "Player select:"
+  , spSearch       = \sStr db -> playerSearch sStr (db^.dbPlayers)
+  , spSearchExact  = \sStr db -> fst <$> playerSearchExact sStr (db^.dbPlayers)
+  , spElemDesc     = playerSummary
+  , spCallback     = callback
+  , spNotFound     = \sStr -> do
+    mode <- gets (^.progMode)
+    let
+      cps = newCreatePlayerState
+        & cpsName .~ sStr
+        & cpsSuccessCallback .~ do
+          modify $ progMode .~ mode
+          index <- pred . length <$> gets (^.database.dbPlayers)
+          callback $ Just index
+        & cpsFailureCallback .~ modify (progMode .~ mode)
+    modify $ progMode .~ CreatePlayer cps
+  }
+
+-- | Selects a goalie (creating one if necessary)
+selectGoaliePrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the goalie as
+  -- input)
+  -> Prompt
+selectGoaliePrompt pStr callback = selectPrompt SelectParams
+  { spPrompt       = pStr
+  , spSearchHeader = "Goalie select:"
+  , spSearch       = \sStr db -> goalieSearch sStr (db^.dbGoalies)
+  , spSearchExact  = \sStr db -> fst <$> goalieSearchExact sStr (db^.dbGoalies)
+  , spElemDesc     = goalieSummary
+  , spCallback     = callback
+  , spNotFound     = \sStr -> do
+    mode <- gets (^.progMode)
+    let
+      cgs = newCreateGoalieState
+        & cgsName .~ sStr
+        & cgsSuccessCallback .~ do
+          modify $ progMode .~ mode
+          index <- pred . length <$> gets (^.database.dbGoalies)
+          callback $ Just index
+        & cgsFailureCallback .~ modify (progMode .~ mode)
+    modify $ progMode .~ CreateGoalie cgs
   }
 
 -- | Prompts for the player who scored the goal
@@ -234,6 +283,7 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
       when (nAssists >= maxAssists) $
         modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
 
+-- | Prompts for the player to assign penalty minutes to
 pMinPlayerPrompt :: Prompt
 pMinPlayerPrompt = selectPlayerPrompt
   "Assign penalty minutes to: " $
@@ -241,9 +291,41 @@ pMinPlayerPrompt = selectPlayerPrompt
     Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
     Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
 
+-- | Prompts for the number of penalty mintues to assign to the player
 assignPMinsPrompt :: Prompt
 assignPMinsPrompt = numPrompt "Penalty minutes: " $
   modify . assignPMins
+
+-- | Prompts tor the goalie's number
+goalieNumPrompt :: Prompt
+goalieNumPrompt = numPrompt "Goalie number: " $
+  modify . (progMode.createGoalieStateL.cgsNumber ?~)
+
+-- | Prompts for the goalie's name
+goalieNamePrompt :: Prompt
+goalieNamePrompt = strPrompt "Goalie name: " $
+  modify . (progMode.createGoalieStateL.cgsName .~)
+
+-- | Prompts for a goalie who played in the game
+selectGameGoaliePrompt :: Prompt
+selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
+  \case
+    Nothing -> modify $ progMode.gameStateL.goaliesRecorded .~ True
+    Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
+
+-- | Prompts for the number of minutes the goalie has played
+goalieMinsPlayedPrompt :: Prompt
+goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
+  modify . (progMode.gameStateL.goalieMinsPlayed ?~)
+
+-- | Prompts for the number of goals the goalie allowed
+goalsAllowedPrompt :: Prompt
+goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
+  modify (progMode.gameStateL.goalsAllowed ?~ n)
+  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.goalieMinsPlayed)
+  when (mins >= gameLength) $
+    modify $ progMode.gameStateL.goaliesRecorded .~ True
+  modify recordGoalieStats
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

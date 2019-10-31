@@ -40,3 +40,7 @@ dbFname = "database.json"
 -- | The maximum number of assists
 maxAssists :: Int
 maxAssists = 2
+
+-- | The length of a typical game (in minutes)
+gameLength :: Int
+gameLength = 60

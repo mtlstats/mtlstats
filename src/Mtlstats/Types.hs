@@ -30,6 +30,7 @@ module Mtlstats.Types (
   GameState (..),
   GameType (..),
   CreatePlayerState (..),
+  CreateGoalieState (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -37,6 +38,7 @@ module Mtlstats.Types (
   GoalieStats (..),
   GameStats (..),
   Prompt (..),
+  SelectParams (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
@@ -46,6 +48,7 @@ module Mtlstats.Types (
   -- ** ProgMode Lenses
   gameStateL,
   createPlayerStateL,
+  createGoalieStateL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -63,12 +66,22 @@ module Mtlstats.Types (
   confirmGoalDataFlag,
   selectedPlayer,
   pMinsRecorded,
+  gameGoalieStats,
+  gameSelectedGoalie,
+  goalieMinsPlayed,
+  goalsAllowed,
+  goaliesRecorded,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
   cpsPosition,
   cpsSuccessCallback,
   cpsFailureCallback,
+  -- ** CreateGoalieState Lenses
+  cgsNumber,
+  cgsName,
+  cgsSuccessCallback,
+  cgsFailureCallback,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -94,7 +107,6 @@ module Mtlstats.Types (
   gsGames,
   gsMinsPlayed,
   gsGoalsAllowed,
-  gsGoalsAgainst,
   gsWins,
   gsLosses,
   gsTies,
@@ -108,6 +120,7 @@ module Mtlstats.Types (
   newProgState,
   newGameState,
   newCreatePlayerState,
+  newCreateGoalieState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -136,7 +149,11 @@ module Mtlstats.Types (
   playerIsActive,
   -- ** PlayerStats Helpers
   psPoints,
-  addPlayerStats
+  addPlayerStats,
+  -- ** Goalie Helpers
+  goalieSearch,
+  goalieSearchExact,
+  goalieSummary
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -190,12 +207,14 @@ data ProgMode
   | NewSeason
   | NewGame GameState
   | CreatePlayer CreatePlayerState
+  | CreateGoalie CreateGoalieState
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
   show NewSeason        = "NewSeason"
   show (NewGame _)      = "NewGame"
   show (CreatePlayer _) = "CreatePlayer"
+  show (CreateGoalie _) = "CreateGoalie"
 
 -- | The game state
 data GameState = GameState
@@ -233,6 +252,18 @@ data GameState = GameState
   -- ^ Index number of the selected 'Player'
   , _pMinsRecorded       :: Bool
   -- ^ Set when the penalty mintes have been recorded
+  , _gameGoalieStats     :: M.Map Int GoalieStats
+  -- ^ The goalie stats accumulated over the game
+  , _gameSelectedGoalie  :: Maybe Int
+  -- ^ Index number of the selected 'Goalie'
+  , _goalieMinsPlayed    :: Maybe Int
+  -- ^ The number of minutes the currently selected goalie played in
+  -- the game
+  , _goalsAllowed        :: Maybe Int
+  -- ^ The number of goals the currently selected goalie allowed in
+  -- the game
+  , _goaliesRecorded     :: Bool
+  -- ^ Set when the user confirms that all goalie info has been entered
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -252,6 +283,18 @@ data CreatePlayerState = CreatePlayerState
   , _cpsSuccessCallback :: Action ()
   -- ^ The function to call on success
   , _cpsFailureCallback :: Action ()
+  -- ^ The function to call on failure
+  }
+
+-- | Goalie creation status
+data CreateGoalieState = CreateGoalieState
+  { _cgsNumber    :: Maybe Int
+  -- ^ The goalie's number
+  , _cgsName      :: String
+  -- ^ The goalie's name
+  , _cgsSuccessCallback :: Action ()
+  -- ^ The function to call on success
+  , _cgsFailureCallback :: Action ()
   -- ^ The function to call on failure
   }
 
@@ -396,8 +439,6 @@ data GoalieStats = GoalieStats
   -- ^ The number of minutes played
   , _gsGoalsAllowed :: Int
   -- ^ The number of goals allowed
-  , _gsGoalsAgainst :: Int
-  -- ^ The number of goals against
   , _gsWins         :: Int
   -- ^ The number of wins
   , _gsLosses       :: Int
@@ -411,28 +452,25 @@ instance FromJSON GoalieStats where
     <$> v .: "games"
     <*> v .: "mins_played"
     <*> v .: "goals_allowed"
-    <*> v .: "goals_against"
     <*> v .: "wins"
     <*> v .: "losses"
     <*> v .: "ties"
 
 instance ToJSON GoalieStats where
-  toJSON (GoalieStats g m al ag w l t) = object
+  toJSON (GoalieStats g m a w l t) = object
     [ "games"         .= g
     , "mins_played"   .= m
-    , "goals_allowed" .= al
-    , "goals_against" .= ag
+    , "goals_allowed" .= a
     , "wins"          .= w
     , "losses"        .= l
     , "ties"          .= t
     ]
-  toEncoding (GoalieStats g m al ag w l t) = pairs $
-      "games"         .= g  <>
-      "mins_played"   .= m  <>
-      "goals_allowed" .= al <>
-      "goals_against" .= ag <>
-      "wins"          .= w  <>
-      "losses"        .= l  <>
+  toEncoding (GoalieStats g m a w l t) = pairs $
+      "games"         .= g <>
+      "mins_played"   .= m <>
+      "goals_allowed" .= a <>
+      "wins"          .= w <>
+      "losses"        .= l <>
       "ties"          .= t
 
 -- | Game statistics
@@ -484,9 +522,28 @@ data Prompt = Prompt
   -- ^ Action to perform when a special key is pressed
   }
 
+-- | Parameters for a search prompt
+data SelectParams a = SelectParams
+  { spPrompt       :: String
+  -- ^ The search prompt
+  , spSearchHeader :: String
+  -- ^ The header to display at the top of the search list
+  , spSearch       :: String -> Database -> [(Int, a)]
+  -- ^ The search function
+  , spSearchExact  :: String -> Database -> Maybe Int
+  -- ^ Search function looking for an exact match
+  , spElemDesc     :: a -> String
+  -- ^ Provides a string description of an element
+  , spCallback     :: Maybe Int -> Action ()
+  -- ^ The function when the selection is made
+  , spNotFound     :: String -> Action ()
+  -- ^ The function to call when the selection doesn't exist
+  }
+
 makeLenses ''ProgState
 makeLenses ''GameState
 makeLenses ''CreatePlayerState
+makeLenses ''CreateGoalieState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
@@ -507,6 +564,13 @@ createPlayerStateL = lens
     CreatePlayer cps -> cps
     _                -> newCreatePlayerState)
   (\_ cps -> CreatePlayer cps)
+
+createGoalieStateL :: Lens' ProgMode CreateGoalieState
+createGoalieStateL = lens
+  (\case
+    CreateGoalie cgs -> cgs
+    _                -> newCreateGoalieState)
+  (\_ cgs -> CreateGoalie cgs)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
@@ -536,6 +600,11 @@ newGameState = GameState
   , _confirmGoalDataFlag = False
   , _selectedPlayer      = Nothing
   , _pMinsRecorded       = False
+  , _gameGoalieStats     = M.empty
+  , _gameSelectedGoalie  = Nothing
+  , _goalieMinsPlayed    = Nothing
+  , _goalsAllowed        = Nothing
+  , _goaliesRecorded     = False
   }
 
 -- | Constructor for a 'CreatePlayerState'
@@ -546,6 +615,15 @@ newCreatePlayerState = CreatePlayerState
   , _cpsPosition        = ""
   , _cpsSuccessCallback = return ()
   , _cpsFailureCallback = return ()
+  }
+
+-- | Constructor for a 'CreateGoalieState'
+newCreateGoalieState :: CreateGoalieState
+newCreateGoalieState = CreateGoalieState
+  { _cgsNumber          = Nothing
+  , _cgsName            = ""
+  , _cgsSuccessCallback = return ()
+  , _cgsFailureCallback = return ()
   }
 
 -- | Constructor for a 'Database'
@@ -603,7 +681,6 @@ newGoalieStats = GoalieStats
   { _gsGames        = 0
   , _gsMinsPlayed   = 0
   , _gsGoalsAllowed = 0
-  , _gsGoalsAgainst = 0
   , _gsWins         = 0
   , _gsLosses       = 0
   , _gsTies         = 0
@@ -757,3 +834,33 @@ addPlayerStats s1 s2 = newPlayerStats
   & psGoals   .~ s1^.psGoals + s2^.psGoals
   & psAssists .~ s1^.psAssists + s2^.psAssists
   & psPMin    .~ s1^.psPMin + s2^.psPMin
+
+-- | Searches a list of goalies
+goalieSearch
+  :: String
+  -- ^ The search string
+  -> [Goalie]
+  -- ^ The list to search
+  -> [(Int, Goalie)]
+  -- ^ The search results with their corresponding index numbers
+goalieSearch sStr = filter (\(_, goalie) -> sStr `isInfixOf` (goalie^.gName)) .
+  zip [0..]
+
+-- | Searches a list of goalies for an exact match
+goalieSearchExact
+  :: String
+  -- ^ The search string
+  -> [Goalie]
+  -- ^ The list to search
+  -> Maybe (Int, Goalie)
+  -- ^ The result with its index number
+goalieSearchExact sStr goalies = let
+  results = filter (\(_, goalie) -> sStr == goalie^.gName) $
+    zip [0..] goalies
+  in case results of
+    []       -> Nothing
+    result:_ -> Just result
+
+-- | Provides a description string for a 'Goalie'
+goalieSummary :: Goalie -> String
+goalieSummary g = g^.gName ++ " (" ++ show (g^.gNumber) ++ ")"

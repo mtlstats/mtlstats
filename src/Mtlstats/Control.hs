@@ -31,6 +31,7 @@ import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Control.GoalieInput
 import Mtlstats.Format
 import Mtlstats.Handlers
 import Mtlstats.Menu
@@ -58,12 +59,17 @@ dispatch s = case s^.progMode of
     | fromJust (unaccountedPoints gs) -> goalInput gs
     | isJust $ gs^.selectedPlayer     -> getPMinsC
     | not $ gs^.pMinsRecorded         -> pMinPlayerC
+    | not $ gs^.goaliesRecorded       -> goalieInput gs
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC
     | null $ cps^.cpsPosition -> getPlayerPosC
     | otherwise               -> confirmCreatePlayerC
+  CreateGoalie cgs
+    | null $ cgs^.cgsNumber -> getGoalieNumC
+    | null $ cgs^.cgsName   -> getGoalieNameC
+    | otherwise             -> confirmCreateGoalieC
 
 mainMenuC :: Controller
 mainMenuC = Controller
@@ -332,6 +338,44 @@ confirmCreatePlayerC = Controller
         join $ gets $ view $ progMode.createPlayerStateL.cpsSuccessCallback
       Just False ->
         join $ gets $ view $ progMode.createPlayerStateL.cpsFailureCallback
+      Nothing -> return ()
+    return True
+  }
+
+getGoalieNumC :: Controller
+getGoalieNumC = Controller
+  { drawController = drawPrompt goalieNumPrompt
+  , handleController = \e -> do
+    promptHandler goalieNumPrompt e
+    return True
+  }
+
+getGoalieNameC :: Controller
+getGoalieNameC = Controller
+  { drawController = drawPrompt goalieNamePrompt
+  , handleController = \e -> do
+    promptHandler goalieNamePrompt e
+    return True
+  }
+
+confirmCreateGoalieC :: Controller
+confirmCreateGoalieC = Controller
+  { drawController = \s -> do
+    let cgs = s^.progMode.createGoalieStateL
+    C.drawString $ unlines
+      [ "Goalie number: " ++ show (fromJust $ cgs^.cgsNumber)
+      , "  Goalie name: " ++ cgs^.cgsName
+      , ""
+      , "Create goalie: are you sure?  (Y/N)"
+      ]
+    return C.CursorInvisible
+  , handleController = \e -> do
+    case ynHandler e of
+      Just True -> do
+        modify addGoalie
+        join $ gets (^.progMode.createGoalieStateL.cgsSuccessCallback)
+      Just False ->
+        join $ gets (^.progMode.createGoalieStateL.cgsFailureCallback)
       Nothing -> return ()
     return True
   }

@@ -43,6 +43,8 @@ import Mtlstats.Actions
 import Mtlstats.Types
 import Mtlstats.Util
 
+import qualified TypesSpec as TS
+
 spec :: Spec
 spec = describe "Mtlstats.Actions" $ do
   startNewSeasonSpec
@@ -54,12 +56,17 @@ spec = describe "Mtlstats.Actions" $ do
   updateGameStatsSpec
   validateGameDateSpec
   createPlayerSpec
+  createGoalieSpec
   addPlayerSpec
+  addGoalieSpec
+  resetCreatePlayerStateSpec
+  resetCreateGoalieStateSpec
   recordGoalAssistsSpec
   awardGoalSpec
   awardAssistSpec
   resetGoalDataSpec
   assignPMinsSpec
+  recordGoalieStatsSpec
   backHomeSpec
   scrollUpSpec
   scrollDownSpec
@@ -117,14 +124,12 @@ resetYtdSpec = describe "resetYtd" $
         ytd ^. gsGames        `shouldBe`    0
         ytd ^. gsMinsPlayed   `shouldBe`    0
         ytd ^. gsGoalsAllowed `shouldBe`    0
-        ytd ^. gsGoalsAgainst `shouldBe`    0
         ytd ^. gsWins         `shouldBe`    0
         ytd ^. gsLosses       `shouldBe`    0
         ytd ^. gsTies         `shouldBe`    0
         lt ^. gsGames         `shouldNotBe` 0
         lt ^. gsMinsPlayed    `shouldNotBe` 0
         lt ^. gsGoalsAllowed  `shouldNotBe` 0
-        lt ^. gsGoalsAgainst  `shouldNotBe` 0
         lt ^. gsWins          `shouldNotBe` 0
         lt ^. gsLosses        `shouldNotBe` 0
         lt ^. gsTies          `shouldNotBe` 0) $
@@ -355,6 +360,12 @@ createPlayerSpec = describe "createPlayer" $
     s = createPlayer newProgState
     in show (s^.progMode) `shouldBe` "CreatePlayer"
 
+createGoalieSpec :: Spec
+createGoalieSpec = describe "createGoalie" $
+  it "should change the mode appropriately" $ let
+    s = createGoalie newProgState
+    in show (s^.progMode) `shouldBe` "CreateGoalie"
+
 addPlayerSpec :: Spec
 addPlayerSpec = describe "addPlayer" $ do
   let
@@ -378,6 +389,48 @@ addPlayerSpec = describe "addPlayer" $ do
     it "should not create the player" $ let
       s' = addPlayer $ s MainMenu
       in s'^.database.dbPlayers `shouldBe` [p1]
+
+addGoalieSpec :: Spec
+addGoalieSpec = describe "addGoalie" $ do
+  let
+    g1 = newGoalie 2 "Joe"
+    g2 = newGoalie 3 "Bob"
+    db = newDatabase
+      & dbGoalies .~ [g1]
+    s pm = newProgState
+      & database .~ db
+      & progMode .~ pm
+
+  context "data available" $
+    it "should create the goalie" $ let
+      s' = addGoalie $ s $ CreateGoalie $ newCreateGoalieState
+        & cgsNumber ?~ 3
+        & cgsName   .~ "Bob"
+      in s'^.database.dbGoalies `shouldBe` [g1, g2]
+
+  context "data unavailable" $
+    it "should not create the goalie" $ let
+      s' = addGoalie $ s MainMenu
+      in s'^.database.dbGoalies `shouldBe` [g1]
+
+resetCreatePlayerStateSpec :: Spec
+resetCreatePlayerStateSpec = describe "resetCreatePlayerState" $ let
+  cps = newCreatePlayerState
+    & cpsNumber   ?~ 1
+    & cpsName     .~ "Joe"
+    & cpsPosition .~ "centre"
+  ps  = resetCreatePlayerState $
+    newProgState & progMode.createPlayerStateL .~ cps
+  in TS.compareTest (ps^.progMode.createPlayerStateL) newCreatePlayerState
+
+resetCreateGoalieStateSpec :: Spec
+resetCreateGoalieStateSpec = describe "resetCreateGoalieState" $ let
+  cgs = newCreateGoalieState
+    & cgsNumber ?~ 1
+    & cgsName   .~ "Joe"
+  ps = resetCreateGoalieState $
+    newProgState & progMode.createGoalieStateL .~ cgs
+  in TS.compareTest (ps^.progMode.createGoalieStateL) newCreateGoalieState
 
 recordGoalAssistsSpec :: Spec
 recordGoalAssistsSpec = describe "recordGoalAssists" $ do
@@ -618,6 +671,137 @@ assignPMinsSpec = describe "assignPMins" $ let
     , ( Nothing, 4,      3,       2,        6,      5,       0        )
     ]
 
+recordGoalieStatsSpec :: Spec
+recordGoalieStatsSpec = describe "recordGoalieStats" $ let
+  goalieStats mins goals = newGoalieStats
+    & gsMinsPlayed   .~ mins
+    & gsGoalsAllowed .~ goals
+
+  joe = newGoalie 2 "Joe"
+    & gYtd      .~ goalieStats 10 11
+    & gLifetime .~ goalieStats 12 13
+
+  bob = newGoalie 3 "Bob"
+    & gYtd      .~ goalieStats 14 15
+    & gLifetime .~ goalieStats 16 17
+
+  gameState n mins goals = newGameState
+    & gameGoalieStats    .~ M.fromList [(1, goalieStats 1 2)]
+    & gameSelectedGoalie .~ n
+    & goalieMinsPlayed   .~ mins
+    & goalsAllowed       .~ goals
+
+  progState n mins goals = newProgState
+    & database.dbGoalies  .~ [joe, bob]
+    & progMode.gameStateL .~ gameState n mins goals
+
+  in mapM_
+    (\(name, gid, mins, goals, joeData, bobData, reset) -> let
+      s = recordGoalieStats $ progState gid mins goals
+      in context name $ do
+
+        mapM_
+          (\(name, gid, (gMins, gGoals, ytdMins, ytdGoals, ltMins, ltGoals)) ->
+            context name $ do
+              let
+                gs     = s^.progMode.gameStateL.gameGoalieStats
+                game   = M.findWithDefault newGoalieStats gid gs
+                goalie = fromJust $ nth gid $ s^.database.dbGoalies
+                ytd    = goalie^.gYtd
+                lt     = goalie^.gLifetime
+
+              context "game minutes played" $
+                it ("should be " ++ show gMins) $
+                  game^.gsMinsPlayed `shouldBe` gMins
+
+              context "game goals allowed" $
+                it ("should be " ++ show gGoals) $
+                  game^.gsGoalsAllowed `shouldBe` gGoals
+
+              context "year-to-date minutes played" $
+                it ("should be " ++ show ytdMins) $
+                  ytd^.gsMinsPlayed `shouldBe` ytdMins
+
+              context "year-to-date goals allowed" $
+                it ("should be " ++ show ytdGoals) $
+                  ytd^.gsGoalsAllowed `shouldBe` ytdGoals
+
+              context "lifetime minutes played" $
+                it ("should be " ++ show ltMins) $
+                  lt^.gsMinsPlayed `shouldBe` ltMins
+
+              context "lifetime goals allowed" $
+                it ("should be " ++ show ltGoals) $
+                  lt^.gsGoalsAllowed `shouldBe` ltGoals)
+          [ ( "Joe", 0, joeData )
+          , ( "Bob", 1, bobData )
+          ]
+
+        context "selected goalie" $ let
+          expected = if reset then Nothing else gid
+          in it ("should be " ++ show expected) $
+            (s^.progMode.gameStateL.gameSelectedGoalie) `shouldBe` expected
+
+        context "minutes played" $ let
+          expected = if reset then Nothing else mins
+          in it ("should be " ++ show expected) $
+            (s^.progMode.gameStateL.goalieMinsPlayed) `shouldBe` expected
+
+        context "goals allowed" $ let
+          expected = if reset then Nothing else goals
+          in it ("should be " ++ show expected) $
+            (s^.progMode.gameStateL.goalsAllowed) `shouldBe` expected)
+
+    [ ( "Joe"
+      , Just 0
+      , Just 1
+      , Just 2
+      , ( 1, 2, 11, 13, 13, 15 )
+      , ( 1, 2, 14, 15, 16, 17 )
+      , True
+      )
+    , ( "Bob"
+      , Just 1
+      , Just 1
+      , Just 2
+      , (0, 0, 10, 11, 12, 13 )
+      , (2, 4, 15, 17, 17, 19 )
+      , True
+      )
+    , ( "goalie out of bounds"
+      , Just 2
+      , Just 1
+      , Just 2
+      , (0, 0, 10, 11, 12, 13 )
+      , (1, 2, 14, 15, 16, 17 )
+      , False
+      )
+    , ( "missing goalie"
+      , Nothing
+      , Just 1
+      , Just 2
+      , (0, 0, 10, 11, 12, 13 )
+      , (1, 2, 14, 15, 16, 17 )
+      , False
+      )
+    , ( "missing minutes"
+      , Just 0
+      , Nothing
+      , Just 1
+      , (0, 0, 10, 11, 12, 13 )
+      , (1, 2, 14, 15, 16, 17 )
+      , False
+      )
+    , ( "missing goals"
+      , Just 0
+      , Just 1
+      , Nothing
+      , (0, 0, 10, 11, 12, 13 )
+      , (1, 2, 14, 15, 16, 17 )
+      , False
+      )
+    ]
+
 makePlayer :: IO Player
 makePlayer = Player
   <$> makeNum
@@ -642,7 +826,6 @@ makePlayerStats = PlayerStats
 makeGoalieStats :: IO GoalieStats
 makeGoalieStats = GoalieStats
   <$> makeNum
-  <*> makeNum
   <*> makeNum
   <*> makeNum
   <*> makeNum

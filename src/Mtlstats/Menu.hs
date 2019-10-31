@@ -71,7 +71,9 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify startNewGame >> return True
   , MenuItem '3' "Create Player" $
     modify createPlayer >> return True
-  , MenuItem '4' "Exit" $ do
+  , MenuItem '4' "Create Goalie" $
+    modify createGoalie >> return True
+  , MenuItem '5' "Exit" $ do
     db <- gets $ view database
     liftIO $ do
       dir <- getAppUserDataDirectory appName

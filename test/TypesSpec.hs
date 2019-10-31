@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
-module TypesSpec (spec) where
+module TypesSpec (Comparable (..), spec) where
 
 import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
@@ -35,6 +35,9 @@ import Mtlstats.Types
 
 import qualified Types.MenuSpec as Menu
 
+class Comparable a where
+  compareTest :: a -> a -> Spec
+
 spec :: Spec
 spec = describe "Mtlstats.Types" $ do
   playerSpec
@@ -43,6 +46,7 @@ spec = describe "Mtlstats.Types" $ do
   databaseSpec
   gameStateLSpec
   createPlayerStateLSpec
+  createGoalieStateLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -61,6 +65,9 @@ spec = describe "Mtlstats.Types" $ do
   playerIsActiveSpec
   psPointsSpec
   addPlayerStatsSpec
+  goalieSearchSpec
+  goalieSearchExactSpec
+  goalieSummarySpec
   Menu.spec
 
 playerSpec :: Spec
@@ -79,43 +86,60 @@ databaseSpec = describe "Database" $ jsonSpec db dbJSON
 gameStateLSpec :: Spec
 gameStateLSpec = describe "gameStateL" $ lensSpec gameStateL
   -- getters
-  [ ( MainMenu,              newGameState )
-  , ( NewGame $ gs HomeGame, gs HomeGame  )
+  [ ( "missing state", MainMenu,              newGameState )
+  , ( "home game",     NewGame $ gs HomeGame, gs HomeGame  )
+  , ( "away game",     NewGame $ gs AwayGame, gs AwayGame  )
   ]
   -- setters
-  [ ( MainMenu,              gs HomeGame  )
-  , ( NewGame $ gs HomeGame, gs AwayGame  )
-  , ( NewGame $ gs HomeGame, newGameState )
+  [ ( "set home",     MainMenu,              gs HomeGame  )
+  , ( "home to away", NewGame $ gs HomeGame, gs AwayGame  )
+  , ( "away to home", NewGame $ gs AwayGame, gs HomeGame  )
+  , ( "clear home",   NewGame $ gs HomeGame, newGameState )
+  , ( "clear away",   NewGame $ gs AwayGame, newGameState )
   ]
   where gs t = newGameState & gameType ?~ t
 
 createPlayerStateLSpec :: Spec
-createPlayerStateLSpec = describe "createPlayerStateL" $ do
-  context "getters" $ do
-    context "state missing" $ let
-      pm  = MainMenu
-      cps = pm^.createPlayerStateL
-      in it "should not have a number" $
-        cps^.cpsNumber `shouldBe` Nothing
+createPlayerStateLSpec = describe "createPlayerStateL" $
+  lensSpec createPlayerStateL
+  -- getters
+  [ ( "missing state", MainMenu,          newCreatePlayerState )
+  , ( "with state",    CreatePlayer cps1, cps1                 )
+  ]
+  -- setters
+  [ ( "missing state", MainMenu,          cps1                 )
+  , ( "change state",  CreatePlayer cps1, cps2                 )
+  , ( "clear state",   CreatePlayer cps1, newCreatePlayerState )
+  ]
+  where
+    cps1 = newCreatePlayerState
+      & cpsNumber    ?~ 1
+      & cpsName      .~ "Joe"
+      & cpsPosition  .~ "centre"
+    cps2 = newCreatePlayerState
+      & cpsNumber   ?~ 2
+      & cpsName     .~ "Bob"
+      & cpsPosition .~ "defense"
 
-    context "existing state" $ let
-      pm  = CreatePlayer $ newCreatePlayerState & cpsNumber ?~ 1
-      cps = pm^.createPlayerStateL
-      in it "should have a number of 1" $
-        cps^.cpsNumber `shouldBe` Just 1
-
-  context "setters" $ do
-    context "state missing" $ let
-      pm  = MainMenu
-      pm' = pm & createPlayerStateL.cpsNumber ?~ 1
-      in it "should set the player number to 1" $
-        pm'^.createPlayerStateL.cpsNumber `shouldBe` Just 1
-
-    context "existing state" $ let
-      pm  = CreatePlayer $ newCreatePlayerState & cpsNumber ?~ 1
-      pm' = pm & createPlayerStateL.cpsNumber ?~ 2
-      in it "should set the player number to 2" $
-        pm'^.createPlayerStateL.cpsNumber `shouldBe` Just 2
+createGoalieStateLSpec :: Spec
+createGoalieStateLSpec = describe "createGoalieStateL" $
+  lensSpec createGoalieStateL
+  -- getters
+  [ ( "missing state", MainMenu,          newCreateGoalieState )
+  , ( "with state",    CreateGoalie cgs1, cgs1                 )
+  ]
+  -- setters
+  [ ( "set state",    MainMenu,          cgs1                 )
+  , ( "change state", CreateGoalie cgs1, cgs2                 )
+  , ( "clear state",  CreateGoalie cgs1, newCreateGoalieState )
+  ]
+  where
+    cgs1 = newCreateGoalieState
+      & cgsNumber    ?~ 1
+      & cgsName      .~ "Joe"
+    cgs2 = newCreateGoalieState
+      & cgsNumber ?~ 2
+      & cgsName   .~ "Bob"
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -177,24 +201,23 @@ jsonSpec x j = do
       decode (encode x) `shouldBe` Just x
 
 lensSpec
-  :: (Eq a, Show s, Show a)
+  :: Comparable a
   => Lens' s a
-  -> [(s, a)]
-  -> [(s, a)]
+  -> [(String, s, a)]
+  -> [(String, s, a)]
   -> Spec
-lensSpec l gs ss = do
+lensSpec lens getters setters = do
 
   context "getters" $ mapM_
-    (\(s, x) -> context (show s) $
-      it ("should be " ++ show x) $
-        s ^. l `shouldBe` x)
-    gs
+    (\(label, s, x) -> context label $
+      compareTest (s^.lens) x)
+    getters
 
   context "setters" $ mapM_
-    (\(s, x) -> context (show s) $
-      it ("should set to " ++ show x) $
-        (s & l .~ x) ^. l `shouldBe` x)
-    ss
+    (\(label, s, x) -> context label $ let
+      s' = s & lens .~ x
+      in compareTest (s'^.lens) x)
+    setters
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
@@ -241,20 +264,18 @@ goalieStats n = newGoalieStats
   & gsGames        .~ n
   & gsMinsPlayed   .~ n + 1
   & gsGoalsAllowed .~ n + 2
-  & gsGoalsAgainst .~ n + 3
-  & gsWins         .~ n + 4
-  & gsLosses       .~ n + 5
-  & gsTies         .~ n + 6
+  & gsWins         .~ n + 3
+  & gsLosses       .~ n + 4
+  & gsTies         .~ n + 5
 
 goalieStatsJSON :: Int -> Value
 goalieStatsJSON n = Object $ HM.fromList
   [ ( "games",         toJSON n       )
   , ( "mins_played",   toJSON $ n + 1 )
   , ( "goals_allowed", toJSON $ n + 2 )
-  , ( "goals_against", toJSON $ n + 3 )
-  , ( "wins",          toJSON $ n + 4 )
-  , ( "losses",        toJSON $ n + 5 )
-  , ( "ties",          toJSON $ n + 6 )
+  , ( "wins",          toJSON $ n + 3 )
+  , ( "losses",        toJSON $ n + 4 )
+  , ( "ties",          toJSON $ n + 5 )
   ]
 
 gameStats :: Int -> GameStats
@@ -633,6 +654,57 @@ addPlayerStatsSpec = describe "addPlayerStats" $ do
     it "should be 9" $
       s3^.psPMin `shouldBe` 9
 
+goalieSearchSpec :: Spec
+goalieSearchSpec = describe "goalieSearch" $ do
+  let
+    goalies =
+      [ newGoalie 2 "Joe"
+      , newGoalie 3 "Bob"
+      , newGoalie 5 "Steve"
+      ]
+    result n = (n, goalies!!n)
+
+  context "partial match" $
+    it "should return Joe and Steve" $
+      goalieSearch "e" goalies `shouldBe` [result 0, result 2]
+
+  context "no match" $
+    it "should return an empty list" $
+      goalieSearch "x" goalies `shouldBe` []
+
+  context "exact match" $
+    it "should return Steve" $
+      goalieSearch "Bob" goalies `shouldBe` [result 1]
+
+goalieSearchExactSpec :: Spec
+goalieSearchExactSpec = describe "goalieSearchExact" $ do
+  let
+    goalies =
+      [ newGoalie 2 "Joe"
+      , newGoalie 3 "Bob"
+      , newGoalie 5 "Steve"
+      ]
+    result n = (n, goalies!!n)
+
+  mapM_
+    (\(name, num) -> context name $
+      it ("should return " ++ name) $
+        goalieSearchExact name goalies `shouldBe` Just (result num))
+    --  name,    num
+    [ ( "Joe",   0   )
+    , ( "Bob",   1   )
+    , ( "Steve", 2   )
+    ]
+
+  context "Greg" $
+    it "should return Nothing" $
+      goalieSearchExact "Greg" goalies `shouldBe` Nothing
+
+goalieSummarySpec :: Spec
+goalieSummarySpec = describe "goalieSummary" $
+  it "should provide a summary string" $
+    goalieSummary (newGoalie 2 "Joe") `shouldBe` "Joe (2)"
+
 joe :: Player
 joe = newPlayer 2 "Joe" "center"
 
@@ -641,3 +713,34 @@ bob = newPlayer 3 "Bob" "defense"
 
 steve :: Player
 steve = newPlayer 5 "Steve" "forward"
+
+instance Comparable GameState where
+  compareTest actual expected =
+    it ("should be " ++ show expected) $
+      actual `shouldBe` expected
+
+instance Comparable CreatePlayerState where
+  compareTest actual expected = do
+
+    describe "cpsNumber" $
+      it ("should be " ++ show (expected^.cpsNumber)) $
+        actual^.cpsNumber `shouldBe` expected^.cpsNumber
+
+    describe "cpsName" $
+      it ("should be " ++ expected^.cpsName) $
+        actual^.cpsName `shouldBe` expected^.cpsName
+
+    describe "cpsPosition" $
+      it ("should be " ++ expected^.cpsPosition) $
+        actual^.cpsPosition `shouldBe` expected^.cpsPosition
+
+instance Comparable CreateGoalieState where
+  compareTest actual expected = do
+
+    describe "cgsNuber" $
+      it("should be " ++ show (expected^.cgsNumber)) $
+        actual^.cgsNumber `shouldBe` expected^.cgsNumber
+
+    describe "cgsName" $
+      it ("should be " ++ expected^.cgsName) $
+        actual^.cgsName `shouldBe` expected^.cgsName

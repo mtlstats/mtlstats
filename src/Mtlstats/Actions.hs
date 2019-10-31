@@ -31,12 +31,17 @@ module Mtlstats.Actions
   , updateGameStats
   , validateGameDate
   , createPlayer
+  , createGoalie
   , addPlayer
+  , addGoalie
+  , resetCreatePlayerState
+  , resetCreateGoalieState
   , recordGoalAssists
   , awardGoal
   , awardAssist
   , resetGoalData
   , assignPMins
+  , recordGoalieStats
   , backHome
   , scrollUp
   , scrollDown
@@ -139,12 +144,20 @@ validateGameDate s = fromMaybe s $ do
 -- | Starts player creation mode
 createPlayer :: ProgState -> ProgState
 createPlayer = let
-  cb = modify $ progMode .~ MainMenu
-  cps
-    = newCreatePlayerState
-    & cpsSuccessCallback .~ cb
-    & cpsFailureCallback .~ cb
+  callback = modify $ progMode .~ MainMenu
+  cps = newCreatePlayerState
+    & cpsSuccessCallback .~ callback
+    & cpsFailureCallback .~ callback
   in progMode .~ CreatePlayer cps
+
+-- | Starts goalie creation mode
+createGoalie :: ProgState -> ProgState
+createGoalie = let
+  callback = modify $ progMode .~ MainMenu
+  cgs = newCreateGoalieState
+    & cgsSuccessCallback .~ callback
+    & cgsFailureCallback .~ callback
+  in progMode .~ CreateGoalie cgs
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
@@ -157,6 +170,30 @@ addPlayer s = fromMaybe s $ do
     player = newPlayer num name pos
   Just $ s & database.dbPlayers
     %~ (++[player])
+
+-- | Adds the entered goalie to the roster
+addGoalie :: ProgState -> ProgState
+addGoalie s = fromMaybe s $ do
+  let cgs = s^.progMode.createGoalieStateL
+  num <- cgs^.cgsNumber
+  let
+    name   = cgs^.cgsName
+    goalie = newGoalie num name
+  Just $ s & database.dbGoalies
+    %~ (++[goalie])
+
+-- | Resets the 'CreatePlayerState' value
+resetCreatePlayerState :: ProgState -> ProgState
+resetCreatePlayerState = progMode.createPlayerStateL
+  %~ (cpsNumber   .~ Nothing)
+  .  (cpsName     .~ "")
+  .  (cpsPosition .~ "")
+
+-- | Resets the 'CreateGoalieState' value
+resetCreateGoalieState :: ProgState -> ProgState
+resetCreateGoalieState = progMode.createGoalieStateL
+  %~ (cgsNumber .~ Nothing)
+  .  (cgsName   .~ "")
 
 -- | Awards the goal and assists to the players
 recordGoalAssists :: ProgState -> ProgState
@@ -232,6 +269,31 @@ assignPMins mins s = fromMaybe s $ do
            (psPMin +~ mins)
          )
       .  (selectedPlayer .~ Nothing)
+
+-- | Records the goalie's game stats
+recordGoalieStats :: ProgState -> ProgState
+recordGoalieStats s = fromMaybe s $ do
+  let gs = s^.progMode.gameStateL
+  gid    <- gs^.gameSelectedGoalie
+  goalie <- nth gid $ s^.database.dbGoalies
+  mins   <- gs^.goalieMinsPlayed
+  goals  <- gs^.goalsAllowed
+
+  let
+    bumpStats gs = gs
+      & gsMinsPlayed   +~ mins
+      & gsGoalsAllowed +~ goals
+
+  Just $ s
+    & progMode.gameStateL
+      %~ (gameGoalieStats    %~ updateMap gid newGoalieStats bumpStats)
+      .  (gameSelectedGoalie .~ Nothing)
+      .  (goalieMinsPlayed   .~ Nothing)
+      .  (goalsAllowed       .~ Nothing)
+    & database.dbGoalies
+      %~ modifyNth gid (\goalie -> goalie
+         & gYtd      %~ bumpStats
+         & gLifetime %~ bumpStats)
 
 -- | Resets the program state back to the main menu
 backHome :: ProgState -> ProgState
