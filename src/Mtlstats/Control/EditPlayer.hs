@@ -30,7 +30,17 @@ import Mtlstats.Types
 editPlayerC :: EditPlayerState -> Controller
 editPlayerC eps
   | null $ eps^.epsSelectedPlayer = selectPlayerC
-  | otherwise                     = undefined
+  | otherwise = case eps^.epsMode of
+    EPMenu       -> menuC
+    EPNumber     -> numberC
+    EPName       -> nameC
+    EPPosition   -> positionC
+    EPYtdGoals   -> ytdGoalsC
+    EPYtdAssists -> ytdAssistsC
+    EPYtdPMin    -> ytdPMinC
+    EPLtGoals    -> ltGoalsC
+    EPLtAssists  -> ltAssistsC
+    EPLtPMin     -> ltPMinC
 
 selectPlayerC :: Controller
 selectPlayerC = Controller
@@ -39,3 +49,33 @@ selectPlayerC = Controller
     promptHandler playerToEditPrompt e
     return True
   }
+
+menuC :: Controller
+menuC = undefined
+
+numberC :: Controller
+numberC = undefined
+
+nameC :: Controller
+nameC = undefined
+
+positionC :: Controller
+positionC = undefined
+
+ytdGoalsC :: Controller
+ytdGoalsC = undefined
+
+ytdAssistsC :: Controller
+ytdAssistsC = undefined
+
+ytdPMinC :: Controller
+ytdPMinC = undefined
+
+ltGoalsC :: Controller
+ltGoalsC = undefined
+
+ltAssistsC :: Controller
+ltAssistsC = undefined
+
+ltPMinC :: Controller
+ltPMinC = undefined
