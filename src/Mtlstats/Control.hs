@@ -71,7 +71,7 @@ dispatch s = case s^.progMode of
     | null $ cgs^.cgsNumber -> getGoalieNumC
     | null $ cgs^.cgsName   -> getGoalieNameC
     | otherwise             -> confirmCreateGoalieC
-  EditPlayer eps -> editPlayer eps
+  EditPlayer eps -> editPlayerC eps
 
 mainMenuC :: Controller
 mainMenuC = Controller

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Control.EditPlayer (editPlayer) where
+module Mtlstats.Control.EditPlayer (editPlayerC) where
 
 import Lens.Micro ((^.))
 
@@ -27,8 +27,8 @@ import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Dispatcher/controller for the player edit mode
-editPlayer :: EditPlayerState -> Controller
-editPlayer eps
+editPlayerC :: EditPlayerState -> Controller
+editPlayerC eps
   | null $ eps^.epsSelectedPlayer = selectPlayerC
   | otherwise                     = undefined
 
