@@ -28,6 +28,7 @@ module Mtlstats.Prompt.EditPlayer
   , editPlayerYtdPMinPrompt
   , editPlayerLtGoalsPrompt
   , editPlayerLtAssistsPrompt
+  , editPlayerLtPMinPrompt
   ) where
 
 import Control.Monad.Extra (whenJustM)
@@ -77,6 +78,11 @@ editPlayerLtGoalsPrompt = numPrompt "Lifetime goals: " $
 editPlayerLtAssistsPrompt :: Prompt
 editPlayerLtAssistsPrompt = numPrompt "Lifetime assists: " $
   editPlayer . (pLifetime.psAssists .~)
+
+-- | Prompt to edit a player's lifetime penalty minutes
+editPlayerLtPMinPrompt :: Prompt
+editPlayerLtPMinPrompt = numPrompt "Lifetime penalty minutes: " $
+  editPlayer . (pLifetime.psPMin .~)
 
 editPlayer :: (Player -> Player) -> Action ()
 editPlayer f =

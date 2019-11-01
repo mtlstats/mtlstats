@@ -135,4 +135,9 @@ ltAssistsC = Controller
   }
 
 ltPMinC :: Controller
-ltPMinC = undefined
+ltPMinC = Controller
+  { drawController   = drawPrompt editPlayerLtPMinPrompt
+  , handleController = \e -> do
+    promptHandler editPlayerLtPMinPrompt e
+    return True
+  }
