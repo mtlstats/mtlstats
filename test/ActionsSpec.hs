@@ -680,20 +680,21 @@ assignPMinsSpec = describe "assignPMins" $ let
 
 recordGoalieStatsSpec :: Spec
 recordGoalieStatsSpec = describe "recordGoalieStats" $ let
-  goalieStats mins goals = newGoalieStats
+  goalieStats games mins goals = newGoalieStats
+    & gsGames        .~ games
     & gsMinsPlayed   .~ mins
     & gsGoalsAllowed .~ goals
 
   joe = newGoalie 2 "Joe"
-    & gYtd      .~ goalieStats 10 11
-    & gLifetime .~ goalieStats 12 13
+    & gYtd      .~ goalieStats 10 11 12
+    & gLifetime .~ goalieStats 20 21 22
 
   bob = newGoalie 3 "Bob"
-    & gYtd      .~ goalieStats 14 15
-    & gLifetime .~ goalieStats 16 17
+    & gYtd      .~ goalieStats 30 31 32
+    & gLifetime .~ goalieStats 40 41 42
 
   gameState n mins goals = newGameState
-    & gameGoalieStats    .~ M.fromList [(1, goalieStats 1 2)]
+    & gameGoalieStats    .~ M.fromList [(1, goalieStats 1 2 3)]
     & gameSelectedGoalie .~ n
     & goalieMinsPlayed   .~ mins
     & goalsAllowed       .~ goals
@@ -708,8 +709,19 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
       in context name $ do
 
         mapM_
-          (\(name, gid, (gMins, gGoals, ytdMins, ytdGoals, ltMins, ltGoals)) ->
-            context name $ do
+          (\( name
+            , gid
+            , ( gGames
+              , gMins
+              , gGoals
+              , ytdGames
+              , ytdMins
+              , ytdGoals
+              , ltGames
+              , ltMins
+              , ltGoals
+              )
+            ) -> context name $ do
               let
                 gs     = s^.progMode.gameStateL.gameGoalieStats
                 game   = M.findWithDefault newGoalieStats gid gs
@@ -717,31 +729,17 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
                 ytd    = goalie^.gYtd
                 lt     = goalie^.gLifetime
 
-              context "game minutes played" $
-                it ("should be " ++ show gMins) $
-                  game^.gsMinsPlayed `shouldBe` gMins
+              context "game" $
+                game `TS.compareTest` goalieStats gGames gMins gGoals
 
-              context "game goals allowed" $
-                it ("should be " ++ show gGoals) $
-                  game^.gsGoalsAllowed `shouldBe` gGoals
+              context "year-to-date" $
+                ytd `TS.compareTest` goalieStats ytdGames ytdMins ytdGoals
 
-              context "year-to-date minutes played" $
-                it ("should be " ++ show ytdMins) $
-                  ytd^.gsMinsPlayed `shouldBe` ytdMins
+              context "lifetime" $
+                lt `TS.compareTest` goalieStats ltGames ltMins ltGoals)
 
-              context "year-to-date goals allowed" $
-                it ("should be " ++ show ytdGoals) $
-                  ytd^.gsGoalsAllowed `shouldBe` ytdGoals
-
-              context "lifetime minutes played" $
-                it ("should be " ++ show ltMins) $
-                  lt^.gsMinsPlayed `shouldBe` ltMins
-
-              context "lifetime goals allowed" $
-                it ("should be " ++ show ltGoals) $
-                  lt^.gsGoalsAllowed `shouldBe` ltGoals)
-          [ ( "Joe", 0, joeData )
-          , ( "Bob", 1, bobData )
+          [ ( "checking Joe", 0, joeData )
+          , ( "checking Bob", 1, bobData )
           ]
 
         context "selected goalie" $ let
@@ -759,52 +757,52 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
           in it ("should be " ++ show expected) $
             (s^.progMode.gameStateL.goalsAllowed) `shouldBe` expected)
 
-    [ ( "Joe"
+    [ ( "updating Joe"
       , Just 0
       , Just 1
       , Just 2
-      , ( 1, 2, 11, 13, 13, 15 )
-      , ( 1, 2, 14, 15, 16, 17 )
+      , (1, 1, 2, 11, 12, 14, 21, 22, 24)
+      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
       , True
       )
-    , ( "Bob"
+    , ( "updating Bob"
       , Just 1
       , Just 1
       , Just 2
-      , (0, 0, 10, 11, 12, 13 )
-      , (2, 4, 15, 17, 17, 19 )
+      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
+      , (1, 3, 5, 30, 32, 34, 40, 42, 44)
       , True
       )
     , ( "goalie out of bounds"
       , Just 2
       , Just 1
       , Just 2
-      , (0, 0, 10, 11, 12, 13 )
-      , (1, 2, 14, 15, 16, 17 )
+      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
+      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
       , False
       )
     , ( "missing goalie"
       , Nothing
       , Just 1
       , Just 2
-      , (0, 0, 10, 11, 12, 13 )
-      , (1, 2, 14, 15, 16, 17 )
+      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
+      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
       , False
       )
     , ( "missing minutes"
       , Just 0
       , Nothing
       , Just 1
-      , (0, 0, 10, 11, 12, 13 )
-      , (1, 2, 14, 15, 16, 17 )
+      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
+      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
       , False
       )
     , ( "missing goals"
       , Just 0
       , Just 1
       , Nothing
-      , (0, 0, 10, 11, 12, 13 )
-      , (1, 2, 14, 15, 16, 17 )
+      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
+      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
       , False
       )
     ]

@@ -764,6 +764,20 @@ bob = newPlayer 3 "Bob" "defense"
 steve :: Player
 steve = newPlayer 5 "Steve" "forward"
 
+instance Comparable GoalieStats where
+  compareTest actual expected = mapM_
+    (\(name, lens) -> describe name $
+      it ("should be " ++ show (expected^.lens)) $
+        actual^.lens `shouldBe` expected^.lens)
+    --  name,             lens
+    [ ( "gsGames",        gsGames        )
+    , ( "gsMinsPlayed",   gsMinsPlayed   )
+    , ( "gsGoalsAllowed", gsGoalsAllowed )
+    , ( "gsWins",         gsWins         )
+    , ( "gsLosses",       gsLosses       )
+    , ( "gsTies",         gsTies         )
+    ]
+
 instance Comparable GameState where
   compareTest actual expected =
     it ("should be " ++ show expected) $

@@ -285,7 +285,13 @@ recordGoalieStats s = fromMaybe s $ do
   goals  <- gs^.goalsAllowed
 
   let
+    gameStats = M.findWithDefault newGoalieStats gid $ gs^.gameGoalieStats
+    bumpVal   = if gameStats^.gsGames == 0
+      then 1
+      else 0
+
     bumpStats gs = gs
+      & gsGames        +~ bumpVal
       & gsMinsPlayed   +~ mins
       & gsGoalsAllowed +~ goals
 
