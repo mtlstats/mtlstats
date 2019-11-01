@@ -21,8 +21,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Prompt.EditPlayer (editPlayerNumPrompt) where
 
+import Control.Monad.Extra (whenJustM)
+import Control.Monad.Trans.State (gets, modify)
+import Lens.Micro ((^.), (.~), (%~))
+
+import Mtlstats.Prompt
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Prompt to edit a player's number
 editPlayerNumPrompt :: Prompt
-editPlayerNumPrompt = undefined
+editPlayerNumPrompt = numPrompt "Player number: " $ \n ->
+  whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid ->
+    modify
+      $ (database.dbPlayers %~ modifyNth pid (pNumber .~ n))
+      . (progMode.editPlayerStateL.epsMode .~ EPMenu)
