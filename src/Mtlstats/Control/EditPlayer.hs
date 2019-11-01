@@ -27,6 +27,7 @@ import qualified UI.NCurses as C
 
 import Mtlstats.Menu
 import Mtlstats.Prompt
+import Mtlstats.Prompt.EditPlayer
 import Mtlstats.Types
 import Mtlstats.Util
 
@@ -70,7 +71,12 @@ menuC = Controller
   }
 
 numberC :: Controller
-numberC = undefined
+numberC = Controller
+  { drawController = drawPrompt editPlayerNumPrompt
+  , handleController = \e -> do
+    promptHandler editPlayerNumPrompt e
+    return True
+  }
 
 nameC :: Controller
 nameC = undefined
