@@ -34,12 +34,17 @@ import Mtlstats.Util
 
 -- | Prompt to edit a player's number
 editPlayerNumPrompt :: Prompt
-editPlayerNumPrompt = numPrompt "Player number: " $ \n ->
-  whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid ->
-    modify
-      $ (database.dbPlayers %~ modifyNth pid (pNumber .~ n))
-      . (progMode.editPlayerStateL.epsMode .~ EPMenu)
+editPlayerNumPrompt = numPrompt "Player number: " $
+  editPlayer . (pNumber .~)
 
 -- | Prompt to edit a player's name
 editPlayerNamePrompt :: Prompt
-editPlayerNamePrompt = undefined
+editPlayerNamePrompt = strPrompt "Player name: " $
+  editPlayer . (pName .~)
+
+editPlayer :: (Player -> Player) -> Action ()
+editPlayer f =
+  whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid ->
+    modify
+      $ (database.dbPlayers %~ modifyNth pid f)
+      . (progMode.editPlayerStateL.epsMode .~ EPMenu)
