@@ -127,7 +127,12 @@ ltGoalsC = Controller
   }
 
 ltAssistsC :: Controller
-ltAssistsC = undefined
+ltAssistsC = Controller
+  { drawController   = drawPrompt editPlayerLtAssistsPrompt
+  , handleController = \e -> do
+    promptHandler editPlayerLtAssistsPrompt e
+    return True
+  }
 
 ltPMinC :: Controller
 ltPMinC = undefined
