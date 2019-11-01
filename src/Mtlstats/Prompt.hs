@@ -329,7 +329,8 @@ goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
   modify recordGoalieStats
 
 playerToEditPrompt :: Prompt
-playerToEditPrompt = undefined
+playerToEditPrompt = selectPlayerPrompt "Player to edit: " $
+  modify . (progMode.editPlayerStateL.epsSelectedPlayer .~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer
