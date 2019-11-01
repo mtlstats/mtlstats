@@ -21,10 +21,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditPlayer (editPlayerC) where
 
+import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
+import qualified UI.NCurses as C
 
+import Mtlstats.Menu
 import Mtlstats.Prompt
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Dispatcher/controller for the player edit mode
 editPlayerC :: EditPlayerState -> Controller
@@ -51,7 +55,19 @@ selectPlayerC = Controller
   }
 
 menuC :: Controller
-menuC = undefined
+menuC = Controller
+  { drawController = \s -> do
+    let
+      header = fromMaybe "" $ do
+        pid <- s^.progMode.editPlayerStateL.epsSelectedPlayer
+        p   <- nth pid $ s^.database.dbPlayers
+        Just $ playerDetails p ++ "\n"
+    C.drawString header
+    drawMenu editPlayerMenu
+  , handleController = \e -> do
+    menuHandler editPlayerMenu e
+    return True
+  }
 
 numberC :: Controller
 numberC = undefined
