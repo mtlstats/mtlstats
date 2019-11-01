@@ -221,6 +221,7 @@ instance Show ProgMode where
   show (NewGame _)      = "NewGame"
   show (CreatePlayer _) = "CreatePlayer"
   show (CreateGoalie _) = "CreateGoalie"
+  show (EditPlayer _)   = "EditPlayer"
 
 -- | The game state
 data GameState = GameState
