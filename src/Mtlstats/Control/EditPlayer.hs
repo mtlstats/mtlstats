@@ -21,8 +21,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditPlayer (editPlayer) where
 
+import Lens.Micro ((^.))
+
 import Mtlstats.Types
 
 -- | Dispatcher/controller for the player edit mode
 editPlayer :: EditPlayerState -> Controller
-editPlayer = undefined
+editPlayer eps
+  | null $ eps^.epsSelectedPlayer = selectPlayerC
+  | otherwise                     = undefined
+
+selectPlayerC :: Controller
+selectPlayerC = undefined

@@ -83,6 +83,8 @@ module Mtlstats.Types (
   cgsName,
   cgsSuccessCallback,
   cgsFailureCallback,
+  -- ** EditPlayerState Lenses
+  epsSelectedPlayer,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -122,6 +124,7 @@ module Mtlstats.Types (
   newGameState,
   newCreatePlayerState,
   newCreateGoalieState,
+  newEditPlayerState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -301,7 +304,10 @@ data CreateGoalieState = CreateGoalieState
   }
 
 -- | Player edit status
-data EditPlayerState = EditPlayerState
+newtype EditPlayerState = EditPlayerState
+  { _epsSelectedPlayer :: Maybe Int
+  -- ^ The index number of the player being edited
+  }
 
 -- | Represents the database
 data Database = Database
@@ -549,6 +555,7 @@ makeLenses ''ProgState
 makeLenses ''GameState
 makeLenses ''CreatePlayerState
 makeLenses ''CreateGoalieState
+makeLenses ''EditPlayerState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
@@ -629,6 +636,12 @@ newCreateGoalieState = CreateGoalieState
   , _cgsName            = ""
   , _cgsSuccessCallback = return ()
   , _cgsFailureCallback = return ()
+  }
+
+-- | Constructor for an 'EditPlayerState'
+newEditPlayerState :: EditPlayerState
+newEditPlayerState = EditPlayerState
+  { _epsSelectedPlayer = Nothing
   }
 
 -- | Constructor for a 'Database'
