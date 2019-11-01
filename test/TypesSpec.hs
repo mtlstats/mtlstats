@@ -47,6 +47,7 @@ spec = describe "Mtlstats.Types" $ do
   gameStateLSpec
   createPlayerStateLSpec
   createGoalieStateLSpec
+  editPlayerStateLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -140,6 +141,24 @@ createGoalieStateLSpec = describe "createGoalieStateL" $
     cgs2 = newCreateGoalieState
       & cgsNumber ?~ 2
       & cgsName   .~ "Bob"
+
+editPlayerStateLSpec :: Spec
+editPlayerStateLSpec = describe "editPlayerStateL" $
+  lensSpec editPlayerStateL
+  -- getters
+  [ ( "missing state", MainMenu,        newEditPlayerState )
+  , ( "withState",     EditPlayer eps1, eps1               )
+  ]
+  -- setters
+  [ ( "set state",    MainMenu,        eps1               )
+  , ( "change state", EditPlayer eps1, eps2               )
+  , ( "clear state",  EditPlayer eps1, newEditPlayerState )
+  ]
+  where
+    eps1 = newEditPlayerState
+      & epsSelectedPlayer ?~ 1
+    eps2 = newEditPlayerState
+      & epsSelectedPlayer ?~ 2
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -733,6 +752,12 @@ instance Comparable CreatePlayerState where
     describe "cpsPosition" $
       it ("should be " ++ expected^.cpsPosition) $
         actual^.cpsPosition `shouldBe` expected^.cpsPosition
+
+instance Comparable EditPlayerState where
+  compareTest actual expected =
+    describe "epsSelectedPlayer" $
+      it ("should be " ++ show (expected^.epsSelectedPlayer)) $
+        actual^.epsSelectedPlayer `shouldBe` expected^.epsSelectedPlayer
 
 instance Comparable CreateGoalieState where
   compareTest actual expected = do
