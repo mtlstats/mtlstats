@@ -19,7 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Prompt.EditPlayer (editPlayerNumPrompt) where
+module Mtlstats.Prompt.EditPlayer
+  ( editPlayerNumPrompt
+  , editPlayerNamePrompt
+  ) where
 
 import Control.Monad.Extra (whenJustM)
 import Control.Monad.Trans.State (gets, modify)
@@ -36,3 +39,7 @@ editPlayerNumPrompt = numPrompt "Player number: " $ \n ->
     modify
       $ (database.dbPlayers %~ modifyNth pid (pNumber .~ n))
       . (progMode.editPlayerStateL.epsMode .~ EPMenu)
+
+-- | Prompt to edit a player's name
+editPlayerNamePrompt :: Prompt
+editPlayerNamePrompt = undefined

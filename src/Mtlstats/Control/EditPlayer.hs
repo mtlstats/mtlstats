@@ -79,7 +79,12 @@ numberC = Controller
   }
 
 nameC :: Controller
-nameC = undefined
+nameC = Controller
+  { drawController   = drawPrompt editPlayerNamePrompt
+  , handleController = \e -> do
+    promptHandler editPlayerNamePrompt e
+    return True
+  }
 
 positionC :: Controller
 positionC = undefined
