@@ -31,6 +31,8 @@ module Mtlstats.Types (
   GameType (..),
   CreatePlayerState (..),
   CreateGoalieState (..),
+  EditPlayerState (..),
+  EditPlayerMode (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -49,6 +51,7 @@ module Mtlstats.Types (
   gameStateL,
   createPlayerStateL,
   createGoalieStateL,
+  editPlayerStateL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -82,6 +85,9 @@ module Mtlstats.Types (
   cgsName,
   cgsSuccessCallback,
   cgsFailureCallback,
+  -- ** EditPlayerState Lenses
+  epsSelectedPlayer,
+  epsMode,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -121,6 +127,7 @@ module Mtlstats.Types (
   newGameState,
   newCreatePlayerState,
   newCreateGoalieState,
+  newEditPlayerState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -146,6 +153,7 @@ module Mtlstats.Types (
   playerSearchExact,
   modifyPlayer,
   playerSummary,
+  playerDetails,
   playerIsActive,
   -- ** PlayerStats Helpers
   psPoints,
@@ -208,6 +216,7 @@ data ProgMode
   | NewGame GameState
   | CreatePlayer CreatePlayerState
   | CreateGoalie CreateGoalieState
+  | EditPlayer EditPlayerState
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
@@ -215,6 +224,7 @@ instance Show ProgMode where
   show (NewGame _)      = "NewGame"
   show (CreatePlayer _) = "CreatePlayer"
   show (CreateGoalie _) = "CreateGoalie"
+  show (EditPlayer _)   = "EditPlayer"
 
 -- | The game state
 data GameState = GameState
@@ -297,6 +307,28 @@ data CreateGoalieState = CreateGoalieState
   , _cgsFailureCallback :: Action ()
   -- ^ The function to call on failure
   }
+
+-- | Player edit status
+data EditPlayerState = EditPlayerState
+  { _epsSelectedPlayer :: Maybe Int
+  -- ^ The index number of the player being edited
+  , _epsMode           :: EditPlayerMode
+  -- ^ The editing mode
+  }
+
+-- | Player editing mode
+data EditPlayerMode
+  = EPMenu
+  | EPNumber
+  | EPName
+  | EPPosition
+  | EPYtdGoals
+  | EPYtdAssists
+  | EPYtdPMin
+  | EPLtGoals
+  | EPLtAssists
+  | EPLtPMin
+  deriving (Eq, Show)
 
 -- | Represents the database
 data Database = Database
@@ -544,6 +576,7 @@ makeLenses ''ProgState
 makeLenses ''GameState
 makeLenses ''CreatePlayerState
 makeLenses ''CreateGoalieState
+makeLenses ''EditPlayerState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
@@ -571,6 +604,13 @@ createGoalieStateL = lens
     CreateGoalie cgs -> cgs
     _                -> newCreateGoalieState)
   (\_ cgs -> CreateGoalie cgs)
+
+editPlayerStateL :: Lens' ProgMode EditPlayerState
+editPlayerStateL = lens
+  (\case
+    EditPlayer eps -> eps
+    _              -> newEditPlayerState)
+  (\_ eps -> EditPlayer eps)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
@@ -624,6 +664,13 @@ newCreateGoalieState = CreateGoalieState
   , _cgsName            = ""
   , _cgsSuccessCallback = return ()
   , _cgsFailureCallback = return ()
+  }
+
+-- | Constructor for an 'EditPlayerState'
+newEditPlayerState :: EditPlayerState
+newEditPlayerState = EditPlayerState
+  { _epsSelectedPlayer = Nothing
+  , _epsMode           = EPMenu
   }
 
 -- | Constructor for a 'Database'
@@ -813,6 +860,20 @@ modifyPlayer f n = map
 playerSummary :: Player -> String
 playerSummary p =
   p^.pName ++ " (" ++ show (p^.pNumber) ++ ") " ++ p^.pPosition
+
+-- | Provides a detailed string describing a 'Player'
+playerDetails :: Player -> String
+playerDetails p = unlines
+  [ "               Number: " ++ show (p^.pNumber)
+  , "                 Name: " ++ p^.pName
+  , "             Position: " ++ p^.pPosition
+  , "            YTD goals: " ++ show (p^.pYtd.psGoals)
+  , "          YTD assists: " ++ show (p^.pYtd.psAssists)
+  , "     YTD penalty mins: " ++ show (p^.pYtd.psPMin)
+  , "       Lifetime goals: " ++ show (p^.pLifetime.psGoals)
+  , "     Lifetime assists: " ++ show (p^.pLifetime.psAssists)
+  , "Lifetime penalty mins: " ++ show (p^.pLifetime.psPMin)
+  ]
 
 -- | Determines whether or not a player has been active in the current
 -- season/year

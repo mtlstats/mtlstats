@@ -31,6 +31,7 @@ import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Control.EditPlayer
 import Mtlstats.Control.GoalieInput
 import Mtlstats.Format
 import Mtlstats.Handlers
@@ -70,6 +71,7 @@ dispatch s = case s^.progMode of
     | null $ cgs^.cgsNumber -> getGoalieNumC
     | null $ cgs^.cgsName   -> getGoalieNameC
     | otherwise             -> confirmCreateGoalieC
+  EditPlayer eps -> editPlayerC eps
 
 mainMenuC :: Controller
 mainMenuC = Controller

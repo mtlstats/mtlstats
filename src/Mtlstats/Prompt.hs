@@ -47,7 +47,8 @@ module Mtlstats.Prompt (
   goalieNamePrompt,
   selectGameGoaliePrompt,
   goalieMinsPlayedPrompt,
-  goalsAllowedPrompt
+  goalsAllowedPrompt,
+  playerToEditPrompt
 ) where
 
 import Control.Monad (when)
@@ -326,6 +327,10 @@ goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
   when (mins >= gameLength) $
     modify $ progMode.gameStateL.goaliesRecorded .~ True
   modify recordGoalieStats
+
+playerToEditPrompt :: Prompt
+playerToEditPrompt = selectPlayerPrompt "Player to edit: " $
+  modify . (progMode.editPlayerStateL.epsSelectedPlayer .~)
 
 drawSimplePrompt :: String -> ProgState -> C.Update ()
 drawSimplePrompt pStr s = C.drawString $ pStr ++ s^.inputBuffer

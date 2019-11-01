@@ -32,6 +32,7 @@ module Mtlstats.Actions
   , validateGameDate
   , createPlayer
   , createGoalie
+  , editPlayer
   , addPlayer
   , addGoalie
   , resetCreatePlayerState
@@ -158,6 +159,10 @@ createGoalie = let
     & cgsSuccessCallback .~ callback
     & cgsFailureCallback .~ callback
   in progMode .~ CreateGoalie cgs
+
+-- | Starts the player editing process
+editPlayer :: ProgState -> ProgState
+editPlayer = progMode .~ EditPlayer newEditPlayerState
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState

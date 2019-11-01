@@ -47,6 +47,7 @@ spec = describe "Mtlstats.Types" $ do
   gameStateLSpec
   createPlayerStateLSpec
   createGoalieStateLSpec
+  editPlayerStateLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -62,6 +63,7 @@ spec = describe "Mtlstats.Types" $ do
   playerSearchExactSpec
   modifyPlayerSpec
   playerSummarySpec
+  playerDetailsSpec
   playerIsActiveSpec
   psPointsSpec
   addPlayerStatsSpec
@@ -140,6 +142,24 @@ createGoalieStateLSpec = describe "createGoalieStateL" $
     cgs2 = newCreateGoalieState
       & cgsNumber ?~ 2
       & cgsName   .~ "Bob"
+
+editPlayerStateLSpec :: Spec
+editPlayerStateLSpec = describe "editPlayerStateL" $
+  lensSpec editPlayerStateL
+  -- getters
+  [ ( "missing state", MainMenu,        newEditPlayerState )
+  , ( "withState",     EditPlayer eps1, eps1               )
+  ]
+  -- setters
+  [ ( "set state",    MainMenu,        eps1               )
+  , ( "change state", EditPlayer eps1, eps2               )
+  , ( "clear state",  EditPlayer eps1, newEditPlayerState )
+  ]
+  where
+    eps1 = newEditPlayerState
+      & epsSelectedPlayer ?~ 1
+    eps2 = newEditPlayerState
+      & epsSelectedPlayer ?~ 2
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -589,6 +609,36 @@ playerSummarySpec = describe "playerSummary" $
   it "should be \"Joe (2) center\"" $
     playerSummary joe `shouldBe` "Joe (2) center"
 
+playerDetailsSpec :: Spec
+playerDetailsSpec = describe "playerDetails" $
+  it "should give a detailed description" $ let
+
+    player = newPlayer 1 "Joe" "centre"
+      & pYtd .~ PlayerStats
+        { _psGoals   = 2
+        , _psAssists = 3
+        , _psPMin    = 4
+        }
+      & pLifetime .~ PlayerStats
+        { _psGoals   = 5
+        , _psAssists = 6
+        , _psPMin    = 7
+        }
+
+    expected = unlines
+      [ "               Number: 1"
+      , "                 Name: Joe"
+      , "             Position: centre"
+      , "            YTD goals: 2"
+      , "          YTD assists: 3"
+      , "     YTD penalty mins: 4"
+      , "       Lifetime goals: 5"
+      , "     Lifetime assists: 6"
+      , "Lifetime penalty mins: 7"
+      ]
+
+    in playerDetails player `shouldBe` expected
+
 playerIsActiveSpec :: Spec
 playerIsActiveSpec = describe "playerIsActive" $ do
   let
@@ -733,6 +783,17 @@ instance Comparable CreatePlayerState where
     describe "cpsPosition" $
       it ("should be " ++ expected^.cpsPosition) $
         actual^.cpsPosition `shouldBe` expected^.cpsPosition
+
+instance Comparable EditPlayerState where
+  compareTest actual expected = do
+
+    describe "epsSelectedPlayer" $
+      it ("should be " ++ show (expected^.epsSelectedPlayer)) $
+        actual^.epsSelectedPlayer `shouldBe` expected^.epsSelectedPlayer
+
+    describe "epsMode" $
+      it ("should be " ++ show (expected^.epsMode)) $
+        actual^.epsMode `shouldBe` expected^.epsMode
 
 instance Comparable CreateGoalieState where
   compareTest actual expected = do

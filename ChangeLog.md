@@ -4,6 +4,7 @@
 
 - Fixed player creation bug
 - Prompt for goalie informaiton on game data entry
+- Implemented player editing
 
 ## v0.4.0
 
