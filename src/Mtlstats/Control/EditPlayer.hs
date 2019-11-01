@@ -103,7 +103,12 @@ ytdGoalsC = Controller
   }
 
 ytdAssistsC :: Controller
-ytdAssistsC = undefined
+ytdAssistsC = Controller
+  { drawController   = drawPrompt editPlayerYtdAssistsPrompt
+  , handleController = \e -> do
+    promptHandler editPlayerYtdAssistsPrompt e
+    return True
+  }
 
 ytdPMinC :: Controller
 ytdPMinC = undefined
