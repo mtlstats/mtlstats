@@ -23,6 +23,7 @@ module Mtlstats.Control.EditPlayer (editPlayer) where
 
 import Lens.Micro ((^.))
 
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Dispatcher/controller for the player edit mode
@@ -32,4 +33,9 @@ editPlayer eps
   | otherwise                     = undefined
 
 selectPlayerC :: Controller
-selectPlayerC = undefined
+selectPlayerC = Controller
+  { drawController   = drawPrompt playerToEditPrompt
+  , handleController = \e -> do
+    promptHandler playerToEditPrompt e
+    return True
+  }
