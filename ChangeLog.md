@@ -3,6 +3,7 @@
 ## current
 
 - Fixed player creation bug
+- Prompt for goalie informaiton on game data entry
 
 ## v0.4.0
 
