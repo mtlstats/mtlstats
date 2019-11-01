@@ -25,6 +25,7 @@ module Mtlstats.Prompt.EditPlayer
   , editPlayerPosPrompt
   , editPlayerYtdGoalsPrompt
   , editPlayerYtdAssistsPrompt
+  , editPlayerYtdPMinPrompt
   ) where
 
 import Control.Monad.Extra (whenJustM)
@@ -59,6 +60,11 @@ editPlayerYtdGoalsPrompt = numPrompt "Year-to-date goals: " $
 editPlayerYtdAssistsPrompt :: Prompt
 editPlayerYtdAssistsPrompt = numPrompt "Year-to-date assists: " $
   editPlayer . (pYtd.psAssists .~)
+
+-- | Prompt to edit a player's year-to-date penalty minutes
+editPlayerYtdPMinPrompt :: Prompt
+editPlayerYtdPMinPrompt = numPrompt "Year-to-date penalty minutes: " $
+  editPlayer . (pYtd.psPMin .~)
 
 editPlayer :: (Player -> Player) -> Action ()
 editPlayer f =
