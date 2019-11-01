@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.5.0
 
 - Fixed player creation bug
 - Prompt for goalie informaiton on game data entry
