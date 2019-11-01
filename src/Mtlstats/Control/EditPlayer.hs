@@ -87,7 +87,12 @@ nameC = Controller
   }
 
 positionC :: Controller
-positionC = undefined
+positionC = Controller
+  { drawController   = drawPrompt editPlayerPosPrompt
+  , handleController = \e -> do
+    promptHandler editPlayerPosPrompt e
+    return True
+  }
 
 ytdGoalsC :: Controller
 ytdGoalsC = undefined

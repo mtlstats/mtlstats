@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Prompt.EditPlayer
   ( editPlayerNumPrompt
   , editPlayerNamePrompt
+  , editPlayerPosPrompt
   ) where
 
 import Control.Monad.Extra (whenJustM)
@@ -41,6 +42,11 @@ editPlayerNumPrompt = numPrompt "Player number: " $
 editPlayerNamePrompt :: Prompt
 editPlayerNamePrompt = strPrompt "Player name: " $
   editPlayer . (pName .~)
+
+-- | Prompt to edit a player's position
+editPlayerPosPrompt :: Prompt
+editPlayerPosPrompt = strPrompt "Player position: " $
+  editPlayer . (pPosition .~)
 
 editPlayer :: (Player -> Player) -> Action ()
 editPlayer f =
