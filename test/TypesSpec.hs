@@ -754,10 +754,15 @@ instance Comparable CreatePlayerState where
         actual^.cpsPosition `shouldBe` expected^.cpsPosition
 
 instance Comparable EditPlayerState where
-  compareTest actual expected =
+  compareTest actual expected = do
+
     describe "epsSelectedPlayer" $
       it ("should be " ++ show (expected^.epsSelectedPlayer)) $
         actual^.epsSelectedPlayer `shouldBe` expected^.epsSelectedPlayer
+
+    describe "epsMode" $
+      it ("should be " ++ show (expected^.epsMode)) $
+        actual^.epsMode `shouldBe` expected^.epsMode
 
 instance Comparable CreateGoalieState where
   compareTest actual expected = do
