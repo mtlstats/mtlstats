@@ -863,7 +863,17 @@ playerSummary p =
 
 -- | Provides a detailed string describing a 'Player'
 playerDetails :: Player -> String
-playerDetails = undefined
+playerDetails p = unlines
+  [ "               Number: " ++ show (p^.pNumber)
+  , "                 Name: " ++ p^.pName
+  , "             Position: " ++ p^.pPosition
+  , "            YTD goals: " ++ show (p^.pYtd.psGoals)
+  , "          YTD assists: " ++ show (p^.pYtd.psAssists)
+  , "     YTD penalty mins: " ++ show (p^.pYtd.psPMin)
+  , "       Lifetime goals: " ++ show (p^.pLifetime.psGoals)
+  , "     Lifetime assists: " ++ show (p^.pLifetime.psAssists)
+  , "Lifetime penalty mins: " ++ show (p^.pLifetime.psPMin)
+  ]
 
 -- | Determines whether or not a player has been active in the current
 -- season/year
