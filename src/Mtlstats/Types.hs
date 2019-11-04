@@ -74,6 +74,7 @@ module Mtlstats.Types (
   goalieMinsPlayed,
   goalsAllowed,
   goaliesRecorded,
+  gameGoalieAssigned,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
@@ -274,6 +275,9 @@ data GameState = GameState
   -- the game
   , _goaliesRecorded     :: Bool
   -- ^ Set when the user confirms that all goalie info has been entered
+  , _gameGoalieAssigned  :: Bool
+  -- ^ Set to 'True' when the goalie has been selected who will be
+  -- given the win/loss/tie
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -645,6 +649,7 @@ newGameState = GameState
   , _goalieMinsPlayed    = Nothing
   , _goalsAllowed        = Nothing
   , _goaliesRecorded     = False
+  , _gameGoalieAssigned  = False
   }
 
 -- | Constructor for a 'CreatePlayerState'
