@@ -58,9 +58,9 @@ dispatch s = case s^.progMode of
     | null $ gs^.overtimeFlag         -> overtimeFlagC
     | not $ gs^.dataVerified          -> verifyDataC
     | fromJust (unaccountedPoints gs) -> goalInput gs
-    | isJust $ gs^.selectedPlayer     -> getPMinsC
-    | not $ gs^.pMinsRecorded         -> pMinPlayerC
-    | not $ gs^.goaliesRecorded       -> goalieInput gs
+    | isJust $ gs^.gameSelectedPlayer -> getPMinsC
+    | not $ gs^.gamePMinsRecorded     -> pMinPlayerC
+    | not $ gs^.gameGoalieAssigned    -> goalieInput s
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
@@ -267,7 +267,7 @@ getPMinsC = Controller
   { drawController = \s -> do
     header s
     C.drawString $ fromMaybe "" $ do
-      pid    <- s^.progMode.gameStateL.selectedPlayer
+      pid    <- s^.progMode.gameStateL.gameSelectedPlayer
       player <- nth pid $ s^.database.dbPlayers
       Just $ playerSummary player ++ "\n"
     drawPrompt assignPMinsPrompt s

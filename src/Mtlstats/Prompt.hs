@@ -25,6 +25,8 @@ module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
   promptHandler,
+  promptControllerWith,
+  promptController,
   strPrompt,
   numPrompt,
   selectPrompt,
@@ -37,17 +39,14 @@ module Mtlstats.Prompt (
   playerNumPrompt,
   playerNamePrompt,
   playerPosPrompt,
+  goalieNumPrompt,
+  goalieNamePrompt,
   selectPlayerPrompt,
   selectGoaliePrompt,
   recordGoalPrompt,
   recordAssistPrompt,
   pMinPlayerPrompt,
   assignPMinsPrompt,
-  goalieNumPrompt,
-  goalieNamePrompt,
-  selectGameGoaliePrompt,
-  goalieMinsPlayedPrompt,
-  goalsAllowedPrompt,
   playerToEditPrompt
 ) where
 
@@ -89,6 +88,31 @@ promptHandler _ (C.EventSpecialKey C.KeyBackspace) =
 promptHandler p (C.EventSpecialKey k) =
   promptSpecialKey p k
 promptHandler _ _ = return ()
+
+-- | Builds a controller out of a prompt with a header
+promptControllerWith
+  :: (ProgState -> C.Update ())
+  -- ^ The header
+  -> Prompt
+  -- ^ The prompt to use
+  -> Controller
+  -- ^ The resulting controller
+promptControllerWith header prompt = Controller
+  { drawController = \s -> do
+    header s
+    drawPrompt prompt s
+  , handleController = \e -> do
+    promptHandler prompt e
+    return True
+  }
+
+-- | Builds a controller out of a prompt
+promptController
+  :: Prompt
+  -- ^ The prompt to use
+  -> Controller
+  -- ^ The resulting controller
+promptController = promptControllerWith (const $ return ())
 
 -- | Builds a string prompt
 strPrompt
@@ -195,6 +219,16 @@ playerPosPrompt :: Prompt
 playerPosPrompt = strPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
 
+-- | Prompts tor the goalie's number
+goalieNumPrompt :: Prompt
+goalieNumPrompt = numPrompt "Goalie number: " $
+  modify . (progMode.createGoalieStateL.cgsNumber ?~)
+
+-- | Prompts for the goalie's name
+goalieNamePrompt :: Prompt
+goalieNamePrompt = strPrompt "Goalie name: " $
+  modify . (progMode.createGoalieStateL.cgsName .~)
+
 -- | Selects a player (creating one if necessary)
 selectPlayerPrompt
   :: String
@@ -289,44 +323,13 @@ pMinPlayerPrompt :: Prompt
 pMinPlayerPrompt = selectPlayerPrompt
   "Assign penalty minutes to: " $
   \case
-    Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
-    Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
+    Nothing -> modify $ progMode.gameStateL.gamePMinsRecorded  .~ True
+    Just n  -> modify $ progMode.gameStateL.gameSelectedPlayer ?~ n
 
 -- | Prompts for the number of penalty mintues to assign to the player
 assignPMinsPrompt :: Prompt
 assignPMinsPrompt = numPrompt "Penalty minutes: " $
   modify . assignPMins
-
--- | Prompts tor the goalie's number
-goalieNumPrompt :: Prompt
-goalieNumPrompt = numPrompt "Goalie number: " $
-  modify . (progMode.createGoalieStateL.cgsNumber ?~)
-
--- | Prompts for the goalie's name
-goalieNamePrompt :: Prompt
-goalieNamePrompt = strPrompt "Goalie name: " $
-  modify . (progMode.createGoalieStateL.cgsName .~)
-
--- | Prompts for a goalie who played in the game
-selectGameGoaliePrompt :: Prompt
-selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
-  \case
-    Nothing -> modify $ progMode.gameStateL.goaliesRecorded .~ True
-    Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
-
--- | Prompts for the number of minutes the goalie has played
-goalieMinsPlayedPrompt :: Prompt
-goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
-  modify . (progMode.gameStateL.goalieMinsPlayed ?~)
-
--- | Prompts for the number of goals the goalie allowed
-goalsAllowedPrompt :: Prompt
-goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
-  modify (progMode.gameStateL.goalsAllowed ?~ n)
-  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.goalieMinsPlayed)
-  when (mins >= gameLength) $
-    modify $ progMode.gameStateL.goaliesRecorded .~ True
-  modify recordGoalieStats
 
 playerToEditPrompt :: Prompt
 playerToEditPrompt = selectPlayerPrompt "Player to edit: " $

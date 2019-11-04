@@ -42,7 +42,6 @@ module Mtlstats.Actions
   , awardAssist
   , resetGoalData
   , assignPMins
-  , recordGoalieStats
   , backHome
   , scrollUp
   , scrollDown
@@ -265,7 +264,7 @@ assignPMins
   -> ProgState
   -> ProgState
 assignPMins mins s = fromMaybe s $ do
-  n <- s^.progMode.gameStateL.selectedPlayer
+  n <- s^.progMode.gameStateL.gameSelectedPlayer
   Just $ s
     & database.dbPlayers %~ modifyNth n
       (((pYtd.psPMin) +~ mins) . ((pLifetime.psPMin) +~ mins))
@@ -273,38 +272,7 @@ assignPMins mins s = fromMaybe s $ do
       %~ ( gamePlayerStats %~ updateMap n newPlayerStats
            (psPMin +~ mins)
          )
-      .  (selectedPlayer .~ Nothing)
-
--- | Records the goalie's game stats
-recordGoalieStats :: ProgState -> ProgState
-recordGoalieStats s = fromMaybe s $ do
-  let gs = s^.progMode.gameStateL
-  gid    <- gs^.gameSelectedGoalie
-  goalie <- nth gid $ s^.database.dbGoalies
-  mins   <- gs^.goalieMinsPlayed
-  goals  <- gs^.goalsAllowed
-
-  let
-    gameStats = M.findWithDefault newGoalieStats gid $ gs^.gameGoalieStats
-    bumpVal   = if gameStats^.gsGames == 0
-      then 1
-      else 0
-
-    bumpStats gs = gs
-      & gsGames        +~ bumpVal
-      & gsMinsPlayed   +~ mins
-      & gsGoalsAllowed +~ goals
-
-  Just $ s
-    & progMode.gameStateL
-      %~ (gameGoalieStats    %~ updateMap gid newGoalieStats bumpStats)
-      .  (gameSelectedGoalie .~ Nothing)
-      .  (goalieMinsPlayed   .~ Nothing)
-      .  (goalsAllowed       .~ Nothing)
-    & database.dbGoalies
-      %~ modifyNth gid (\goalie -> goalie
-         & gYtd      %~ bumpStats
-         & gLifetime %~ bumpStats)
+      .  (gameSelectedPlayer .~ Nothing)
 
 -- | Resets the program state back to the main menu
 backHome :: ProgState -> ProgState

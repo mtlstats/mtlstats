@@ -67,13 +67,14 @@ module Mtlstats.Types (
   assistsBy,
   gamePlayerStats,
   confirmGoalDataFlag,
-  selectedPlayer,
-  pMinsRecorded,
+  gameSelectedPlayer,
+  gamePMinsRecorded,
   gameGoalieStats,
   gameSelectedGoalie,
-  goalieMinsPlayed,
-  goalsAllowed,
-  goaliesRecorded,
+  gameGoalieMinsPlayed,
+  gameGoalsAllowed,
+  gameGoaliesRecorded,
+  gameGoalieAssigned,
   -- ** CreatePlayerState Lenses
   cpsNumber,
   cpsName,
@@ -251,29 +252,32 @@ data GameState = GameState
   , _goalBy              :: Maybe Int
   -- ^ The index number of the player who scored the most recently
   -- entered goal
-  , _assistsBy           :: [Int]
+  , _assistsBy            :: [Int]
   -- ^ The index numbers of the players who have assisted the most
   -- recently entered goal
-  , _gamePlayerStats     :: M.Map Int PlayerStats
+  , _gamePlayerStats      :: M.Map Int PlayerStats
   -- ^ The player stats accumulated over the game
-  , _confirmGoalDataFlag :: Bool
+  , _confirmGoalDataFlag  :: Bool
   -- ^ Set when the user confirms the goal data
-  , _selectedPlayer      :: Maybe Int
+  , _gameSelectedPlayer   :: Maybe Int
   -- ^ Index number of the selected 'Player'
-  , _pMinsRecorded       :: Bool
+  , _gamePMinsRecorded    :: Bool
   -- ^ Set when the penalty mintes have been recorded
-  , _gameGoalieStats     :: M.Map Int GoalieStats
+  , _gameGoalieStats      :: M.Map Int GoalieStats
   -- ^ The goalie stats accumulated over the game
-  , _gameSelectedGoalie  :: Maybe Int
+  , _gameSelectedGoalie   :: Maybe Int
   -- ^ Index number of the selected 'Goalie'
-  , _goalieMinsPlayed    :: Maybe Int
+  , _gameGoalieMinsPlayed :: Maybe Int
   -- ^ The number of minutes the currently selected goalie played in
   -- the game
-  , _goalsAllowed        :: Maybe Int
+  , _gameGoalsAllowed     :: Maybe Int
   -- ^ The number of goals the currently selected goalie allowed in
   -- the game
-  , _goaliesRecorded     :: Bool
+  , _gameGoaliesRecorded  :: Bool
   -- ^ Set when the user confirms that all goalie info has been entered
+  , _gameGoalieAssigned   :: Bool
+  -- ^ Set to 'True' when the goalie has been selected who will be
+  -- given the win/loss/tie
   } deriving (Eq, Show)
 
 -- | The type of game
@@ -624,27 +628,28 @@ newProgState = ProgState
 -- | Constructor for a 'GameState'
 newGameState :: GameState
 newGameState = GameState
-  { _gameYear            = Nothing
-  , _gameMonth           = Nothing
-  , _gameDay             = Nothing
-  , _gameType            = Nothing
-  , _otherTeam           = ""
-  , _homeScore           = Nothing
-  , _awayScore           = Nothing
-  , _overtimeFlag        = Nothing
-  , _dataVerified        = False
-  , _pointsAccounted     = 0
-  , _goalBy              = Nothing
-  , _assistsBy           = []
-  , _gamePlayerStats     = M.empty
-  , _confirmGoalDataFlag = False
-  , _selectedPlayer      = Nothing
-  , _pMinsRecorded       = False
-  , _gameGoalieStats     = M.empty
-  , _gameSelectedGoalie  = Nothing
-  , _goalieMinsPlayed    = Nothing
-  , _goalsAllowed        = Nothing
-  , _goaliesRecorded     = False
+  { _gameYear             = Nothing
+  , _gameMonth            = Nothing
+  , _gameDay              = Nothing
+  , _gameType             = Nothing
+  , _otherTeam            = ""
+  , _homeScore            = Nothing
+  , _awayScore            = Nothing
+  , _overtimeFlag         = Nothing
+  , _dataVerified         = False
+  , _pointsAccounted      = 0
+  , _goalBy               = Nothing
+  , _assistsBy            = []
+  , _gamePlayerStats      = M.empty
+  , _confirmGoalDataFlag  = False
+  , _gameSelectedPlayer   = Nothing
+  , _gamePMinsRecorded    = False
+  , _gameGoalieStats      = M.empty
+  , _gameSelectedGoalie   = Nothing
+  , _gameGoalieMinsPlayed = Nothing
+  , _gameGoalsAllowed     = Nothing
+  , _gameGoaliesRecorded  = False
+  , _gameGoalieAssigned   = False
   }
 
 -- | Constructor for a 'CreatePlayerState'

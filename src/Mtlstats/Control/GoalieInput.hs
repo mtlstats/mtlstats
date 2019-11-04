@@ -26,47 +26,38 @@ import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
 import Mtlstats.Format
+import Mtlstats.Menu
 import Mtlstats.Prompt
+import Mtlstats.Prompt.GoalieInput
 import Mtlstats.Types
 import Mtlstats.Util
 
 -- | The dispatcher for handling goalie input
-goalieInput :: GameState -> Controller
-goalieInput gs
-  | null $ gs^.gameSelectedGoalie = selectGoalieC
-  | null $ gs^.goalieMinsPlayed   = minsPlayedC
-  | otherwise                     = goalsAllowedC
+goalieInput :: ProgState -> Controller
+goalieInput s = let
+  gs = s^.progMode.gameStateL
+  in if gs^.gameGoaliesRecorded
+    then selectGameGoalieC s
+  else if null $ gs^.gameSelectedGoalie
+    then selectGoalieC
+  else if null $ gs^.gameGoalieMinsPlayed
+    then minsPlayedC
+  else goalsAllowedC
 
 selectGoalieC :: Controller
-selectGoalieC = Controller
-  { drawController   = drawPrompt selectGameGoaliePrompt
-  , handleController = \e -> do
-    promptHandler selectGameGoaliePrompt e
-    return True
-  }
+selectGoalieC = promptController selectGameGoaliePrompt
 
 minsPlayedC :: Controller
-minsPlayedC = Controller
-  { drawController = \s -> do
-    C.drawString $ header s
-    drawPrompt goalieMinsPlayedPrompt s
-  , handleController = \e -> do
-    promptHandler goalieMinsPlayedPrompt e
-    return True
-  }
+minsPlayedC = promptControllerWith header goalieMinsPlayedPrompt
 
 goalsAllowedC :: Controller
-goalsAllowedC = Controller
-  { drawController = \s -> do
-    C.drawString $ header s
-    drawPrompt goalsAllowedPrompt s
-  , handleController = \e -> do
-    promptHandler goalsAllowedPrompt e
-    return True
-  }
+goalsAllowedC = promptControllerWith header goalsAllowedPrompt
 
-header :: ProgState -> String
-header s = unlines
+selectGameGoalieC :: ProgState -> Controller
+selectGameGoalieC = menuController . gameGoalieMenu
+
+header :: ProgState -> C.Update ()
+header s = C.drawString $ unlines
   [ "*** GAME " ++ padNum 2 (s^.database.dbGames) ++ " ***"
   , fromMaybe "" $ do
     n <- s^.progMode.gameStateL.gameSelectedGoalie

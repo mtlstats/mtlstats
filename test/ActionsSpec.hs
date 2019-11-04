@@ -43,6 +43,7 @@ import Mtlstats.Actions
 import Mtlstats.Types
 import Mtlstats.Util
 
+import qualified Actions.GoalieInputSpec as GoalieInput
 import qualified TypesSpec as TS
 
 spec :: Spec
@@ -67,10 +68,10 @@ spec = describe "Mtlstats.Actions" $ do
   awardAssistSpec
   resetGoalDataSpec
   assignPMinsSpec
-  recordGoalieStatsSpec
   backHomeSpec
   scrollUpSpec
   scrollDownSpec
+  GoalieInput.spec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -637,7 +638,7 @@ assignPMinsSpec = describe "assignPMins" $ let
     & database.dbPlayers .~ [bob, joe]
     & progMode.gameStateL
       %~ (gamePlayerStats .~ M.fromList [(0, newPlayerStats & psPMin .~ 2)])
-      .  (selectedPlayer  .~ pid)
+      .  (gameSelectedPlayer .~ pid)
 
   in mapM_
     (\(pid, bobLt, bobYtd, bobGame, joeLt, joeYtd, joeGame) ->
@@ -669,142 +670,13 @@ assignPMinsSpec = describe "assignPMins" $ let
           ]
 
         it "should set selectedPlayer to Nothing" $
-          ps'^.progMode.gameStateL.selectedPlayer `shouldBe` Nothing)
+          ps'^.progMode.gameStateL.gameSelectedPlayer `shouldBe` Nothing)
 
     --  index,   bob lt, bob ytd, bob game, joe lt, joe ytd, joe game
     [ ( Just 0,  6,      5,       4,        6,      5,       0        )
     , ( Just 1,  4,      3,       2,        8,      7,       2        )
     , ( Just 2,  4,      3,       2,        6,      5,       0        )
     , ( Nothing, 4,      3,       2,        6,      5,       0        )
-    ]
-
-recordGoalieStatsSpec :: Spec
-recordGoalieStatsSpec = describe "recordGoalieStats" $ let
-  goalieStats games mins goals = newGoalieStats
-    & gsGames        .~ games
-    & gsMinsPlayed   .~ mins
-    & gsGoalsAllowed .~ goals
-
-  joe = newGoalie 2 "Joe"
-    & gYtd      .~ goalieStats 10 11 12
-    & gLifetime .~ goalieStats 20 21 22
-
-  bob = newGoalie 3 "Bob"
-    & gYtd      .~ goalieStats 30 31 32
-    & gLifetime .~ goalieStats 40 41 42
-
-  gameState n mins goals = newGameState
-    & gameGoalieStats    .~ M.fromList [(1, goalieStats 1 2 3)]
-    & gameSelectedGoalie .~ n
-    & goalieMinsPlayed   .~ mins
-    & goalsAllowed       .~ goals
-
-  progState n mins goals = newProgState
-    & database.dbGoalies  .~ [joe, bob]
-    & progMode.gameStateL .~ gameState n mins goals
-
-  in mapM_
-    (\(name, gid, mins, goals, joeData, bobData, reset) -> let
-      s = recordGoalieStats $ progState gid mins goals
-      in context name $ do
-
-        mapM_
-          (\( name
-            , gid
-            , ( gGames
-              , gMins
-              , gGoals
-              , ytdGames
-              , ytdMins
-              , ytdGoals
-              , ltGames
-              , ltMins
-              , ltGoals
-              )
-            ) -> context name $ do
-              let
-                gs     = s^.progMode.gameStateL.gameGoalieStats
-                game   = M.findWithDefault newGoalieStats gid gs
-                goalie = fromJust $ nth gid $ s^.database.dbGoalies
-                ytd    = goalie^.gYtd
-                lt     = goalie^.gLifetime
-
-              context "game" $
-                game `TS.compareTest` goalieStats gGames gMins gGoals
-
-              context "year-to-date" $
-                ytd `TS.compareTest` goalieStats ytdGames ytdMins ytdGoals
-
-              context "lifetime" $
-                lt `TS.compareTest` goalieStats ltGames ltMins ltGoals)
-
-          [ ( "checking Joe", 0, joeData )
-          , ( "checking Bob", 1, bobData )
-          ]
-
-        context "selected goalie" $ let
-          expected = if reset then Nothing else gid
-          in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.gameSelectedGoalie) `shouldBe` expected
-
-        context "minutes played" $ let
-          expected = if reset then Nothing else mins
-          in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.goalieMinsPlayed) `shouldBe` expected
-
-        context "goals allowed" $ let
-          expected = if reset then Nothing else goals
-          in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.goalsAllowed) `shouldBe` expected)
-
-    [ ( "updating Joe"
-      , Just 0
-      , Just 1
-      , Just 2
-      , (1, 1, 2, 11, 12, 14, 21, 22, 24)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , True
-      )
-    , ( "updating Bob"
-      , Just 1
-      , Just 1
-      , Just 2
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 3, 5, 30, 32, 34, 40, 42, 44)
-      , True
-      )
-    , ( "goalie out of bounds"
-      , Just 2
-      , Just 1
-      , Just 2
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    , ( "missing goalie"
-      , Nothing
-      , Just 1
-      , Just 2
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    , ( "missing minutes"
-      , Just 0
-      , Nothing
-      , Just 1
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    , ( "missing goals"
-      , Just 0
-      , Just 1
-      , Nothing
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
     ]
 
 makePlayer :: IO Player
