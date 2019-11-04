@@ -80,4 +80,26 @@ setGameGoalie
   -- ^ The goalie's index
   -> ProgState
   -> ProgState
-setGameGoalie = undefined
+setGameGoalie gid s = fromMaybe s $ do
+  let gs = s^.progMode.gameStateL
+  won  <- gameWon gs
+  lost <- gameLost gs
+  tied <- gs^.overtimeFlag
+  let
+    w = if won then 1 else 0
+    l = if lost then 1 else 0
+    t = if tied then 1 else 0
+
+    updateStats gs = gs
+      & gsWins   +~ w
+      & gsLosses +~ l
+      & gsTies   +~ t
+
+    updateGoalie g = g
+      & gYtd      %~ updateStats
+      & gLifetime %~ updateStats
+
+  Just $ s
+    & database.dbGoalies %~ modifyNth gid updateGoalie
+    & progMode.gameStateL.gameGoalieStats
+      %~ updateMap gid newGoalieStats updateStats

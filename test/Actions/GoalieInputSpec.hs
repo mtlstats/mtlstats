@@ -23,7 +23,7 @@ module Actions.GoalieInputSpec (spec) where
 
 import qualified Data.Map as M
 import Data.Maybe (fromJust)
-import Lens.Micro ((^.), (&), (.~))
+import Lens.Micro ((^.), (&), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Actions.GoalieInput
@@ -36,6 +36,7 @@ spec :: Spec
 spec = describe "Mtlstats.Actions.GoalieInput" $ do
   finishGoalieEntrySpec
   recordGoalieStatsSpec
+  setGameGoalieSpec
 
 finishGoalieEntrySpec :: Spec
 finishGoalieEntrySpec = describe "finishGoalieEntry" $ do
@@ -180,5 +181,108 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
       , (0, 0, 0, 10, 11, 12, 20, 21, 22)
       , (1, 2, 3, 30, 31, 32, 40, 41, 42)
       , False
+      )
+    ]
+
+setGameGoalieSpec :: Spec
+setGameGoalieSpec = describe "setGameGoalie" $ let
+
+  goalieStats w l t = newGoalieStats
+    & gsWins   .~ w
+    & gsLosses .~ l
+    & gsTies   .~ t
+
+  bob = newGoalie 2 "Bob"
+    & gYtd      .~ goalieStats 10 11 12
+    & gLifetime .~ goalieStats 20 21 22
+
+  joe = newGoalie 3 "Joe"
+    & gYtd      .~ goalieStats 30 31 32
+    & gLifetime .~ goalieStats 40 41 42
+
+  gameState h a ot = newGameState
+    & gameType        ?~ HomeGame
+    & homeScore       ?~ h
+    & awayScore       ?~ a
+    & overtimeFlag    ?~ ot
+
+  winningGame = gameState 1 0 False
+  losingGame  = gameState 0 1 False
+  tiedGame    = gameState 0 1 True
+
+  in mapM_
+    (\(label, gameState, gid, bobData, joeData) -> context label $ let
+
+      progState = newProgState
+        & database.dbGoalies  .~ [bob, joe]
+        & progMode.gameStateL .~ gameState
+        & setGameGoalie gid
+
+      in mapM_
+        (\( label
+          , gid
+          , ( gWins
+            , gLosses
+            , gTies
+            , ytdWins
+            , ytdLosses
+            , ytdTies
+            , ltWins
+            , ltLosses
+            , ltTies
+            )
+          ) -> context label $ do
+            let
+              goalie = (progState^.database.dbGoalies) !! gid
+              gameStats = progState^.progMode.gameStateL.gameGoalieStats
+              game      = M.findWithDefault newGoalieStats gid gameStats
+              ytd       = goalie^.gYtd
+              lifetime  = goalie^.gLifetime
+
+            mapM_
+              (\(label, expected, actual) -> context label $
+                expected `TS.compareTest` actual)
+              [ ( "game stats",     game,     goalieStats gWins   gLosses   gTies   )
+              , ( "YTD stats",      ytd,      goalieStats ytdWins ytdLosses ytdTies )
+              , ( "lifetime stats", lifetime, goalieStats ltWins  ltLosses  ltTies  )
+              ])
+        [ ( "checking Bob", 0, bobData )
+        , ( "checking Joe", 1, joeData )
+        ])
+    [ ( "Bob wins"
+      , winningGame
+      , 0
+      , ( 1, 0, 0, 11, 11, 12, 21, 21, 22 )
+      , ( 0, 0, 0, 30, 31, 32, 40, 41, 42 )
+      )
+    , ( "Bob loses"
+      , losingGame
+      , 0
+      , ( 0, 1, 0, 10, 12, 12, 20, 22, 22 )
+      , ( 0, 0, 0, 30, 31, 32, 40, 41, 42 )
+      )
+    , ( "Bob ties"
+      , tiedGame
+      , 0
+      , ( 0, 0, 1, 10, 11, 13, 20, 21, 23 )
+      , ( 0, 0, 0, 30, 31, 32, 40, 41, 42 )
+      )
+    , ( "Joe wins"
+      , winningGame
+      , 1
+      , ( 0, 0, 0, 10, 11, 12, 20, 21, 22 )
+      , ( 1, 0, 0, 31, 31, 32, 41, 41, 42 )
+      )
+    , ( "Joe loses"
+      , losingGame
+      , 1
+      , ( 0, 0, 0, 10, 11, 12, 20, 21, 22 )
+      , ( 0, 1, 0, 30, 32, 32, 40, 42, 42 )
+      )
+    , ( "Joe ties"
+      , tiedGame
+      , 1
+      , ( 0, 0, 0, 10, 11, 12, 20, 21, 22 )
+      , ( 0, 0, 1, 30, 31, 33, 40, 41, 43 )
       )
     ]
