@@ -39,17 +39,14 @@ module Mtlstats.Prompt (
   playerNumPrompt,
   playerNamePrompt,
   playerPosPrompt,
+  goalieNumPrompt,
+  goalieNamePrompt,
   selectPlayerPrompt,
   selectGoaliePrompt,
   recordGoalPrompt,
   recordAssistPrompt,
   pMinPlayerPrompt,
   assignPMinsPrompt,
-  goalieNumPrompt,
-  goalieNamePrompt,
-  selectGameGoaliePrompt,
-  goalieMinsPlayedPrompt,
-  goalsAllowedPrompt,
   playerToEditPrompt
 ) where
 
@@ -222,6 +219,16 @@ playerPosPrompt :: Prompt
 playerPosPrompt = strPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
 
+-- | Prompts tor the goalie's number
+goalieNumPrompt :: Prompt
+goalieNumPrompt = numPrompt "Goalie number: " $
+  modify . (progMode.createGoalieStateL.cgsNumber ?~)
+
+-- | Prompts for the goalie's name
+goalieNamePrompt :: Prompt
+goalieNamePrompt = strPrompt "Goalie name: " $
+  modify . (progMode.createGoalieStateL.cgsName .~)
+
 -- | Selects a player (creating one if necessary)
 selectPlayerPrompt
   :: String
@@ -323,37 +330,6 @@ pMinPlayerPrompt = selectPlayerPrompt
 assignPMinsPrompt :: Prompt
 assignPMinsPrompt = numPrompt "Penalty minutes: " $
   modify . assignPMins
-
--- | Prompts tor the goalie's number
-goalieNumPrompt :: Prompt
-goalieNumPrompt = numPrompt "Goalie number: " $
-  modify . (progMode.createGoalieStateL.cgsNumber ?~)
-
--- | Prompts for the goalie's name
-goalieNamePrompt :: Prompt
-goalieNamePrompt = strPrompt "Goalie name: " $
-  modify . (progMode.createGoalieStateL.cgsName .~)
-
--- | Prompts for a goalie who played in the game
-selectGameGoaliePrompt :: Prompt
-selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
-  \case
-    Nothing -> modify finishGameGoalieEntry
-    Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
-
--- | Prompts for the number of minutes the goalie has played
-goalieMinsPlayedPrompt :: Prompt
-goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
-  modify . (progMode.gameStateL.gameGoalieMinsPlayed ?~)
-
--- | Prompts for the number of goals the goalie allowed
-goalsAllowedPrompt :: Prompt
-goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
-  modify (progMode.gameStateL.gameGoalsAllowed ?~ n)
-  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.gameGoalieMinsPlayed)
-  when (mins >= gameLength) $
-    modify $ progMode.gameStateL.gameGoaliesRecorded .~ True
-  modify recordGoalieStats
 
 playerToEditPrompt :: Prompt
 playerToEditPrompt = selectPlayerPrompt "Player to edit: " $

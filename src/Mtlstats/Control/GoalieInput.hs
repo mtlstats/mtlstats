@@ -27,6 +27,7 @@ import qualified UI.NCurses as C
 
 import Mtlstats.Format
 import Mtlstats.Prompt
+import Mtlstats.Prompt.GoalieInput
 import Mtlstats.Types
 import Mtlstats.Util
 
