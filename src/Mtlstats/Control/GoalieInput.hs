@@ -33,9 +33,9 @@ import Mtlstats.Util
 -- | The dispatcher for handling goalie input
 goalieInput :: GameState -> Controller
 goalieInput gs
-  | null $ gs^.gameSelectedGoalie = selectGoalieC
-  | null $ gs^.goalieMinsPlayed   = minsPlayedC
-  | otherwise                     = goalsAllowedC
+  | null $ gs^.gameSelectedGoalie   = selectGoalieC
+  | null $ gs^.gameGoalieMinsPlayed = minsPlayedC
+  | otherwise                       = goalsAllowedC
 
 selectGoalieC :: Controller
 selectGoalieC = Controller

@@ -450,12 +450,12 @@ finishGameGoalieEntrySpec = describe "finishGameGoalieEntry" $ do
   context "no goalie data" $
     it "should not set goaliesRecorded" $ let
       s = progState M.empty
-      in s^.progMode.gameStateL.goaliesRecorded `shouldBe` False
+      in s^.progMode.gameStateL.gameGoaliesRecorded `shouldBe` False
 
   context "goalie data" $
     it "should set goaliesRecorded" $ let
       s = progState $ M.fromList [(1, newGoalieStats)]
-      in s^.progMode.gameStateL.goaliesRecorded `shouldBe` True
+      in s^.progMode.gameStateL.gameGoaliesRecorded `shouldBe` True
 
 recordGoalAssistsSpec :: Spec
 recordGoalAssistsSpec = describe "recordGoalAssists" $ do
@@ -655,7 +655,7 @@ assignPMinsSpec = describe "assignPMins" $ let
     & database.dbPlayers .~ [bob, joe]
     & progMode.gameStateL
       %~ (gamePlayerStats .~ M.fromList [(0, newPlayerStats & psPMin .~ 2)])
-      .  (selectedPlayer  .~ pid)
+      .  (gameSelectedPlayer .~ pid)
 
   in mapM_
     (\(pid, bobLt, bobYtd, bobGame, joeLt, joeYtd, joeGame) ->
@@ -687,7 +687,7 @@ assignPMinsSpec = describe "assignPMins" $ let
           ]
 
         it "should set selectedPlayer to Nothing" $
-          ps'^.progMode.gameStateL.selectedPlayer `shouldBe` Nothing)
+          ps'^.progMode.gameStateL.gameSelectedPlayer `shouldBe` Nothing)
 
     --  index,   bob lt, bob ytd, bob game, joe lt, joe ytd, joe game
     [ ( Just 0,  6,      5,       4,        6,      5,       0        )
@@ -712,10 +712,10 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
     & gLifetime .~ goalieStats 40 41 42
 
   gameState n mins goals = newGameState
-    & gameGoalieStats    .~ M.fromList [(1, goalieStats 1 2 3)]
-    & gameSelectedGoalie .~ n
-    & goalieMinsPlayed   .~ mins
-    & goalsAllowed       .~ goals
+    & gameGoalieStats      .~ M.fromList [(1, goalieStats 1 2 3)]
+    & gameSelectedGoalie   .~ n
+    & gameGoalieMinsPlayed .~ mins
+    & gameGoalsAllowed     .~ goals
 
   progState n mins goals = newProgState
     & database.dbGoalies  .~ [joe, bob]
@@ -768,12 +768,12 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
         context "minutes played" $ let
           expected = if reset then Nothing else mins
           in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.goalieMinsPlayed) `shouldBe` expected
+            (s^.progMode.gameStateL.gameGoalieMinsPlayed) `shouldBe` expected
 
         context "goals allowed" $ let
           expected = if reset then Nothing else goals
           in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.goalsAllowed) `shouldBe` expected)
+            (s^.progMode.gameStateL.gameGoalsAllowed) `shouldBe` expected)
 
     [ ( "updating Joe"
       , Just 0

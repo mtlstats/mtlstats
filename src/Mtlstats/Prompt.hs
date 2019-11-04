@@ -316,8 +316,8 @@ pMinPlayerPrompt :: Prompt
 pMinPlayerPrompt = selectPlayerPrompt
   "Assign penalty minutes to: " $
   \case
-    Nothing -> modify $ progMode.gameStateL.pMinsRecorded .~ True
-    Just n  -> modify $ progMode.gameStateL.selectedPlayer ?~ n
+    Nothing -> modify $ progMode.gameStateL.gamePMinsRecorded  .~ True
+    Just n  -> modify $ progMode.gameStateL.gameSelectedPlayer ?~ n
 
 -- | Prompts for the number of penalty mintues to assign to the player
 assignPMinsPrompt :: Prompt
@@ -344,15 +344,15 @@ selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
 -- | Prompts for the number of minutes the goalie has played
 goalieMinsPlayedPrompt :: Prompt
 goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
-  modify . (progMode.gameStateL.goalieMinsPlayed ?~)
+  modify . (progMode.gameStateL.gameGoalieMinsPlayed ?~)
 
 -- | Prompts for the number of goals the goalie allowed
 goalsAllowedPrompt :: Prompt
 goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
-  modify (progMode.gameStateL.goalsAllowed ?~ n)
-  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.goalieMinsPlayed)
+  modify (progMode.gameStateL.gameGoalsAllowed ?~ n)
+  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.gameGoalieMinsPlayed)
   when (mins >= gameLength) $
-    modify $ progMode.gameStateL.goaliesRecorded .~ True
+    modify $ progMode.gameStateL.gameGoaliesRecorded .~ True
   modify recordGoalieStats
 
 playerToEditPrompt :: Prompt

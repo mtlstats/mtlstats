@@ -203,7 +203,7 @@ resetCreateGoalieState = progMode.createGoalieStateL
 
 -- | Attempts to finish game goalie entry
 finishGameGoalieEntry :: ProgState -> ProgState
-finishGameGoalieEntry s = s & progMode.gameStateL.goaliesRecorded
+finishGameGoalieEntry s = s & progMode.gameStateL.gameGoaliesRecorded
   .~ not (null $ s^.progMode.gameStateL.gameGoalieStats)
 
 -- | Awards the goal and assists to the players
@@ -271,7 +271,7 @@ assignPMins
   -> ProgState
   -> ProgState
 assignPMins mins s = fromMaybe s $ do
-  n <- s^.progMode.gameStateL.selectedPlayer
+  n <- s^.progMode.gameStateL.gameSelectedPlayer
   Just $ s
     & database.dbPlayers %~ modifyNth n
       (((pYtd.psPMin) +~ mins) . ((pLifetime.psPMin) +~ mins))
@@ -279,7 +279,7 @@ assignPMins mins s = fromMaybe s $ do
       %~ ( gamePlayerStats %~ updateMap n newPlayerStats
            (psPMin +~ mins)
          )
-      .  (selectedPlayer .~ Nothing)
+      .  (gameSelectedPlayer .~ Nothing)
 
 -- | Records the goalie's game stats
 recordGoalieStats :: ProgState -> ProgState
@@ -287,8 +287,8 @@ recordGoalieStats s = fromMaybe s $ do
   let gs = s^.progMode.gameStateL
   gid    <- gs^.gameSelectedGoalie
   goalie <- nth gid $ s^.database.dbGoalies
-  mins   <- gs^.goalieMinsPlayed
-  goals  <- gs^.goalsAllowed
+  mins   <- gs^.gameGoalieMinsPlayed
+  goals  <- gs^.gameGoalsAllowed
 
   let
     gameStats = M.findWithDefault newGoalieStats gid $ gs^.gameGoalieStats
@@ -304,9 +304,9 @@ recordGoalieStats s = fromMaybe s $ do
   Just $ s
     & progMode.gameStateL
       %~ (gameGoalieStats    %~ updateMap gid newGoalieStats bumpStats)
-      .  (gameSelectedGoalie .~ Nothing)
-      .  (goalieMinsPlayed   .~ Nothing)
-      .  (goalsAllowed       .~ Nothing)
+      .  (gameSelectedGoalie   .~ Nothing)
+      .  (gameGoalieMinsPlayed .~ Nothing)
+      .  (gameGoalsAllowed     .~ Nothing)
     & database.dbGoalies
       %~ modifyNth gid (\goalie -> goalie
          & gYtd      %~ bumpStats
