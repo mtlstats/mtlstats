@@ -338,7 +338,7 @@ goalieNamePrompt = strPrompt "Goalie name: " $
 selectGameGoaliePrompt :: Prompt
 selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
   \case
-    Nothing -> modify $ progMode.gameStateL.goaliesRecorded .~ True
+    Nothing -> modify finishGameGoalieEntry
     Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
 
 -- | Prompts for the number of minutes the goalie has played

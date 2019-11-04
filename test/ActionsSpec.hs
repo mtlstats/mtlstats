@@ -62,6 +62,7 @@ spec = describe "Mtlstats.Actions" $ do
   addGoalieSpec
   resetCreatePlayerStateSpec
   resetCreateGoalieStateSpec
+  finishGameGoalieEntrySpec
   recordGoalAssistsSpec
   awardGoalSpec
   awardAssistSpec
@@ -438,6 +439,23 @@ resetCreateGoalieStateSpec = describe "resetCreateGoalieState" $ let
   ps = resetCreateGoalieState $
     newProgState & progMode.createGoalieStateL .~ cgs
   in TS.compareTest (ps^.progMode.createGoalieStateL) newCreateGoalieState
+
+finishGameGoalieEntrySpec :: Spec
+finishGameGoalieEntrySpec = describe "finishGameGoalieEntry" $ do
+  let
+    progState stats = newProgState
+      & progMode.gameStateL.gameGoalieStats .~ stats
+      & finishGameGoalieEntry
+
+  context "no goalie data" $
+    it "should not set goaliesRecorded" $ let
+      s = progState M.empty
+      in s^.progMode.gameStateL.goaliesRecorded `shouldBe` False
+
+  context "goalie data" $
+    it "should set goaliesRecorded" $ let
+      s = progState $ M.fromList [(1, newGoalieStats)]
+      in s^.progMode.gameStateL.goaliesRecorded `shouldBe` True
 
 recordGoalAssistsSpec :: Spec
 recordGoalAssistsSpec = describe "recordGoalAssists" $ do

@@ -37,6 +37,7 @@ module Mtlstats.Actions
   , addGoalie
   , resetCreatePlayerState
   , resetCreateGoalieState
+  , finishGameGoalieEntry
   , recordGoalAssists
   , awardGoal
   , awardAssist
@@ -199,6 +200,11 @@ resetCreateGoalieState :: ProgState -> ProgState
 resetCreateGoalieState = progMode.createGoalieStateL
   %~ (cgsNumber .~ Nothing)
   .  (cgsName   .~ "")
+
+-- | Attempts to finish game goalie entry
+finishGameGoalieEntry :: ProgState -> ProgState
+finishGameGoalieEntry s = s & progMode.gameStateL.goaliesRecorded
+  .~ not (null $ s^.progMode.gameStateL.gameGoalieStats)
 
 -- | Awards the goal and assists to the players
 recordGoalAssists :: ProgState -> ProgState
