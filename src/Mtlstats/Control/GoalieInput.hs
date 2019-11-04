@@ -39,35 +39,16 @@ goalieInput gs
   | otherwise                       = goalsAllowedC
 
 selectGoalieC :: Controller
-selectGoalieC = Controller
-  { drawController   = drawPrompt selectGameGoaliePrompt
-  , handleController = \e -> do
-    promptHandler selectGameGoaliePrompt e
-    return True
-  }
+selectGoalieC = promptController selectGameGoaliePrompt
 
 minsPlayedC :: Controller
-minsPlayedC = Controller
-  { drawController = \s -> do
-    C.drawString $ header s
-    drawPrompt goalieMinsPlayedPrompt s
-  , handleController = \e -> do
-    promptHandler goalieMinsPlayedPrompt e
-    return True
-  }
+minsPlayedC = promptControllerWith header goalieMinsPlayedPrompt
 
 goalsAllowedC :: Controller
-goalsAllowedC = Controller
-  { drawController = \s -> do
-    C.drawString $ header s
-    drawPrompt goalsAllowedPrompt s
-  , handleController = \e -> do
-    promptHandler goalsAllowedPrompt e
-    return True
-  }
+goalsAllowedC = promptControllerWith header goalsAllowedPrompt
 
-header :: ProgState -> String
-header s = unlines
+header :: ProgState -> C.Update ()
+header s = C.drawString $ unlines
   [ "*** GAME " ++ padNum 2 (s^.database.dbGames) ++ " ***"
   , fromMaybe "" $ do
     n <- s^.progMode.gameStateL.gameSelectedGoalie
