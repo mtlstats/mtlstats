@@ -28,6 +28,7 @@ import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (%~), (+~))
 
+import Mtlstats.Config
 import Mtlstats.Types
 import Mtlstats.Util
 
@@ -56,6 +57,10 @@ recordGoalieStats s = fromMaybe s $ do
       & gsMinsPlayed   +~ mins
       & gsGoalsAllowed +~ goals
 
+    tryFinish = if mins >= gameLength
+      then finishGoalieEntry
+      else id
+
   Just $ s
     & progMode.gameStateL
       %~ (gameGoalieStats    %~ updateMap gid newGoalieStats bumpStats)
@@ -66,3 +71,4 @@ recordGoalieStats s = fromMaybe s $ do
       %~ modifyNth gid (\goalie -> goalie
          & gYtd      %~ bumpStats
          & gLifetime %~ bumpStats)
+    & tryFinish

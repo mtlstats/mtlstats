@@ -53,7 +53,4 @@ goalieMinsPlayedPrompt = numPrompt "Minutes played: " $
 goalsAllowedPrompt :: Prompt
 goalsAllowedPrompt = numPrompt "Goals allowed: " $ \n -> do
   modify (progMode.gameStateL.gameGoalsAllowed ?~ n)
-  mins <- fromMaybe 0 <$> gets (^.progMode.gameStateL.gameGoalieMinsPlayed)
-  when (mins >= gameLength) $
-    modify $ progMode.gameStateL.gameGoaliesRecorded .~ True
   modify recordGoalieStats
