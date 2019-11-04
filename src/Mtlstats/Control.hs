@@ -60,7 +60,7 @@ dispatch s = case s^.progMode of
     | fromJust (unaccountedPoints gs) -> goalInput gs
     | isJust $ gs^.gameSelectedPlayer -> getPMinsC
     | not $ gs^.gamePMinsRecorded     -> pMinPlayerC
-    | not $ gs^.gameGoaliesRecorded   -> goalieInput gs
+    | not $ gs^.gameGoalieAssigned    -> goalieInput gs
     | otherwise                       -> reportC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
