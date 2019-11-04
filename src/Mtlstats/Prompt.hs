@@ -25,6 +25,8 @@ module Mtlstats.Prompt (
   -- * Prompt Functions
   drawPrompt,
   promptHandler,
+  promptControllerWith,
+  promptController,
   strPrompt,
   numPrompt,
   selectPrompt,
@@ -89,6 +91,31 @@ promptHandler _ (C.EventSpecialKey C.KeyBackspace) =
 promptHandler p (C.EventSpecialKey k) =
   promptSpecialKey p k
 promptHandler _ _ = return ()
+
+-- | Builds a controller out of a prompt with a header
+promptControllerWith
+  :: (ProgState -> C.Update ())
+  -- ^ The header
+  -> Prompt
+  -- ^ The prompt to use
+  -> Controller
+  -- ^ The resulting controller
+promptControllerWith header prompt = Controller
+  { drawController = \s -> do
+    header s
+    drawPrompt prompt s
+  , handleController = \e -> do
+    promptHandler prompt e
+    return True
+  }
+
+-- | Builds a controller out of a prompt
+promptController
+  :: Prompt
+  -- ^ The prompt to use
+  -> Controller
+  -- ^ The resulting controller
+promptController = promptControllerWith (const $ return ())
 
 -- | Builds a string prompt
 strPrompt
