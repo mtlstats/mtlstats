@@ -99,7 +99,10 @@ setGameGoalie gid s = fromMaybe s $ do
       & gYtd      %~ updateStats
       & gLifetime %~ updateStats
 
+    updateGameState gs = gs
+      & gameGoalieStats %~ updateMap gid newGoalieStats updateStats
+      & gameGoalieAssigned .~ True
+
   Just $ s
-    & database.dbGoalies %~ modifyNth gid updateGoalie
-    & progMode.gameStateL.gameGoalieStats
-      %~ updateMap gid newGoalieStats updateStats
+    & database.dbGoalies  %~ modifyNth gid updateGoalie
+    & progMode.gameStateL %~ updateGameState

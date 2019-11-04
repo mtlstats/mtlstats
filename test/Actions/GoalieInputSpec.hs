@@ -245,7 +245,10 @@ setGameGoalieSpec = describe "setGameGoalie" $ let
               [ ( "game stats",     game,     goalieStats gWins   gLosses   gTies   )
               , ( "YTD stats",      ytd,      goalieStats ytdWins ytdLosses ytdTies )
               , ( "lifetime stats", lifetime, goalieStats ltWins  ltLosses  ltTies  )
-              ])
+              ]
+
+            it "should set the gameGoalieAssigned flag" $
+              progState^.progMode.gameStateL.gameGoalieAssigned `shouldBe` True)
         [ ( "checking Bob", 0, bobData )
         , ( "checking Joe", 1, joeData )
         ])
