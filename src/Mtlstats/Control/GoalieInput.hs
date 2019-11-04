@@ -26,18 +26,23 @@ import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
 import Mtlstats.Format
+import Mtlstats.Menu
 import Mtlstats.Prompt
 import Mtlstats.Prompt.GoalieInput
 import Mtlstats.Types
 import Mtlstats.Util
 
 -- | The dispatcher for handling goalie input
-goalieInput :: GameState -> Controller
-goalieInput gs
-  | gs^.gameGoaliesRecorded         = selectGameGoalieC
-  | null $ gs^.gameSelectedGoalie   = selectGoalieC
-  | null $ gs^.gameGoalieMinsPlayed = minsPlayedC
-  | otherwise                       = goalsAllowedC
+goalieInput :: ProgState -> Controller
+goalieInput s = let
+  gs = s^.progMode.gameStateL
+  in if gs^.gameGoaliesRecorded
+    then selectGameGoalieC s
+  else if null $ gs^.gameSelectedGoalie
+    then selectGoalieC
+  else if null $ gs^.gameGoalieMinsPlayed
+    then minsPlayedC
+  else goalsAllowedC
 
 selectGoalieC :: Controller
 selectGoalieC = promptController selectGameGoaliePrompt
@@ -48,8 +53,8 @@ minsPlayedC = promptControllerWith header goalieMinsPlayedPrompt
 goalsAllowedC :: Controller
 goalsAllowedC = promptControllerWith header goalsAllowedPrompt
 
-selectGameGoalieC :: Controller
-selectGameGoalieC = undefined
+selectGameGoalieC :: ProgState -> Controller
+selectGameGoalieC = menuController . gameGoalieMenu
 
 header :: ProgState -> C.Update ()
 header s = C.drawString $ unlines

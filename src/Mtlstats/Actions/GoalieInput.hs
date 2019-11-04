@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Actions.GoalieInput
   ( finishGoalieEntry
   , recordGoalieStats
+  , setGameGoalie
   ) where
 
 import qualified Data.Map as M
@@ -72,3 +73,11 @@ recordGoalieStats s = fromMaybe s $ do
          & gYtd      %~ bumpStats
          & gLifetime %~ bumpStats)
     & tryFinish
+
+-- | Records the win, loss, or tie to a specific 'Goalie'
+setGameGoalie
+  :: Int
+  -- ^ The goalie's index
+  -> ProgState
+  -> ProgState
+setGameGoalie = undefined

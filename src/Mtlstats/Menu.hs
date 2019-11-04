@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Menu (
   -- * Menu Functions
+  menuController,
   drawMenu,
   menuHandler,
   -- * Menus
@@ -28,13 +29,16 @@ module Mtlstats.Menu (
   newSeasonMenu,
   gameMonthMenu,
   gameTypeMenu,
-  editPlayerMenu
+  editPlayerMenu,
+  gameGoalieMenu
 ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Aeson (encodeFile)
 import Data.Char (toUpper)
+import qualified Data.Map as M
+import Data.Maybe (mapMaybe)
 import Lens.Micro ((^.), (.~), (?~))
 import Lens.Micro.Extras (view)
 import System.EasyFile
@@ -45,9 +49,20 @@ import System.EasyFile
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import qualified Mtlstats.Actions.GoalieInput as GI
 import Mtlstats.Config
 import Mtlstats.Types
 import Mtlstats.Types.Menu
+import Mtlstats.Util
+
+-- | Generates a simple 'Controller' for a Menu
+menuController :: Menu () -> Controller
+menuController menu = Controller
+  { drawController   = const $ drawMenu menu
+  , handleController = \e -> do
+    menuHandler menu e
+    return True
+  }
 
 -- | The draw function for a 'Menu'
 drawMenu :: Menu a -> C.Update C.CursorMode
@@ -142,3 +157,18 @@ editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
   , ( '9', "Lifetime penalty mins", Just EPLtPMin     )
   , ( '0', "Finished editing",      Nothing           )
   ]
+
+-- | Game goalie selection menu
+gameGoalieMenu :: ProgState -> Menu ()
+gameGoalieMenu s = let
+  title   = "Which goalie should get credit for the game?"
+  gids    = map fst $ M.toList $ s^.progMode.gameStateL.gameGoalieStats
+  goalies = mapMaybe
+    (\n -> do
+      goalie <- nth n $ s^.database.dbGoalies
+      Just (n, goalie))
+    gids
+  in Menu title () $ map
+    (\(ch, (gid, goalie)) -> MenuItem ch (goalieSummary goalie) $
+      modify $ GI.setGameGoalie gid) $
+    zip ['1'..] goalies
