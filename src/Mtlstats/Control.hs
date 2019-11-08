@@ -21,25 +21,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control (dispatch) where
 
-import Control.Monad (join, when)
-import Control.Monad.Extra (ifM)
+import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Char (toUpper)
-import Data.Maybe (fromJust, fromMaybe, isJust)
-import Lens.Micro ((^.), (.~), (%~))
+import Data.Maybe (fromJust)
+import Lens.Micro ((^.))
 import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import Mtlstats.Control.EditPlayer
 import Mtlstats.Control.NewGame
-import Mtlstats.Format
 import Mtlstats.Handlers
 import Mtlstats.Menu
 import Mtlstats.Prompt
-import Mtlstats.Report
 import Mtlstats.Types
-import Mtlstats.Util
 
 -- | Reads the program state and returs the apropriate controller to
 -- run

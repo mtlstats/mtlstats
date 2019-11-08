@@ -27,13 +27,10 @@ module Mtlstats.Prompt.NewGame.GoalieInput
   , goalsAllowedPrompt
   ) where
 
-import Control.Monad (when)
-import Control.Monad.Trans.State (gets, modify)
-import Data.Maybe (fromMaybe)
-import Lens.Micro ((^.), (.~), (?~))
+import Control.Monad.Trans.State (modify)
+import Lens.Micro ((?~))
 
 import Mtlstats.Actions.NewGame.GoalieInput
-import Mtlstats.Config
 import Mtlstats.Prompt
 import Mtlstats.Types
 

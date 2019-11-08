@@ -40,12 +40,10 @@ module Mtlstats.Actions
   ) where
 
 import Control.Monad.Trans.State (modify)
-import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
-import Lens.Micro (over, (^.), (&), (.~), (?~), (%~), (+~))
+import Lens.Micro ((^.), (&), (.~), (%~))
 
 import Mtlstats.Types
-import Mtlstats.Util
 
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState

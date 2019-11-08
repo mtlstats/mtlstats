@@ -46,15 +46,13 @@ import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
-import Data.Maybe (fromMaybe)
-import Lens.Micro ((^.), (&), (.~), (?~), (%~))
+import Lens.Micro ((^.), (&), (.~), (?~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import Mtlstats.Config
-import Mtlstats.Format
 import Mtlstats.Types
 import Mtlstats.Util
 

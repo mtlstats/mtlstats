@@ -46,6 +46,7 @@ spec = describe "NewGame" $ do
   assignPMinsSpec
   GoalieInput.spec
 
+overtimeCheckSpec :: Spec
 overtimeCheckSpec = describe "overtimeCheck" $ do
 
   context "tie game" $ do

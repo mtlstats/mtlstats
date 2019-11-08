@@ -33,7 +33,6 @@ module TypesSpec
 import Control.Monad (replicateM)
 import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
-import Data.ByteString.Lazy (ByteString)
 import qualified Data.HashMap.Strict as HM
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
 import System.Random (randomRIO)

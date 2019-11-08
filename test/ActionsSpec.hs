@@ -24,16 +24,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
-import qualified Data.Map as M
-import Data.Maybe (fromJust)
-import Lens.Micro ((^.), (&), (.~), (?~), (%~))
-import System.Random (randomRIO)
+import Lens.Micro ((^.), (&), (.~), (?~))
 import Test.Hspec
   ( Spec
   , context
   , describe
   , it
-  , runIO
   , shouldBe
   , shouldNotBe
   , shouldSatisfy
@@ -41,7 +37,6 @@ import Test.Hspec
 
 import Mtlstats.Actions
 import Mtlstats.Types
-import Mtlstats.Util
 
 import qualified Actions.NewGameSpec as NewGame
 import qualified TypesSpec as TS
