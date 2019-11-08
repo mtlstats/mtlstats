@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Control.GoalieInput (goalieInput) where
+module Mtlstats.Control.NewGame.GoalieInput (goalieInputC) where
 
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
@@ -28,13 +28,13 @@ import qualified UI.NCurses as C
 import Mtlstats.Format
 import Mtlstats.Menu
 import Mtlstats.Prompt
-import Mtlstats.Prompt.GoalieInput
+import Mtlstats.Prompt.NewGame.GoalieInput
 import Mtlstats.Types
 import Mtlstats.Util
 
 -- | The dispatcher for handling goalie input
-goalieInput :: ProgState -> Controller
-goalieInput s = let
+goalieInputC :: ProgState -> Controller
+goalieInputC s = let
   gs = s^.progMode.gameStateL
   in if gs^.gameGoaliesRecorded
     then selectGameGoalieC s

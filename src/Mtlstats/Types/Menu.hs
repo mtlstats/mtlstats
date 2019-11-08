@@ -38,7 +38,6 @@ module Mtlstats.Types.Menu (
 
 import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
-import qualified UI.NCurses as C
 
 import Mtlstats.Types
 

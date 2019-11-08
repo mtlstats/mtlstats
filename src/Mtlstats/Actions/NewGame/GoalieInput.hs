@@ -19,12 +19,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Actions.GoalieInput
+module Mtlstats.Actions.NewGame.GoalieInput
   ( finishGoalieEntry
   , recordGoalieStats
   , setGameGoalie
   ) where
 
+import Control.Monad (void)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (%~), (+~))
@@ -42,10 +43,10 @@ finishGoalieEntry s = s & progMode.gameStateL.gameGoaliesRecorded
 recordGoalieStats :: ProgState -> ProgState
 recordGoalieStats s = fromMaybe s $ do
   let gs = s^.progMode.gameStateL
-  gid    <- gs^.gameSelectedGoalie
-  goalie <- nth gid $ s^.database.dbGoalies
-  mins   <- gs^.gameGoalieMinsPlayed
-  goals  <- gs^.gameGoalsAllowed
+  gid   <- gs^.gameSelectedGoalie
+  mins  <- gs^.gameGoalieMinsPlayed
+  goals <- gs^.gameGoalsAllowed
+  void $ nth gid $ s^.database.dbGoalies
 
   let
     gameStats = M.findWithDefault newGoalieStats gid $ gs^.gameGoalieStats

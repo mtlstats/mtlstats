@@ -21,13 +21,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {-# LANGUAGE OverloadedStrings, RankNTypes #-}
 
-module TypesSpec (Comparable (..), spec) where
+module TypesSpec
+  ( Comparable (..)
+  , spec
+  , makePlayer
+  , makeGoalie
+  , makePlayerStats
+  , makeGoalieStats
+  ) where
 
+import Control.Monad (replicateM)
 import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
-import Data.ByteString.Lazy (ByteString)
 import qualified Data.HashMap.Strict as HM
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
+import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Config
@@ -763,6 +771,47 @@ bob = newPlayer 3 "Bob" "defense"
 
 steve :: Player
 steve = newPlayer 5 "Steve" "forward"
+
+-- | Creates a 'Player'
+makePlayer :: IO Player
+makePlayer = Player
+  <$> makeNum
+  <*> makeName
+  <*> makeName
+  <*> makePlayerStats
+  <*> makePlayerStats
+
+-- | Creates a 'Goalie'
+makeGoalie :: IO Goalie
+makeGoalie = Goalie
+  <$> makeNum
+  <*> makeName
+  <*> makeGoalieStats
+  <*> makeGoalieStats
+
+-- | Creates a 'PlayerStats' value
+makePlayerStats :: IO PlayerStats
+makePlayerStats = PlayerStats
+  <$> makeNum
+  <*> makeNum
+  <*> makeNum
+
+-- | Creates a 'GoalieStats' value
+makeGoalieStats :: IO GoalieStats
+makeGoalieStats = GoalieStats
+  <$> makeNum
+  <*> makeNum
+  <*> makeNum
+  <*> makeNum
+  <*> makeNum
+  <*> makeNum
+
+
+makeNum :: IO Int
+makeNum = randomRIO (1, 10)
+
+makeName :: IO String
+makeName = replicateM 10 $ randomRIO ('A', 'Z')
 
 instance Comparable GoalieStats where
   compareTest actual expected = mapM_

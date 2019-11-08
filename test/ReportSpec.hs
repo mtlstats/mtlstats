@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module ReportSpec (spec) where
 
-import Lens.Micro ((&), (?~), (%~))
+import Lens.Micro ((&), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Report
