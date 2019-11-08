@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Actions.GoalieInput
+module Mtlstats.Actions.NewGame.GoalieInput
   ( finishGoalieEntry
   , recordGoalieStats
   , setGameGoalie

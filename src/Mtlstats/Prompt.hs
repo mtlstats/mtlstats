@@ -31,11 +31,6 @@ module Mtlstats.Prompt (
   numPrompt,
   selectPrompt,
   -- * Individual prompts
-  gameYearPrompt,
-  gameDayPrompt,
-  otherTeamPrompt,
-  homeScorePrompt,
-  awayScorePrompt,
   playerNumPrompt,
   playerNamePrompt,
   playerPosPrompt,
@@ -43,10 +38,6 @@ module Mtlstats.Prompt (
   goalieNamePrompt,
   selectPlayerPrompt,
   selectGoaliePrompt,
-  recordGoalPrompt,
-  recordAssistPrompt,
-  pMinPlayerPrompt,
-  assignPMinsPrompt,
   playerToEditPrompt
 ) where
 
@@ -179,31 +170,6 @@ selectPrompt params = Prompt
     _ -> return ()
   }
 
--- | Prompts for the game year
-gameYearPrompt :: Prompt
-gameYearPrompt = numPrompt "Game year: " $
-  modify . (progMode.gameStateL.gameYear ?~)
-
--- | Prompts for the day of the month the game took place
-gameDayPrompt :: Prompt
-gameDayPrompt = numPrompt "Day of month: " $
-  modify . (progMode.gameStateL.gameDay ?~)
-
--- | Prompts for the other team name
-otherTeamPrompt :: Prompt
-otherTeamPrompt = strPrompt "Other team: " $
-  modify . (progMode.gameStateL.otherTeam .~)
-
--- | Prompts for the home score
-homeScorePrompt :: Prompt
-homeScorePrompt = numPrompt "Home score: " $
-  modify . (progMode.gameStateL.homeScore ?~)
-
--- | Prompts for the away score
-awayScorePrompt :: Prompt
-awayScorePrompt = numPrompt "Away score: " $
-  modify . (progMode.gameStateL.awayScore ?~)
-
 -- | Prompts for a new player's number
 playerNumPrompt :: Prompt
 playerNumPrompt = numPrompt "Player number: " $
@@ -284,52 +250,6 @@ selectGoaliePrompt pStr callback = selectPrompt SelectParams
         & cgsFailureCallback .~ modify (progMode .~ mode)
     modify $ progMode .~ CreateGoalie cgs
   }
-
--- | Prompts for the player who scored the goal
-recordGoalPrompt
-  :: Int
-  -- ^ The game number
-  -> Int
-  -- ^ The goal number
-  -> Prompt
-recordGoalPrompt game goal = selectPlayerPrompt
-  (  "*** GAME " ++ padNum 2 game ++ " ***\n"
-  ++ "Who scored goal number " ++ show goal ++ "? "
-  ) $ modify . (progMode.gameStateL.goalBy .~)
-
--- | Prompts for a player who assisted the goal
-recordAssistPrompt
-  :: Int
-  -- ^ The game number
-  -> Int
-  -- ^ The goal nuber
-  -> Int
-  -- ^ The assist number
-  -> Prompt
-recordAssistPrompt game goal assist = selectPlayerPrompt
-  (  "*** GAME " ++ padNum 2 game ++ " ***\n"
-  ++ "Goal: " ++ show goal ++ "\n"
-  ++ "Assist #" ++ show assist ++ ": "
-  ) $ \case
-    Nothing -> modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
-    Just n  -> do
-      modify $ progMode.gameStateL.assistsBy %~ (++[n])
-      nAssists <- length <$> gets (view $ progMode.gameStateL.assistsBy)
-      when (nAssists >= maxAssists) $
-        modify $ progMode.gameStateL.confirmGoalDataFlag .~ True
-
--- | Prompts for the player to assign penalty minutes to
-pMinPlayerPrompt :: Prompt
-pMinPlayerPrompt = selectPlayerPrompt
-  "Assign penalty minutes to: " $
-  \case
-    Nothing -> modify $ progMode.gameStateL.gamePMinsRecorded  .~ True
-    Just n  -> modify $ progMode.gameStateL.gameSelectedPlayer ?~ n
-
--- | Prompts for the number of penalty mintues to assign to the player
-assignPMinsPrompt :: Prompt
-assignPMinsPrompt = numPrompt "Penalty minutes: " $
-  modify . assignPMins
 
 playerToEditPrompt :: Prompt
 playerToEditPrompt = selectPlayerPrompt "Player to edit: " $

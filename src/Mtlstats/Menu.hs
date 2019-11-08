@@ -49,7 +49,7 @@ import System.EasyFile
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
-import qualified Mtlstats.Actions.GoalieInput as GI
+import qualified Mtlstats.Actions.NewGame.GoalieInput as GI
 import Mtlstats.Config
 import Mtlstats.Types
 import Mtlstats.Types.Menu

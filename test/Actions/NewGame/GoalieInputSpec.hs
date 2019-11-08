@@ -19,14 +19,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Actions.GoalieInputSpec (spec) where
+module Actions.NewGame.GoalieInputSpec (spec) where
 
 import qualified Data.Map as M
 import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (&), (.~), (?~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
-import Mtlstats.Actions.GoalieInput
+import Mtlstats.Actions.NewGame.GoalieInput
 import Mtlstats.Types
 import Mtlstats.Util
 

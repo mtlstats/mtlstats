@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 {-# LANGUAGE LambdaCase #-}
 
-module Mtlstats.Prompt.GoalieInput
+module Mtlstats.Prompt.NewGame.GoalieInput
   ( selectGameGoaliePrompt
   , goalieMinsPlayedPrompt
   , goalsAllowedPrompt
@@ -32,7 +32,7 @@ import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (.~), (?~))
 
-import Mtlstats.Actions.GoalieInput
+import Mtlstats.Actions.NewGame.GoalieInput
 import Mtlstats.Config
 import Mtlstats.Prompt
 import Mtlstats.Types
