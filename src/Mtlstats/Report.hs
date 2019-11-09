@@ -43,6 +43,8 @@ report width s
   ++ gameStatsReport width s
   ++ [""]
   ++ yearToDateStatsReport width s
+  ++ [""]
+  ++ lifetimeStatsReport width s
 
 standingsReport :: Int -> ProgState -> [String]
 standingsReport width s = fromMaybe [] $ do
@@ -102,6 +104,10 @@ yearToDateStatsReport :: Int -> ProgState -> [String]
 yearToDateStatsReport width s = playerReport width "YEAR TO DATE" $
   map (\p -> (p, p^.pYtd)) $
   filter playerIsActive $ s^.database.dbPlayers
+
+lifetimeStatsReport :: Int -> ProgState -> [String]
+lifetimeStatsReport width s = playerReport width "LIFETIME" $
+  map (\p -> (p, p^.pLifetime)) $ s^.database.dbPlayers
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
