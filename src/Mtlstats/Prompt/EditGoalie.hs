@@ -19,22 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Control.EditGoalie (editGoalieC) where
+module Mtlstats.Prompt.EditGoalie (goalieToEditPrompt) where
 
-import Lens.Micro ((^.))
-
-import Mtlstats.Prompt
-import Mtlstats.Prompt.EditGoalie
 import Mtlstats.Types
 
--- | Controller/dispatcher for editing a 'Goalie'
-editGoalieC :: EditGoalieState -> Controller
-editGoalieC egs
-  | null $ egs^.egsSelectedGoalie = selectC
-  | otherwise = editC
-
-selectC :: Controller
-selectC = promptController goalieToEditPrompt
-
-editC :: Controller
-editC = undefined
+-- | Prompt to select a 'Goalie' for editing
+goalieToEditPrompt :: Prompt
+goalieToEditPrompt = undefined
