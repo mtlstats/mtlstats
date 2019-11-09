@@ -33,6 +33,8 @@ module Mtlstats.Types (
   CreateGoalieState (..),
   EditPlayerState (..),
   EditPlayerMode (..),
+  EditGoalieState (..),
+  EditGoalieMode (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -89,6 +91,9 @@ module Mtlstats.Types (
   -- ** EditPlayerState Lenses
   epsSelectedPlayer,
   epsMode,
+  -- ** EditGoalieState Lenses
+  egsSelectedGoalie,
+  egsMode,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -129,6 +134,7 @@ module Mtlstats.Types (
   newCreatePlayerState,
   newCreateGoalieState,
   newEditPlayerState,
+  newEditGoalieState,
   newDatabase,
   newPlayer,
   newPlayerStats,
@@ -218,6 +224,7 @@ data ProgMode
   | CreatePlayer CreatePlayerState
   | CreateGoalie CreateGoalieState
   | EditPlayer EditPlayerState
+  | EditGoalie EditGoalieState
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
@@ -226,6 +233,7 @@ instance Show ProgMode where
   show (CreatePlayer _) = "CreatePlayer"
   show (CreateGoalie _) = "CreateGoalie"
   show (EditPlayer _)   = "EditPlayer"
+  show (EditGoalie _)   = "EditGoalie"
 
 -- | The game state
 data GameState = GameState
@@ -332,6 +340,32 @@ data EditPlayerMode
   | EPLtGoals
   | EPLtAssists
   | EPLtPMin
+  deriving (Eq, Show)
+
+-- | 'Goalie' edit status
+data EditGoalieState = EditGoalieState
+  { _egsSelectedGoalie :: Maybe Int
+  -- ^ The index number of the 'Goalie' being edited
+  , _egsMode           :: EditGoalieMode
+  }
+
+-- | 'Goalie' editing mode
+data EditGoalieMode
+  = EGMenu
+  | EGNumber
+  | EGName
+  | EGYtdGames
+  | EGYtdMins
+  | EGYtdGoals
+  | EGYtdWins
+  | EGYtdLosses
+  | EGYtdTies
+  | EGLtGames
+  | EGLtMins
+  | EGLtGoals
+  | EGLtWins
+  | EGLtLosses
+  | EGLtTies
   deriving (Eq, Show)
 
 -- | Represents the database
@@ -581,6 +615,7 @@ makeLenses ''GameState
 makeLenses ''CreatePlayerState
 makeLenses ''CreateGoalieState
 makeLenses ''EditPlayerState
+makeLenses ''EditGoalieState
 makeLenses ''Database
 makeLenses ''Player
 makeLenses ''PlayerStats
@@ -676,6 +711,13 @@ newEditPlayerState :: EditPlayerState
 newEditPlayerState = EditPlayerState
   { _epsSelectedPlayer = Nothing
   , _epsMode           = EPMenu
+  }
+
+-- | Constructor for an 'EditGoalieState' value
+newEditGoalieState :: EditGoalieState
+newEditGoalieState = EditGoalieState
+  { _egsSelectedGoalie = Nothing
+  , _egsMode           = EGMenu
   }
 
 -- | Constructor for a 'Database'
