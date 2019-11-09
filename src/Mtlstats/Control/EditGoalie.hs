@@ -21,8 +21,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditGoalie (editGoalieC) where
 
+import Lens.Micro ((^.))
+
 import Mtlstats.Types
 
 -- | Controller/dispatcher for editing a 'Goalie'
 editGoalieC :: EditGoalieState -> Controller
-editGoalieC = undefined
+editGoalieC egs
+  | null $ egs^.egsSelectedGoalie = selectC
+  | otherwise = editC
+
+selectC :: Controller
+selectC = undefined
+
+editC :: Controller
+editC = undefined
