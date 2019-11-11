@@ -21,8 +21,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Prompt.EditGoalie (goalieToEditPrompt) where
 
+import Control.Monad.Trans.State (modify)
+import Lens.Micro ((.~))
+
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Prompt to select a 'Goalie' for editing
 goalieToEditPrompt :: Prompt
-goalieToEditPrompt = undefined
+goalieToEditPrompt = selectGoaliePrompt "Goalie to edit: " $
+  modify . (progMode.editGoalieStateL.egsSelectedGoalie .~)

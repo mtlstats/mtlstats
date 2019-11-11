@@ -54,6 +54,7 @@ module Mtlstats.Types (
   createPlayerStateL,
   createGoalieStateL,
   editPlayerStateL,
+  editGoalieStateL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -650,6 +651,9 @@ editPlayerStateL = lens
     EditPlayer eps -> eps
     _              -> newEditPlayerState)
   (\_ eps -> EditPlayer eps)
+
+editGoalieStateL :: Lens' ProgMode EditGoalieState
+editGoalieStateL = undefined
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
