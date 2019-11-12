@@ -828,9 +828,8 @@ playerSearch
   -> [(Int, Player)]
   -- ^ The matching players with their index numbers
 playerSearch sStr =
-  filter (match sStr) .
-  zip [0..]
-  where match sStr (_, p) = sStr `isInfixOf` (p^.pName)
+  filter match . zip [0..]
+  where match (_, p) = sStr `isInfixOf` (p^.pName)
 
 -- | Searches for a player by exact match on name
 playerSearchExact
@@ -841,10 +840,8 @@ playerSearchExact
   -> Maybe (Int, Player)
   -- ^ The player's index and value
 playerSearchExact sStr =
-  listToMaybe .
-  filter (match sStr) .
-  zip [0..]
-  where match sStr (_, p) = p^.pName == sStr
+  listToMaybe . filter match . zip [0..]
+  where match (_, p) = p^.pName == sStr
 
 -- | Modifies a player with a given name
 modifyPlayer

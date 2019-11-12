@@ -81,13 +81,13 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
     & progMode.gameStateL .~ gameState n mins goals
 
   in mapM_
-    (\(name, gid, mins, goals, joeData, bobData, reset) -> let
-      s = recordGoalieStats $ progState gid mins goals
-      in context name $ do
+    (\(setName, setGid, mins, goals, joeData, bobData, reset) -> let
+      s = recordGoalieStats $ progState setGid mins goals
+      in context setName $ do
 
         mapM_
-          (\( name
-            , gid
+          (\( chkName
+            , chkGid
             , ( gGames
               , gMins
               , gGoals
@@ -98,11 +98,11 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
               , ltMins
               , ltGoals
               )
-            ) -> context name $ do
+            ) -> context chkName $ do
               let
                 gs     = s^.progMode.gameStateL.gameGoalieStats
-                game   = M.findWithDefault newGoalieStats gid gs
-                goalie = fromJust $ nth gid $ s^.database.dbGoalies
+                game   = M.findWithDefault newGoalieStats chkGid gs
+                goalie = fromJust $ nth chkGid $ s^.database.dbGoalies
                 ytd    = goalie^.gYtd
                 lt     = goalie^.gLifetime
 
@@ -120,7 +120,7 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
           ]
 
         context "selected goalie" $ let
-          expected = if reset then Nothing else gid
+          expected = if reset then Nothing else setGid
           in it ("should be " ++ show expected) $
             (s^.progMode.gameStateL.gameSelectedGoalie) `shouldBe` expected
 
@@ -211,16 +211,16 @@ setGameGoalieSpec = describe "setGameGoalie" $ let
   tiedGame    = gameState 0 1 True
 
   in mapM_
-    (\(label, gameState, gid, bobData, joeData) -> context label $ let
+    (\(setLabel, gs, setGid, bobData, joeData) -> context setLabel $ let
 
       progState = newProgState
         & database.dbGoalies  .~ [bob, joe]
-        & progMode.gameStateL .~ gameState
-        & setGameGoalie gid
+        & progMode.gameStateL .~ gs
+        & setGameGoalie setGid
 
       in mapM_
-        (\( label
-          , gid
+        (\( chkLabel
+          , chkGid
           , ( gWins
             , gLosses
             , gTies
@@ -231,16 +231,16 @@ setGameGoalieSpec = describe "setGameGoalie" $ let
             , ltLosses
             , ltTies
             )
-          ) -> context label $ do
+          ) -> context chkLabel $ do
             let
-              goalie = (progState^.database.dbGoalies) !! gid
+              goalie = (progState^.database.dbGoalies) !! chkGid
               gameStats = progState^.progMode.gameStateL.gameGoalieStats
-              game      = M.findWithDefault newGoalieStats gid gameStats
+              game      = M.findWithDefault newGoalieStats chkGid gameStats
               ytd       = goalie^.gYtd
               lifetime  = goalie^.gLifetime
 
             mapM_
-              (\(label, expected, actual) -> context label $
+              (\(label', expected, actual) -> context label' $
                 expected `TS.compareTest` actual)
               [ ( "game stats",     game,     goalieStats gWins   gLosses   gTies   )
               , ( "YTD stats",      ytd,      goalieStats ytdWins ytdLosses ytdTies )

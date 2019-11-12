@@ -54,10 +54,10 @@ recordGoalieStats s = fromMaybe s $ do
       then 1
       else 0
 
-    bumpStats gs = gs
-      & gsGames        +~ bumpVal
-      & gsMinsPlayed   +~ mins
-      & gsGoalsAllowed +~ goals
+    bumpStats
+      = (gsGames        +~ bumpVal)
+      . (gsMinsPlayed   +~ mins)
+      . (gsGoalsAllowed +~ goals)
 
     tryFinish = if mins >= gameLength
       then finishGoalieEntry
@@ -91,18 +91,18 @@ setGameGoalie gid s = fromMaybe s $ do
     l = if lost then 1 else 0
     t = if tied then 1 else 0
 
-    updateStats gs = gs
-      & gsWins   +~ w
-      & gsLosses +~ l
-      & gsTies   +~ t
+    updateStats
+      = (gsWins   +~ w)
+      . (gsLosses +~ l)
+      . (gsTies   +~ t)
 
-    updateGoalie g = g
-      & gYtd      %~ updateStats
-      & gLifetime %~ updateStats
+    updateGoalie
+      = (gYtd      %~ updateStats)
+      . (gLifetime %~ updateStats)
 
-    updateGameState gs = gs
-      & gameGoalieStats %~ updateMap gid newGoalieStats updateStats
-      & gameGoalieAssigned .~ True
+    updateGameState
+      = (gameGoalieStats %~ updateMap gid newGoalieStats updateStats)
+      . (gameGoalieAssigned .~ True)
 
   Just $ s
     & database.dbGoalies  %~ modifyNth gid updateGoalie
