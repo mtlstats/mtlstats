@@ -653,7 +653,11 @@ editPlayerStateL = lens
   (\_ eps -> EditPlayer eps)
 
 editGoalieStateL :: Lens' ProgMode EditGoalieState
-editGoalieStateL = undefined
+editGoalieStateL = lens
+  (\case
+    EditGoalie egs -> egs
+    _              -> newEditGoalieState)
+  (\_ egs -> EditGoalie egs)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState
