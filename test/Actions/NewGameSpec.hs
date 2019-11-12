@@ -327,20 +327,20 @@ awardGoalSpec = describe "awardGoal" $ do
       & database .~ db
 
   mapM_
-    (\(pName, pid, ytd, lt, game) ->
-      context pName $ do
+    (\(name, pid, ytd, lt, game) ->
+      context name $ do
         let
           ps'    = awardGoal pid ps
           player = (ps'^.database.dbPlayers) !! pid
           gStats = (ps'^.progMode.gameStateL.gamePlayerStats) M.! pid
 
-        it ("should increment " ++ pName ++ "'s year-to-date goals") $
+        it ("should increment " ++ name ++ "'s year-to-date goals") $
           player^.pYtd.psGoals `shouldBe` ytd
 
-        it ("should increment " ++ pName ++ "'s lifetime goals") $
+        it ("should increment " ++ name ++ "'s lifetime goals") $
           player^.pLifetime.psGoals `shouldBe` lt
 
-        it ("should increment " ++ pName ++ "'s game goals") $
+        it ("should increment " ++ name ++ "'s game goals") $
           gStats^.psGoals `shouldBe` game)
     --  player name, player id, ytd goals, lifetime goals, game goals
     [ ( "Joe",       0,         2,         3,              2          )
@@ -377,20 +377,20 @@ awardAssistSpec = describe "awardAssist" $ do
       & database.dbPlayers .~ [joe, bob]
 
   mapM_
-    (\(pName, pid, ytd, lt, game) ->
-      context pName $ do
+    (\(name, pid, ytd, lt, game) ->
+      context name $ do
         let
           ps' = awardAssist pid ps
           player = (ps'^.database.dbPlayers) !! pid
           gStats = (ps'^.progMode.gameStateL.gamePlayerStats) M.! pid
 
-        it ("should increment " ++ pName ++ "'s year-to-date assists") $
+        it ("should increment " ++ name ++ "'s year-to-date assists") $
           player^.pYtd.psAssists `shouldBe` ytd
 
-        it ("should increment " ++ pName ++ "'s lifetime assists") $
+        it ("should increment " ++ name ++ "'s lifetime assists") $
           player^.pLifetime.psAssists `shouldBe` lt
 
-        it ("should increment " ++ pName ++ "'s game assists") $
+        it ("should increment " ++ name ++ "'s game assists") $
           gStats^.psAssists `shouldBe` game)
     --  player name, player id, ytd assists, lifetime assists, game assists
     [ ( "Joe",       0,         2,           3,                2            )

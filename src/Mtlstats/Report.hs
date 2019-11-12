@@ -111,10 +111,10 @@ lifetimeStatsReport width s = playerReport width "LIFETIME" $
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
-  year  <- show <$> gs^.gameYear
-  month <- month <$> gs^.gameMonth
-  day   <- padNum 2 <$> gs^.gameDay
-  Just $ month ++ " " ++ day ++ " " ++ year
+  y <- show <$> gs^.gameYear
+  m <- month <$> gs^.gameMonth
+  d <- padNum 2 <$> gs^.gameDay
+  Just $ m ++ " " ++ d ++ " " ++ y
 
 playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
 playerReport width label ps = let

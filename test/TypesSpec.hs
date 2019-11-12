@@ -589,22 +589,22 @@ playerSearchExactSpec = describe "playerSearchExact" $ mapM_
 
 modifyPlayerSpec :: Spec
 modifyPlayerSpec = describe "modifyPlayer" $ mapM_
-  (\(pName, j, b, s) -> let
+  (\(name, j, b, s) -> let
     modifier = pLifetime.psGoals .~ 1
-    players = modifyPlayer modifier pName [joe, bob, steve]
-    in context ("modify " ++ pName) $ do
+    players = modifyPlayer modifier name [joe, bob, steve]
+    in context ("modify " ++ name) $ do
 
       context "Joe's lifetime goals" $
         it ("should be " ++ show j) $
-          head players ^. pLifetime.psGoals `shouldBe` j
+          head players^.pLifetime.psGoals `shouldBe` j
 
       context "Bob's lifetime goals" $
         it ("should be " ++ show b) $
-          (players !! 1) ^. pLifetime.psGoals `shouldBe` b
+          (players !! 1)^.pLifetime.psGoals `shouldBe` b
 
       context "Steve's lifetime goals" $
         it ("should be " ++ show s) $
-          last players ^. pLifetime.psGoals `shouldBe` s)
+          last players^.pLifetime.psGoals `shouldBe` s)
   --  player name, Joe's goals, Bob's goals, Steve's goals
   [ ( "Joe",       1,           0,           0             )
   , ( "Bob",       0,           1,           0             )
@@ -621,7 +621,7 @@ playerDetailsSpec :: Spec
 playerDetailsSpec = describe "playerDetails" $
   it "should give a detailed description" $ let
 
-    player = newPlayer 1 "Joe" "centre"
+    p = newPlayer 1 "Joe" "centre"
       & pYtd .~ PlayerStats
         { _psGoals   = 2
         , _psAssists = 3
@@ -645,26 +645,26 @@ playerDetailsSpec = describe "playerDetails" $
       , "Lifetime penalty mins: 7"
       ]
 
-    in playerDetails player `shouldBe` expected
+    in playerDetails p `shouldBe` expected
 
 playerIsActiveSpec :: Spec
 playerIsActiveSpec = describe "playerIsActive" $ do
   let
-    pState = newPlayerStats
+    pStats = newPlayerStats
       & psGoals   .~ 10
       & psAssists .~ 11
       & psPMin    .~ 12
-    player = newPlayer 1 "Joe" "centre" & pLifetime .~ pState
+    p = newPlayer 1 "Joe" "centre" & pLifetime .~ pStats
 
   mapM_
-    (\(label, player', expected) -> context label $
+    (\(label, p', expected) -> context label $
       it ("should be " ++ show expected) $
-        playerIsActive player' `shouldBe` expected)
-    --  label,                player,                       expected
-    [ ( "not active",         player,                       False    )
-    , ( "has goal",           player & pYtd.psGoals   .~ 1, True     )
-    , ( "has assist",         player & pYtd.psAssists .~ 1, True     )
-    , ( "has penalty minute", player & pYtd.psPMin    .~ 1, True     )
+        playerIsActive p' `shouldBe` expected)
+    --  label,                player,                  expected
+    [ ( "not active",         p,                       False    )
+    , ( "has goal",           p & pYtd.psGoals   .~ 1, True     )
+    , ( "has assist",         p & pYtd.psAssists .~ 1, True     )
+    , ( "has penalty minute", p & pYtd.psPMin    .~ 1, True     )
     ]
 
 psPointsSpec :: Spec

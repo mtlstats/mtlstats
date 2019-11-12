@@ -162,9 +162,9 @@ selectPrompt params = Prompt
         n       = pred $ fromInteger rawK
         results = spSearch params sStr db
       when (n < maxFunKeys) $
-        whenJust (nth n results) $ \(n, _) -> do
+        whenJust (nth n results) $ \(sel, _) -> do
           modify $ inputBuffer .~ ""
-          spCallback params $ Just n
+          spCallback params $ Just sel
     _ -> return ()
   }
 

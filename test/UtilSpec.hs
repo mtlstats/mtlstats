@@ -49,18 +49,19 @@ nthSpec = describe "nth" $ mapM_
 
 modifyNthSpec  :: Spec
 modifyNthSpec = describe "modifyNth" $ do
+  let list = [1, 2, 3] :: [Int]
 
   context "in bounds" $
     it "should modify the value" $
-      modifyNth 1 succ [1, 2, 3] `shouldBe` [1, 3, 3]
+      modifyNth 1 succ list `shouldBe` [1, 3, 3]
 
   context "out of bounds" $
     it "should not modify the value" $
-      modifyNth 3 succ [1, 2, 3] `shouldBe` [1, 2, 3]
+      modifyNth 3 succ list `shouldBe` [1, 2, 3]
 
   context "negative index" $
     it "should not modify the value" $
-      modifyNth (-1) succ [1, 2, 3] `shouldBe` [1, 2, 3]
+      modifyNth (-1) succ list `shouldBe` [1, 2, 3]
 
 updateMapSpec :: Spec
 updateMapSpec = describe "updateMap" $ do
@@ -68,7 +69,7 @@ updateMapSpec = describe "updateMap" $ do
     input = M.fromList [(1, 2), (3, 5)]
 
   context "key found" $ let
-    expected = M.fromList [(1, 3), (3, 5)]
+    expected = M.fromList [(1, 3), (3, 5)] :: M.Map Int Int
     in it "should update the value" $
       updateMap 1 10 succ input `shouldBe` expected
 
@@ -79,7 +80,7 @@ updateMapSpec = describe "updateMap" $ do
 
 sliceSpec :: Spec
 sliceSpec = describe "slice" $ do
-  let list = [2, 4, 6, 8]
+  let list = [2, 4, 6, 8] :: [Int]
 
   context "sublist" $
     it "should return the sublist" $
