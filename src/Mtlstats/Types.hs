@@ -355,6 +355,8 @@ data EditGoalieMode
   = EGMenu
   | EGNumber
   | EGName
+  | EGYtd
+  | EGLifetime
   | EGYtdGames
   | EGYtdMins
   | EGYtdGoals

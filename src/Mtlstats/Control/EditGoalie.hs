@@ -45,6 +45,8 @@ editC = \case
   EGMenu      -> menuC
   EGNumber    -> numberC
   EGName      -> nameC
+  EGYtd       -> ytdMenuC
+  EGLifetime  -> lifetimeMenuC
   EGYtdGames  -> ytdGamesC
   EGYtdMins   -> ytdMinsC
   EGYtdGoals  -> ytdGoalsC
@@ -66,6 +68,12 @@ numberC = undefined
 
 nameC :: Controller
 nameC = undefined
+
+ytdMenuC :: Controller
+ytdMenuC = undefined
+
+lifetimeMenuC :: Controller
+lifetimeMenuC = undefined
 
 ytdGamesC :: Controller
 ytdGamesC = undefined
