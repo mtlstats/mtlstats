@@ -27,6 +27,7 @@ import Lens.Micro ((^.))
 import UI.NCurses as C
 
 import Mtlstats.Menu
+import Mtlstats.Menu.EditGoalie
 import Mtlstats.Prompt
 import Mtlstats.Prompt.EditGoalie
 import Mtlstats.Types

@@ -31,7 +31,6 @@ module Mtlstats.Menu (
   gameMonthMenu,
   gameTypeMenu,
   editPlayerMenu,
-  editGoalieMenu,
   gameGoalieMenu
 ) where
 
@@ -171,10 +170,6 @@ editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
   , ( '9', "Lifetime penalty mins", Just EPLtPMin     )
   , ( '0', "Finished editing",      Nothing           )
   ]
-
--- | The 'Goalie' edit menu
-editGoalieMenu :: Menu ()
-editGoalieMenu = undefined
 
 -- | Game goalie selection menu
 gameGoalieMenu :: ProgState -> Menu ()
