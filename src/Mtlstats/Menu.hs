@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Menu (
   -- * Menu Functions
   menuController,
+  menuControllerWith,
   drawMenu,
   menuHandler,
   -- * Menus
@@ -64,6 +65,16 @@ menuController menu = Controller
     menuHandler menu e
     return True
   }
+
+-- | Generate a simple 'Controller' for a 'Menu' with a header
+menuControllerWith
+  :: (ProgState -> C.Update ())
+  -- ^ Generates the header
+  -> Menu ()
+  -- ^ The menu
+  -> Controller
+  -- ^ The resulting controller
+menuControllerWith = undefined
 
 -- | The draw function for a 'Menu'
 drawMenu :: Menu a -> C.Update C.CursorMode

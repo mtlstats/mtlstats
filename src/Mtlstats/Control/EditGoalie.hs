@@ -24,7 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Control.EditGoalie (editGoalieC) where
 
 import Lens.Micro ((^.))
+import UI.NCurses as C
 
+import Mtlstats.Menu
 import Mtlstats.Prompt
 import Mtlstats.Prompt.EditGoalie
 import Mtlstats.Types
@@ -57,7 +59,7 @@ editC = \case
   EGLtTies    -> ltTiesC
 
 menuC :: Controller
-menuC = undefined
+menuC = menuControllerWith header editGoalieMenu
 
 numberC :: Controller
 numberC = undefined
@@ -100,3 +102,6 @@ ltLossesC = undefined
 
 ltTiesC :: Controller
 ltTiesC = undefined
+
+header :: ProgState -> C.Update ()
+header = undefined
