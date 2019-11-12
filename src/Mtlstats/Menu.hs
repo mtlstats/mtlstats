@@ -59,12 +59,7 @@ import Mtlstats.Util
 
 -- | Generates a simple 'Controller' for a Menu
 menuController :: Menu () -> Controller
-menuController menu = Controller
-  { drawController   = const $ drawMenu menu
-  , handleController = \e -> do
-    menuHandler menu e
-    return True
-  }
+menuController = menuControllerWith $ const $ return ()
 
 -- | Generate a simple 'Controller' for a 'Menu' with a header
 menuControllerWith
@@ -74,7 +69,14 @@ menuControllerWith
   -- ^ The menu
   -> Controller
   -- ^ The resulting controller
-menuControllerWith = undefined
+menuControllerWith header menu = Controller
+  { drawController = \s -> do
+    header s
+    drawMenu menu
+  , handleController = \e -> do
+    menuHandler menu e
+    return True
+  }
 
 -- | The draw function for a 'Menu'
 drawMenu :: Menu a -> C.Update C.CursorMode
