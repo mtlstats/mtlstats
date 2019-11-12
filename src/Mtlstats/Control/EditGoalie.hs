@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Control.EditGoalie (editGoalieC) where
 
 import Lens.Micro ((^.))
@@ -31,10 +33,70 @@ import Mtlstats.Types
 editGoalieC :: EditGoalieState -> Controller
 editGoalieC egs
   | null $ egs^.egsSelectedGoalie = selectC
-  | otherwise = editC
+  | otherwise = editC $ egs^.egsMode
 
 selectC :: Controller
 selectC = promptController goalieToEditPrompt
 
-editC :: Controller
-editC = undefined
+editC :: EditGoalieMode -> Controller
+editC = \case
+  EGMenu      -> menuC
+  EGNumber    -> numberC
+  EGName      -> nameC
+  EGYtdGames  -> ytdGamesC
+  EGYtdMins   -> ytdMinsC
+  EGYtdGoals  -> ytdGoalsC
+  EGYtdWins   -> ytdWinsC
+  EGYtdLosses -> ytdLossesC
+  EGYtdTies   -> ytdTiesC
+  EGLtGames   -> ltGamesC
+  EGLtMins    -> ltMinsC
+  EGLtGoals   -> ltGoalsC
+  EGLtWins    -> ltWinsC
+  EGLtLosses  -> ltLossesC
+  EGLtTies    -> ltTiesC
+
+menuC :: Controller
+menuC = undefined
+
+numberC :: Controller
+numberC = undefined
+
+nameC :: Controller
+nameC = undefined
+
+ytdGamesC :: Controller
+ytdGamesC = undefined
+
+ytdMinsC :: Controller
+ytdMinsC = undefined
+
+ytdGoalsC :: Controller
+ytdGoalsC = undefined
+
+ytdWinsC :: Controller
+ytdWinsC = undefined
+
+ytdLossesC :: Controller
+ytdLossesC = undefined
+
+ytdTiesC :: Controller
+ytdTiesC = undefined
+
+ltGamesC :: Controller
+ltGamesC = undefined
+
+ltMinsC :: Controller
+ltMinsC = undefined
+
+ltGoalsC :: Controller
+ltGoalsC = undefined
+
+ltWinsC :: Controller
+ltWinsC = undefined
+
+ltLossesC :: Controller
+ltLossesC = undefined
+
+ltTiesC :: Controller
+ltTiesC = undefined
