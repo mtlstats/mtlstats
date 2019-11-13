@@ -96,7 +96,7 @@ editPlayer = progMode .~ EditPlayer newEditPlayerState
 
 -- | Starts the 'Goalie' editing process
 editGoalie :: ProgState -> ProgState
-editGoalie = undefined
+editGoalie = progMode .~ EditGoalie newEditGoalieState
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
