@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Actions.EditGoalie
   ( editGoalieNumber
+  , editGoalieName
   ) where
 
 import Control.Monad (void)
@@ -43,3 +44,11 @@ editGoalieNumber n s = fromMaybe s $ do
   Just $ s
     & database.dbGoalies %~ modifyNth gid updateGoalie
     & progMode.editGoalieStateL.egsMode .~ EGMenu
+
+-- | Edits a goalie's name
+editGoalieName
+  :: String
+  -- ^ The new name
+  -> ProgState
+  -> ProgState
+editGoalieName = undefined

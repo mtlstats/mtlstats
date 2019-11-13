@@ -44,4 +44,5 @@ editGoalieNumberPrompt = numPrompt "Goalie number: " $
 
 -- | Prompt to edit a goalie's name
 editGoalieNamePrompt :: Prompt
-editGoalieNamePrompt = undefined
+editGoalieNamePrompt = strPrompt "Goalie name: " $
+  modify . editGoalieName
