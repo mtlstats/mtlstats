@@ -23,7 +23,12 @@ module Mtlstats.Actions.EditGoalie
   ( setGoalieNumber
   ) where
 
+import Control.Monad (void)
+import Data.Maybe (fromMaybe)
+import Lens.Micro ((^.), (&), (.~), (%~))
+
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Sets a goalie's number
 setGoalieNumber
@@ -31,4 +36,10 @@ setGoalieNumber
   -- ^ New goalie number
   -> ProgState
   -> ProgState
-setGoalieNumber = undefined
+setGoalieNumber n s = fromMaybe s $ do
+  gid <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+  void $ nth gid $ s^.database.dbGoalies
+  let updateGoalie = gNumber .~ n
+  Just $ s
+    & database.dbGoalies %~ modifyNth gid updateGoalie
+    & progMode.editGoalieStateL.egsMode .~ EGMenu

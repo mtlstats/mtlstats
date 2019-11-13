@@ -38,6 +38,7 @@ import Test.Hspec
 import Mtlstats.Actions
 import Mtlstats.Types
 
+import qualified Actions.EditGoalieSpec as EditGoalie
 import qualified Actions.NewGameSpec as NewGame
 import qualified TypesSpec as TS
 
@@ -60,6 +61,7 @@ spec = describe "Mtlstats.Actions" $ do
   scrollUpSpec
   scrollDownSpec
   NewGame.spec
+  EditGoalie.spec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
