@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditGoalie (editGoalieC) where
 
+import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
 import UI.NCurses as C
 
@@ -31,6 +32,7 @@ import Mtlstats.Menu.EditGoalie
 import Mtlstats.Prompt
 import Mtlstats.Prompt.EditGoalie
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Controller/dispatcher for editing a 'Goalie'
 editGoalieC :: EditGoalieState -> Controller
@@ -113,4 +115,23 @@ ltTiesC :: Controller
 ltTiesC = undefined
 
 header :: ProgState -> C.Update ()
-header = undefined
+header s = C.drawString $ fromMaybe "" $ do
+  gid <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+  g   <- nth gid $ s^.database.dbGoalies
+  Just $ unlines
+    [ "         Goalie number: " ++ show (g^.gNumber)
+    , "           Goalie name: " ++ g^.gName
+    , "      YTD games played: " ++ show (g^.gYtd.gsGames)
+    , "       YTD mins played: " ++ show (g^.gYtd.gsMinsPlayed)
+    , "     YTD goals allowed: " ++ show (g^.gYtd.gsGoalsAllowed)
+    , "              YTD wins: " ++ show (g^.gYtd.gsWins)
+    , "            YTD losses: " ++ show (g^.gYtd.gsLosses)
+    , "              YTD ties: " ++ show (g^.gYtd.gsTies)
+    , " Lifetime games played: " ++ show (g^.gLifetime.gsGames)
+    , "  Lifetime mins played: " ++ show (g^.gLifetime.gsMinsPlayed)
+    , "Lifetime goals allowed: " ++ show (g^.gLifetime.gsGoalsAllowed)
+    , "         Lifetime wins: " ++ show (g^.gLifetime.gsWins)
+    , "       Lifetime losses: " ++ show (g^.gLifetime.gsLosses)
+    , "         Lifetime ties: " ++ show (g^.gLifetime.gsTies)
+    , ""
+    ]
