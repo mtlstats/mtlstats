@@ -30,6 +30,7 @@ module Mtlstats.Actions
   , createPlayer
   , createGoalie
   , editPlayer
+  , editGoalie
   , addPlayer
   , addGoalie
   , resetCreatePlayerState
@@ -92,6 +93,10 @@ createGoalie = let
 -- | Starts the player editing process
 editPlayer :: ProgState -> ProgState
 editPlayer = progMode .~ EditPlayer newEditPlayerState
+
+-- | Starts the 'Goalie' editing process
+editGoalie :: ProgState -> ProgState
+editGoalie = undefined
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState

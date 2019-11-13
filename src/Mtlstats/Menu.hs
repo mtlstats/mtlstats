@@ -104,7 +104,9 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify createGoalie >> return True
   , MenuItem '5' "Edit Player" $
     modify editPlayer >> return True
-  , MenuItem '6' "Exit" $ do
+  , MenuItem '6' "Edit Goalie" $
+    modify editGoalie >> return True
+  , MenuItem 'X' "Exit" $ do
     db <- gets $ view database
     liftIO $ do
       dir <- getAppUserDataDirectory appName
