@@ -70,7 +70,7 @@ numberC :: Controller
 numberC = promptController editGoalieNumberPrompt
 
 nameC :: Controller
-nameC = undefined
+nameC = promptController editGoalieNamePrompt
 
 ytdMenuC :: Controller
 ytdMenuC = undefined

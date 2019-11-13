@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Prompt.EditGoalie
   ( goalieToEditPrompt
   , editGoalieNumberPrompt
+  , editGoalieNamePrompt
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -40,3 +41,7 @@ goalieToEditPrompt = selectGoaliePrompt "Goalie to edit: " $
 editGoalieNumberPrompt :: Prompt
 editGoalieNumberPrompt = numPrompt "Goalie number: " $
   modify . editGoalieNumber
+
+-- | Prompt to edit a goalie's name
+editGoalieNamePrompt :: Prompt
+editGoalieNamePrompt = undefined
