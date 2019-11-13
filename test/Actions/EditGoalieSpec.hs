@@ -31,10 +31,10 @@ import Mtlstats.Util
 
 spec :: Spec
 spec = describe "EditGoalie"
-  setGoalieNumberSpec
+  editGoalieNumberSpec
 
-setGoalieNumberSpec :: Spec
-setGoalieNumberSpec = describe "setGoalieNumber" $ do
+editGoalieNumberSpec :: Spec
+editGoalieNumberSpec = describe "editGoalieNumber" $ do
   let
     joe = newGoalie 2 "Joe"
     bob = newGoalie 3 "Bob"
@@ -43,7 +43,7 @@ setGoalieNumberSpec = describe "setGoalieNumber" $ do
     progState m = newProgState
       & progMode .~ m
       & database .~ db
-      & setGoalieNumber 5
+      & editGoalieNumber 5
 
   mapM_
     (\(setLabel, setGid, mode, joeData, bobData) -> context setLabel $ do

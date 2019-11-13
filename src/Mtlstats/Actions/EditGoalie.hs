@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -}
 
 module Mtlstats.Actions.EditGoalie
-  ( setGoalieNumber
+  ( editGoalieNumber
   ) where
 
 import Control.Monad (void)
@@ -30,13 +30,13 @@ import Lens.Micro ((^.), (&), (.~), (%~))
 import Mtlstats.Types
 import Mtlstats.Util
 
--- | Sets a goalie's number
-setGoalieNumber
+-- | Edits a goalie's number
+editGoalieNumber
   :: Int
   -- ^ New goalie number
   -> ProgState
   -> ProgState
-setGoalieNumber n s = fromMaybe s $ do
+editGoalieNumber n s = fromMaybe s $ do
   gid <- s^.progMode.editGoalieStateL.egsSelectedGoalie
   void $ nth gid $ s^.database.dbGoalies
   let updateGoalie = gNumber .~ n

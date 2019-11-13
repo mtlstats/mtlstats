@@ -39,4 +39,4 @@ goalieToEditPrompt = selectGoaliePrompt "Goalie to edit: " $
 -- | Prompt to edit a goalie's number
 editGoalieNumberPrompt :: Prompt
 editGoalieNumberPrompt = numPrompt "Goalie number: " $
-  modify . setGoalieNumber
+  modify . editGoalieNumber
