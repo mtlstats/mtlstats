@@ -19,7 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Prompt.EditGoalie (goalieToEditPrompt) where
+module Mtlstats.Prompt.EditGoalie
+  ( goalieToEditPrompt
+  , editGoalieNumberPrompt
+  ) where
 
 import Control.Monad.Trans.State (modify)
 import Lens.Micro ((.~))
@@ -31,3 +34,7 @@ import Mtlstats.Types
 goalieToEditPrompt :: Prompt
 goalieToEditPrompt = selectGoaliePrompt "Goalie to edit: " $
   modify . (progMode.editGoalieStateL.egsSelectedGoalie .~)
+
+-- | Prompt to edit a goalie's number
+editGoalieNumberPrompt :: Prompt
+editGoalieNumberPrompt = undefined

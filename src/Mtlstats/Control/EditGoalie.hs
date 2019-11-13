@@ -67,7 +67,7 @@ menuC :: Controller
 menuC = menuControllerWith header editGoalieMenu
 
 numberC :: Controller
-numberC = undefined
+numberC = promptController editGoalieNumberPrompt
 
 nameC :: Controller
 nameC = undefined
