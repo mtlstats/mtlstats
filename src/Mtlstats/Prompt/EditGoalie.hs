@@ -56,4 +56,5 @@ editGoalieYtdGamesPrompt = numPrompt "Year-to-date games played: " $
 
 -- | Prompt to edit a goalie's YTD minutes played
 editGoalieYtdMinsPrompt :: Prompt
-editGoalieYtdMinsPrompt = undefined
+editGoalieYtdMinsPrompt = numPrompt "Year-to-date minutes played: " $
+  modify . editGoalieYtdMins

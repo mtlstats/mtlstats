@@ -23,6 +23,7 @@ module Mtlstats.Actions.EditGoalie
   ( editGoalieNumber
   , editGoalieName
   , editGoalieYtdGames
+  , editGoalieYtdMins
   ) where
 
 import Control.Monad (void)
@@ -55,6 +56,14 @@ editGoalieYtdGames
   -> ProgState
   -> ProgState
 editGoalieYtdGames games = editGoalie (gYtd.gsGames .~ games) EGYtd
+
+-- | Edits a goalie's YTD minutes
+editGoalieYtdMins
+  :: Int
+  -- ^ The number of minutes played
+  -> ProgState
+  -> ProgState
+editGoalieYtdMins = undefined
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
