@@ -126,7 +126,7 @@ editGoalieLtGoals
   -- ^ The number of goals
   -> ProgState
   -> ProgState
-editGoalieLtGoals = undefined
+editGoalieLtGoals goals = editGoalie (gLifetime.gsGoalsAllowed .~ goals) EGLifetime
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
