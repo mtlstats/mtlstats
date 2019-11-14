@@ -108,7 +108,7 @@ editGoalieLtGames
   -- ^ The number of games
   -> ProgState
   -> ProgState
-editGoalieLtGames = undefined
+editGoalieLtGames games = editGoalie (gLifetime.gsGames .~ games) EGLifetime
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
