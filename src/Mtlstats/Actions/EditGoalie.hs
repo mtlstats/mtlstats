@@ -117,7 +117,7 @@ editGoalieLtMins
   -- ^ The number of minutes
   -> ProgState
   -> ProgState
-editGoalieLtMins = undefined
+editGoalieLtMins mins = editGoalie (gLifetime.gsMinsPlayed .~ mins) EGLifetime
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
