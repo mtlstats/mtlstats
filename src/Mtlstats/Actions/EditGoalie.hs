@@ -54,7 +54,7 @@ editGoalieYtdGames
   -- ^ The number of games played
   -> ProgState
   -> ProgState
-editGoalieYtdGames = undefined
+editGoalieYtdGames games = editGoalie (gYtd.gsGames .~ games) EGYtd
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
