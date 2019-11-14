@@ -144,7 +144,7 @@ editGoalieLtLosses
   -- ^ The number of losses
   -> ProgState
   -> ProgState
-editGoalieLtLosses = undefined
+editGoalieLtLosses losses = editGoalie (gLifetime.gsLosses .~ losses) EGLifetime
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
