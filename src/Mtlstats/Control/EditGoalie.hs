@@ -97,7 +97,7 @@ ytdTiesC :: Controller
 ytdTiesC = promptController editGoalieYtdTiesPrompt
 
 ltGamesC :: Controller
-ltGamesC = undefined
+ltGamesC = promptController editGoalieLtGamesPrompt
 
 ltMinsC :: Controller
 ltMinsC = undefined
