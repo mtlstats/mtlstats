@@ -3,6 +3,7 @@
 ## current
 - Generate lifetime statistics report
 - Implemented goalie editing
+- Reset game standings on new season
 
 ## 0.5.0
 
