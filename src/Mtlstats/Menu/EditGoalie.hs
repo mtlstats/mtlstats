@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Menu.EditGoalie
   ( editGoalieMenu
   , editGoalieYtdMenu
+  , editGoalieLtMenu
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -60,3 +61,7 @@ editGoalieYtdMenu = Menu "*** EDIT GOALTENDER YEAR-TO-DATE ***" () $ map
   , ( '6', "Edit YTD ties",       EGYtdTies   )
   , ( 'R', "Return to edit menu", EGMenu      )
   ]
+
+-- | The 'Goalie' lifetime edit menu
+editGoalieLtMenu :: Menu ()
+editGoalieLtMenu = undefined

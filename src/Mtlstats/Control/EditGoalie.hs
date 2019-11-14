@@ -76,7 +76,7 @@ ytdMenuC :: Controller
 ytdMenuC = menuControllerWith header editGoalieYtdMenu
 
 lifetimeMenuC :: Controller
-lifetimeMenuC = undefined
+lifetimeMenuC = menuControllerWith header editGoalieLtMenu
 
 ytdGamesC :: Controller
 ytdGamesC = undefined
