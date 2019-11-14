@@ -153,7 +153,7 @@ editGoalieLtTies
   -- ^ The number of ties
   -> ProgState
   -> ProgState
-editGoalieLtTies = undefined
+editGoalieLtTies ties = editGoalie (gLifetime.gsTies .~ ties) EGLifetime
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
