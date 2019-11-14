@@ -91,7 +91,7 @@ ytdWinsC :: Controller
 ytdWinsC = promptController editGoalieYtdWinsPrompt
 
 ytdLossesC :: Controller
-ytdLossesC = undefined
+ytdLossesC = promptController editGoalieYtdLossesPrompt
 
 ytdTiesC :: Controller
 ytdTiesC = undefined
