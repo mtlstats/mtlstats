@@ -94,7 +94,7 @@ ytdLossesC :: Controller
 ytdLossesC = promptController editGoalieYtdLossesPrompt
 
 ytdTiesC :: Controller
-ytdTiesC = undefined
+ytdTiesC = promptController editGoalieYtdTiesPrompt
 
 ltGamesC :: Controller
 ltGamesC = undefined
