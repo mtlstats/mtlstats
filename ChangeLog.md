@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Generate lifetime statistics report
+
 ## 0.5.0
 
 - Fixed player creation bug
