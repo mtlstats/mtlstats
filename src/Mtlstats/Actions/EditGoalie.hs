@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Actions.EditGoalie
   ( editGoalieNumber
   , editGoalieName
+  , editGoalieYtdGames
   ) where
 
 import Control.Monad (void)
@@ -46,6 +47,14 @@ editGoalieName
   -> ProgState
   -> ProgState
 editGoalieName name = editGoalie (gName .~ name) EGMenu
+
+-- | Edits a goalie's YTD games
+editGoalieYtdGames
+  :: Int
+  -- ^ The number of games played
+  -> ProgState
+  -> ProgState
+editGoalieYtdGames = undefined
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
