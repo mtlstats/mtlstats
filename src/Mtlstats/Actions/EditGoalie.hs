@@ -31,6 +31,7 @@ module Mtlstats.Actions.EditGoalie
   , editGoalieLtGames
   , editGoalieLtMins
   , editGoalieLtGoals
+  , editGoalieLtWins
   ) where
 
 import Control.Monad (void)
@@ -127,6 +128,14 @@ editGoalieLtGoals
   -> ProgState
   -> ProgState
 editGoalieLtGoals goals = editGoalie (gLifetime.gsGoalsAllowed .~ goals) EGLifetime
+
+-- | Edits a goalie's lifetime wins
+editGoalieLtWins
+  :: Int
+  -- ^ The number of wins
+  -> ProgState
+  -> ProgState
+editGoalieLtWins = undefined
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
