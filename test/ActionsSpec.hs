@@ -47,6 +47,7 @@ spec = describe "Mtlstats.Actions" $ do
   startNewSeasonSpec
   startNewGameSpec
   resetYtdSpec
+  resetStandingsSpec
   addCharSpec
   removeCharSpec
   createPlayerSpec
@@ -126,6 +127,41 @@ resetYtdSpec = describe "resetYtd" $
         lt ^. gsLosses        `shouldNotBe` 0
         lt ^. gsTies          `shouldNotBe` 0) $
       s ^. database . dbGoalies
+
+resetStandingsSpec :: Spec
+resetStandingsSpec = describe "resetStandings" $ do
+  let
+    home = GameStats
+      { _gmsWins         = 1
+      , _gmsLosses       = 2
+      , _gmsOvertime     = 3
+      , _gmsGoalsFor     = 4
+      , _gmsGoalsAgainst = 5
+      }
+
+    away = GameStats
+      { _gmsWins         = 6
+      , _gmsLosses       = 7
+      , _gmsOvertime     = 8
+      , _gmsGoalsFor     = 9
+      , _gmsGoalsAgainst = 10
+      }
+
+    db = newDatabase
+      & dbHomeGameStats .~ home
+      & dbAwayGameStats .~ away
+
+    ps = newProgState
+      & database .~ db
+      & resetStandings
+
+  context "home standings" $
+    it "should be reset" $
+      ps^.database.dbHomeGameStats `shouldBe` newGameStats
+
+  context "away standings" $
+    it "should be reset" $
+      ps^.database.dbAwayGameStats `shouldBe` newGameStats
 
 addCharSpec :: Spec
 addCharSpec = describe "addChar" $

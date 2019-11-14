@@ -119,11 +119,13 @@ mainMenu = Menu "*** MAIN MENU ***" True
 -- | The new season menu
 newSeasonMenu :: Menu ()
 newSeasonMenu = Menu "*** SEASON TYPE ***" ()
-  [ MenuItem '1' "Regular Season" $ do
-    modify resetYtd
-    modify startNewGame
-  , MenuItem '2' "Playoffs" $
-    modify startNewGame
+  [ MenuItem '1' "Regular Season" $ modify
+    $ resetYtd
+    . resetStandings
+    . startNewGame
+  , MenuItem '2' "Playoffs" $ modify
+    $ resetStandings
+    . startNewGame
   ]
 
 -- | Requests the month in which the game took place

@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Actions
   ( startNewSeason
   , resetYtd
+  , resetStandings
   , startNewGame
   , addChar
   , removeChar
@@ -55,6 +56,12 @@ resetYtd :: ProgState -> ProgState
 resetYtd
   = (database . dbPlayers %~ map (pYtd .~ newPlayerStats))
   . (database . dbGoalies %~ map (gYtd .~ newGoalieStats))
+
+-- | Resets game standings
+resetStandings :: ProgState -> ProgState
+resetStandings = database
+  %~ ( dbHomeGameStats .~ newGameStats)
+  .  ( dbAwayGameStats .~ newGameStats)
 
 -- | Starts a new game
 startNewGame :: ProgState -> ProgState
