@@ -1,0 +1,164 @@
+{- |
+
+mtlstats
+Copyright (C) 2019 Rhéal Lamothe
+<rheal.lamothe@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+-}
+
+module Mtlstats.Actions.EditGoalie
+  ( editGoalieNumber
+  , editGoalieName
+  , editGoalieYtdGames
+  , editGoalieYtdMins
+  , editGoalieYtdGoals
+  , editGoalieYtdWins
+  , editGoalieYtdLosses
+  , editGoalieYtdTies
+  , editGoalieLtGames
+  , editGoalieLtMins
+  , editGoalieLtGoals
+  , editGoalieLtWins
+  , editGoalieLtLosses
+  , editGoalieLtTies
+  ) where
+
+import Control.Monad (void)
+import Data.Maybe (fromMaybe)
+import Lens.Micro ((^.), (&), (.~), (%~))
+
+import Mtlstats.Types
+import Mtlstats.Util
+
+-- | Edits a goalie's number
+editGoalieNumber
+  :: Int
+  -- ^ New goalie number
+  -> ProgState
+  -> ProgState
+editGoalieNumber num = editGoalie (gNumber .~ num) EGMenu
+
+-- | Edits a goalie's name
+editGoalieName
+  :: String
+  -- ^ The new name
+  -> ProgState
+  -> ProgState
+editGoalieName name = editGoalie (gName .~ name) EGMenu
+
+-- | Edits a goalie's YTD games
+editGoalieYtdGames
+  :: Int
+  -- ^ The number of games played
+  -> ProgState
+  -> ProgState
+editGoalieYtdGames games = editGoalie (gYtd.gsGames .~ games) EGYtd
+
+-- | Edits a goalie's YTD minutes
+editGoalieYtdMins
+  :: Int
+  -- ^ The number of minutes played
+  -> ProgState
+  -> ProgState
+editGoalieYtdMins mins = editGoalie (gYtd.gsMinsPlayed .~ mins) EGYtd
+
+-- | Edits a goalie's YTD goals allowed
+editGoalieYtdGoals
+  :: Int
+  -- ^ The number of goals
+  -> ProgState
+  -> ProgState
+editGoalieYtdGoals goals = editGoalie (gYtd.gsGoalsAllowed .~ goals) EGYtd
+
+-- | Edits a goalie's YTD wins
+editGoalieYtdWins
+  :: Int
+  -- ^ The number of wins
+  -> ProgState
+  -> ProgState
+editGoalieYtdWins wins = editGoalie (gYtd.gsWins .~ wins) EGYtd
+
+-- | Edits a goalie's YTD losses
+editGoalieYtdLosses
+  :: Int
+  -- ^ The number of losses
+  -> ProgState
+  -> ProgState
+editGoalieYtdLosses losses = editGoalie (gYtd.gsLosses .~ losses) EGYtd
+
+-- | Edits a goalie's YTD ties
+editGoalieYtdTies
+  :: Int
+  -- ^ The number of ties
+  -> ProgState
+  -> ProgState
+editGoalieYtdTies ties = editGoalie (gYtd.gsTies .~ ties) EGYtd
+
+-- | Edits a goalie's lifetime games played
+editGoalieLtGames
+  :: Int
+  -- ^ The number of games
+  -> ProgState
+  -> ProgState
+editGoalieLtGames games = editGoalie (gLifetime.gsGames .~ games) EGLifetime
+
+-- | Edits a goalie's lifetime minutes played
+editGoalieLtMins
+  :: Int
+  -- ^ The number of minutes
+  -> ProgState
+  -> ProgState
+editGoalieLtMins mins = editGoalie (gLifetime.gsMinsPlayed .~ mins) EGLifetime
+
+-- | Edits a goalie's lifetime goals allowed
+editGoalieLtGoals
+  :: Int
+  -- ^ The number of goals
+  -> ProgState
+  -> ProgState
+editGoalieLtGoals goals = editGoalie (gLifetime.gsGoalsAllowed .~ goals) EGLifetime
+
+-- | Edits a goalie's lifetime wins
+editGoalieLtWins
+  :: Int
+  -- ^ The number of wins
+  -> ProgState
+  -> ProgState
+editGoalieLtWins wins = editGoalie (gLifetime.gsWins .~ wins) EGLifetime
+
+-- | Edits a goalie's lifetime losses
+editGoalieLtLosses
+  :: Int
+  -- ^ The number of losses
+  -> ProgState
+  -> ProgState
+editGoalieLtLosses losses = editGoalie (gLifetime.gsLosses .~ losses) EGLifetime
+
+-- | Edits a goalie's lifetime ties
+editGoalieLtTies
+  :: Int
+  -- ^ The number of ties
+  -> ProgState
+  -> ProgState
+editGoalieLtTies ties = editGoalie (gLifetime.gsTies .~ ties) EGLifetime
+
+editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
+editGoalie f mode s = fromMaybe s $ do
+  gid <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+  void $ nth gid $ s^.database.dbGoalies
+  Just $ s
+    & database.dbGoalies %~ modifyNth gid f
+    & progMode.editGoalieStateL.egsMode .~ mode

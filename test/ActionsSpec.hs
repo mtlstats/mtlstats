@@ -38,6 +38,7 @@ import Test.Hspec
 import Mtlstats.Actions
 import Mtlstats.Types
 
+import qualified Actions.EditGoalieSpec as EditGoalie
 import qualified Actions.NewGameSpec as NewGame
 import qualified TypesSpec as TS
 
@@ -51,6 +52,7 @@ spec = describe "Mtlstats.Actions" $ do
   createPlayerSpec
   createGoalieSpec
   editPlayerSpec
+  editGoalieSpec
   addPlayerSpec
   addGoalieSpec
   resetCreatePlayerStateSpec
@@ -59,6 +61,7 @@ spec = describe "Mtlstats.Actions" $ do
   scrollUpSpec
   scrollDownSpec
   NewGame.spec
+  EditGoalie.spec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -164,6 +167,12 @@ editPlayerSpec = describe "editPlayer" $
   it "should change the mode appropriately" $ let
     s = editPlayer newProgState
     in show (s^.progMode) `shouldBe` "EditPlayer"
+
+editGoalieSpec :: Spec
+editGoalieSpec = describe "editGoalie" $
+  it "should change the mode appropriately" $ let
+    s = editGoalie newProgState
+    in show (s^.progMode) `shouldBe` "EditGoalie"
 
 addPlayerSpec :: Spec
 addPlayerSpec = describe "addPlayer" $ do

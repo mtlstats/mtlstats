@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Menu (
   -- * Menu Functions
   menuController,
+  menuControllerWith,
   drawMenu,
   menuHandler,
   -- * Menus
@@ -57,8 +58,20 @@ import Mtlstats.Util
 
 -- | Generates a simple 'Controller' for a Menu
 menuController :: Menu () -> Controller
-menuController menu = Controller
-  { drawController   = const $ drawMenu menu
+menuController = menuControllerWith $ const $ return ()
+
+-- | Generate a simple 'Controller' for a 'Menu' with a header
+menuControllerWith
+  :: (ProgState -> C.Update ())
+  -- ^ Generates the header
+  -> Menu ()
+  -- ^ The menu
+  -> Controller
+  -- ^ The resulting controller
+menuControllerWith header menu = Controller
+  { drawController = \s -> do
+    header s
+    drawMenu menu
   , handleController = \e -> do
     menuHandler menu e
     return True
@@ -91,7 +104,9 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify createGoalie >> return True
   , MenuItem '5' "Edit Player" $
     modify editPlayer >> return True
-  , MenuItem '6' "Exit" $ do
+  , MenuItem '6' "Edit Goalie" $
+    modify editGoalie >> return True
+  , MenuItem 'X' "Exit" $ do
     db <- gets $ view database
     liftIO $ do
       dir <- getAppUserDataDirectory appName
