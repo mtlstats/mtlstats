@@ -19,7 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Menu.EditGoalie (editGoalieMenu) where
+module Mtlstats.Menu.EditGoalie
+  ( editGoalieMenu
+  , editGoalieYtdMenu
+  ) where
 
 import Control.Monad.Trans.State (modify)
 import Data.Maybe (maybe)
@@ -42,3 +45,7 @@ editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
   , ( '4', "Edit Lifetime stats", Just EGLifetime )
   , ( 'R', "Return to Main Menu", Nothing         )
   ]
+
+-- | The 'Goalie' YTD edit menu
+editGoalieYtdMenu :: Menu ()
+editGoalieYtdMenu = undefined

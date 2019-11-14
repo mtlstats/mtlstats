@@ -73,7 +73,7 @@ nameC :: Controller
 nameC = promptController editGoalieNamePrompt
 
 ytdMenuC :: Controller
-ytdMenuC = undefined
+ytdMenuC = menuControllerWith header editGoalieYtdMenu
 
 lifetimeMenuC :: Controller
 lifetimeMenuC = undefined
