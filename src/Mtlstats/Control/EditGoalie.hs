@@ -100,7 +100,7 @@ ltGamesC :: Controller
 ltGamesC = promptController editGoalieLtGamesPrompt
 
 ltMinsC :: Controller
-ltMinsC = undefined
+ltMinsC = promptController editGoalieLtMinsPrompt
 
 ltGoalsC :: Controller
 ltGoalsC = undefined
