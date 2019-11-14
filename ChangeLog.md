@@ -2,6 +2,7 @@
 
 ## current
 - Generate lifetime statistics report
+- Implemented goalie editing
 
 ## 0.5.0
 
