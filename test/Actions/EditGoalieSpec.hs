@@ -36,6 +36,7 @@ spec = describe "EditGoalie" $ do
   editGoalieYtdGamesSpec
   editGoalieYtdMinsSpec
   editGoalieYtdGoalsSpec
+  editGoalieYtdWinsSpec
 
 editGoalieNumberSpec :: Spec
 editGoalieNumberSpec = describe "editGoalieNumber" $ editTest
@@ -189,6 +190,37 @@ editGoalieYtdGoalsSpec = describe "editGoalieYtdGoals" $ editTest
     , ( 2, "Joe", 0 )
     , ( 3, "Bob", 0 )
     , EGYtdGoals
+    )
+  ]
+
+editGoalieYtdWinsSpec :: Spec
+editGoalieYtdWinsSpec = describe "editGoalieYtdWins" $ editTest
+  (editGoalieYtdWins 1)
+  EGYtdWins
+  (\(num, name, wins) -> newGoalie num name & gYtd.gsWins .~ wins)
+  [ ( "set Joe"
+    , Just 0
+    , ( 2, "Joe", 1 )
+    , ( 3, "Bob", 0 )
+    , EGYtd
+    )
+  , ( "set Bob"
+    , Just 1
+    , ( 2, "Joe", 0 )
+    , ( 3, "Bob", 1 )
+    , EGYtd
+    )
+  , ( "out of bounds"
+    , Just 2
+    , ( 2, "Joe", 0 )
+    , ( 3, "Bob", 0 )
+    , EGYtdWins
+    )
+  , ( "no goalie selected"
+    , Nothing
+    , ( 2, "Joe", 0 )
+    , ( 3, "Bob", 0 )
+    , EGYtdWins
     )
   ]
 
