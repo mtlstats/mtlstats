@@ -112,7 +112,7 @@ ltLossesC :: Controller
 ltLossesC = promptController editGoalieLtLossesPrompt
 
 ltTiesC :: Controller
-ltTiesC = undefined
+ltTiesC = promptController editGoalieLtTiesPrompt
 
 header :: ProgState -> C.Update ()
 header s = C.drawString $ fromMaybe "" $ do

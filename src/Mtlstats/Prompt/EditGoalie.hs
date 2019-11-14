@@ -34,6 +34,7 @@ module Mtlstats.Prompt.EditGoalie
   , editGoalieLtGoalsPrompt
   , editGoalieLtWinsPrompt
   , editGoalieLtLossesPrompt
+  , editGoalieLtTiesPrompt
   ) where
 
 import Control.Monad.Trans.State (modify)
@@ -112,3 +113,7 @@ editGoalieLtWinsPrompt = numPrompt "Lifetime wins: " $
 editGoalieLtLossesPrompt :: Prompt
 editGoalieLtLossesPrompt = numPrompt "Lifetime losses: " $
   modify . editGoalieLtLosses
+
+-- | Prompt to edit a goalie's lifetime ties
+editGoalieLtTiesPrompt :: Prompt
+editGoalieLtTiesPrompt = undefined
