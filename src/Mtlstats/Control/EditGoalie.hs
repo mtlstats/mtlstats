@@ -85,7 +85,7 @@ ytdMinsC :: Controller
 ytdMinsC = promptController editGoalieYtdMinsPrompt
 
 ytdGoalsC :: Controller
-ytdGoalsC = undefined
+ytdGoalsC = promptController editGoalieYtdGoalsPrompt
 
 ytdWinsC :: Controller
 ytdWinsC = undefined
