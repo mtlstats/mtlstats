@@ -99,7 +99,7 @@ editGoalieYtdTies
   -- ^ The number of ties
   -> ProgState
   -> ProgState
-editGoalieYtdTies = undefined
+editGoalieYtdTies ties = editGoalie (gYtd.gsTies .~ ties) EGYtd
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
