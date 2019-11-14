@@ -109,7 +109,7 @@ ltWinsC :: Controller
 ltWinsC = promptController editGoalieLtWinsPrompt
 
 ltLossesC :: Controller
-ltLossesC = undefined
+ltLossesC = promptController editGoalieLtLossesPrompt
 
 ltTiesC :: Controller
 ltTiesC = undefined
