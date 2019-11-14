@@ -63,7 +63,7 @@ editGoalieYtdMins
   -- ^ The number of minutes played
   -> ProgState
   -> ProgState
-editGoalieYtdMins = undefined
+editGoalieYtdMins mins = editGoalie (gYtd.gsMinsPlayed .~ mins) EGYtd
 
 editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
 editGoalie f mode s = fromMaybe s $ do
