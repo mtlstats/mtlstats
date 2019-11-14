@@ -68,4 +68,5 @@ editGoalieYtdGoalsPrompt = numPrompt "Year-to-date goals allowed: " $
 
 -- | Prompt to edit a goalie's YTD wins
 editGoalieYtdWinsPrompt :: Prompt
-editGoalieYtdWinsPrompt = undefined
+editGoalieYtdWinsPrompt = numPrompt "Year-to-date wins: " $
+  modify . editGoalieYtdWins
