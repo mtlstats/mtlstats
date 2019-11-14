@@ -48,4 +48,15 @@ editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
 
 -- | The 'Goalie' YTD edit menu
 editGoalieYtdMenu :: Menu ()
-editGoalieYtdMenu = undefined
+editGoalieYtdMenu = Menu "*** EDIT GOALTENDER YEAR-TO-DATE ***" () $ map
+  (\(key, label, val) -> MenuItem key label $
+    modify $ progMode.editGoalieStateL.egsMode .~ val)
+  --  key, label,                 value
+  [ ( '1', "Edit YTD games",      EGYtdGames  )
+  , ( '2', "Edit YTD minutes",    EGYtdMins   )
+  , ( '3', "Edit YTD goals",      EGYtdGoals  )
+  , ( '4', "Edit YTD wins",       EGYtdWins   )
+  , ( '5', "Edit YTD losses",     EGYtdLosses )
+  , ( '6', "Edit YTD ties",       EGYtdTies   )
+  , ( 'R', "Return to edit menu", EGMenu      )
+  ]
