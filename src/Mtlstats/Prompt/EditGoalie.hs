@@ -86,4 +86,5 @@ editGoalieYtdTiesPrompt = numPrompt "Year-to-date ties: " $
 
 -- | Prompt to edit a goalie's lifetime games played
 editGoalieLtGamesPrompt :: Prompt
-editGoalieLtGamesPrompt = undefined
+editGoalieLtGamesPrompt = numPrompt "Lifetime games played: " $
+  modify . editGoalieLtGames
