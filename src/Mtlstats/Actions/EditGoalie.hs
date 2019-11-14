@@ -37,13 +37,7 @@ editGoalieNumber
   -- ^ New goalie number
   -> ProgState
   -> ProgState
-editGoalieNumber n s = fromMaybe s $ do
-  gid <- s^.progMode.editGoalieStateL.egsSelectedGoalie
-  void $ nth gid $ s^.database.dbGoalies
-  let updateGoalie = gNumber .~ n
-  Just $ s
-    & database.dbGoalies %~ modifyNth gid updateGoalie
-    & progMode.editGoalieStateL.egsMode .~ EGMenu
+editGoalieNumber num = editGoalie (gNumber .~ num) EGMenu
 
 -- | Edits a goalie's name
 editGoalieName
@@ -51,4 +45,12 @@ editGoalieName
   -- ^ The new name
   -> ProgState
   -> ProgState
-editGoalieName = undefined
+editGoalieName name = editGoalie (gName .~ name) EGMenu
+
+editGoalie :: (Goalie -> Goalie) -> EditGoalieMode -> ProgState -> ProgState
+editGoalie f mode s = fromMaybe s $ do
+  gid <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+  void $ nth gid $ s^.database.dbGoalies
+  Just $ s
+    & database.dbGoalies %~ modifyNth gid f
+    & progMode.editGoalieStateL.egsMode .~ mode

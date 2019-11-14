@@ -30,80 +30,124 @@ import Mtlstats.Types
 import Mtlstats.Util
 
 spec :: Spec
-spec = describe "EditGoalie"
+spec = describe "EditGoalie" $ do
   editGoalieNumberSpec
+  editGoalieNameSpec
 
 editGoalieNumberSpec :: Spec
-editGoalieNumberSpec = describe "editGoalieNumber" $ do
-  let
-    joe = newGoalie 2 "Joe"
-    bob = newGoalie 3 "Bob"
-    db  = newDatabase & dbGoalies .~ [joe, bob]
+editGoalieNumberSpec = describe "editGoalieNumber" $ editTest
+  (editGoalieNumber 5)
+  EGNumber
+  (uncurry newGoalie)
+  [ ( "set Joe"
+    , Just 0
+    , (5, "Joe")
+    , (3, "Bob")
+    , EGMenu
+    )
+  , ( "set Bob"
+    , Just 1
+    , (2, "Joe")
+    , (5, "Bob")
+    , EGMenu
+    )
+  , ( "out of bounds"
+    , Just 2
+    , (2, "Joe")
+    , (3, "Bob")
+    , EGNumber
+    )
+  , ( "no goalie selected"
+    , Nothing
+    , (2, "Joe")
+    , (3, "Bob")
+    , EGNumber
+    )
+  ]
 
-    progState m = newProgState
-      & progMode .~ m
-      & database .~ db
-      & editGoalieNumber 5
+editGoalieNameSpec :: Spec
+editGoalieNameSpec = describe "editGoalieName" $ editTest
+  (editGoalieName "foo")
+  EGName
+  (uncurry newGoalie)
+  [ ( "set Joe"
+    , Just 0
+    , ( 2, "foo" )
+    , ( 3, "Bob" )
+    , EGMenu
+    )
+  , ( "set Bob"
+    , Just 1
+    , ( 2, "Joe" )
+    , ( 3, "foo" )
+    , EGMenu
+    )
+  , ( "out of bounds"
+    , Just 2
+    , ( 2, "Joe" )
+    , ( 3, "Bob" )
+    , EGName
+    )
+  , ( "no goalie selected"
+    , Nothing
+    , ( 2, "Joe" )
+    , ( 3, "Bob" )
+    , EGName
+    )
+  ]
 
+editTest
+  :: (ProgState -> ProgState)
+  -> EditGoalieMode
+  -> (a -> Goalie)
+  -> [(String, Maybe Int, a, a, EditGoalieMode)]
+  -> Spec
+editTest func setMode mkGoalie params = do
   mapM_
-    (\(setLabel, setGid, mode, joeData, bobData) -> context setLabel $ do
+    (\(setLabel, setGid, joeData, bobData, expectMode) -> context setLabel $ do
       let
         egs = newEditGoalieState
           & egsSelectedGoalie .~ setGid
-          & egsMode           .~ EGNumber
+          & egsMode           .~ setMode
 
-        pm = EditGoalie egs
-        ps = progState pm
+        ps = func $ progState $ EditGoalie egs
 
       mapM_
-        (\(chkLabel, chkGid, (number, name)) -> context chkLabel $ let
-          g = fromJust $ nth chkGid $ ps^.database.dbGoalies
-
-          in context "check goalie" $ let
-            expected = newGoalie number name
-            in it ("should be " ++ show expected) $
-              g `shouldBe` expected)
-
-        --  label,       goalie ID, data
-        [ ( "check Joe", 0,         joeData )
-        , ( "check Bob", 1,         bobData )
+        (\(chkLabel, chkGid, goalieData) -> context chkLabel $ let
+          actual   = fromJust $ nth chkGid $ ps^.database.dbGoalies
+          expected = mkGoalie goalieData
+          in it ("should be " ++ show expected) $
+            actual `shouldBe` expected)
+        --  label,       goalie ID, goalie data
+        [ ( "check Joe", 0,         joeData     )
+        , ( "check Bob", 1,         bobData     )
         ]
 
       context "check mode" $
-        it ("should be " ++ show mode) $
-          ps^.progMode.editGoalieStateL.egsMode `shouldBe` mode)
+        it ("should be " ++ show expectMode) $
+          ps^.progMode.editGoalieStateL.egsMode `shouldBe` expectMode)
 
-    [ ( "set Joe"
-      , Just 0
-      , EGMenu
-      , (5, "Joe")
-      , (3, "Bob")
-      )
-    , ( "set Bob"
-      , Just 1
-      , EGMenu
-      , (2, "Joe")
-      , (5, "Bob")
-      )
-    , ( "out of bounds"
-      , Just 2
-      , EGNumber
-      , (2, "Joe")
-      , (3, "Bob")
-      )
-    , ( "no goalie selected"
-      , Nothing
-      , EGNumber
-      , (2, "Joe")
-      , (3, "Bob")
-      )
-    ]
+    params
 
   context "wrong progMode" $ do
-    let ps = progState MainMenu
+    let ps = func $ progState MainMenu
 
     it "should not change the database" $
       ps^.database `shouldBe` db
 
     it "should not change the progMode" $
       show (ps^.progMode) `shouldBe` "MainMenu"
+
+joe :: Goalie
+joe = newGoalie 2 "Joe"
+
+bob :: Goalie
+bob = newGoalie 3 "Bob"
+
+db :: Database
+db = newDatabase & dbGoalies .~ [joe, bob]
+
+progState :: ProgMode -> ProgState
+progState mode = newProgState
+  & progMode .~ mode
+  & database .~ db
