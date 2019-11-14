@@ -92,4 +92,5 @@ editGoalieLtGamesPrompt = numPrompt "Lifetime games played: " $
 
 -- | Prompt to edit a goalie's lifetime minutes played
 editGoalieLtMinsPrompt :: Prompt
-editGoalieLtMinsPrompt = undefined
+editGoalieLtMinsPrompt = numPrompt "Lifetime minutes played: " $
+  modify . editGoalieLtMins
