@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.6.0
 - Generate lifetime statistics report
 - Implemented goalie editing
 - Reset game standings on new season
