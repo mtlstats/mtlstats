@@ -40,6 +40,8 @@ editPlayerC eps
     EPNumber     -> numberC
     EPName       -> nameC
     EPPosition   -> positionC
+    EPYtd        -> ytdC
+    EPLifetime   -> lifetimeC
     EPYtdGoals   -> ytdGoalsC
     EPYtdAssists -> ytdAssistsC
     EPYtdPMin    -> ytdPMinC
@@ -93,6 +95,12 @@ positionC = Controller
     promptHandler editPlayerPosPrompt e
     return True
   }
+
+ytdC :: Controller
+ytdC = undefined
+
+lifetimeC :: Controller
+lifetimeC = undefined
 
 ytdGoalsC :: Controller
 ytdGoalsC = Controller

@@ -335,6 +335,8 @@ data EditPlayerMode
   | EPNumber
   | EPName
   | EPPosition
+  | EPYtd
+  | EPLifetime
   | EPYtdGoals
   | EPYtdAssists
   | EPYtdPMin
