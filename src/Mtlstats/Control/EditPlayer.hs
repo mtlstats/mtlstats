@@ -25,6 +25,7 @@ import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
+import Mtlstats.Helpers.Player
 import Mtlstats.Menu
 import Mtlstats.Prompt
 import Mtlstats.Prompt.EditPlayer
@@ -92,4 +93,4 @@ header :: ProgState -> C.Update ()
 header s = C.drawString $ fromMaybe "" $ do
   pid    <- s^.progMode.editPlayerStateL.epsSelectedPlayer
   player <- nth pid $ s^.database.dbPlayers
-  Just $ playerDetails player
+  Just $ playerDetails player ++ "\n"

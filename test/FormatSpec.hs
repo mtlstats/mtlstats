@@ -33,6 +33,9 @@ spec = describe "Mtlstats.Format" $ do
   centreSpec
   overlaySpec
   monthSpec
+  labelTableSpec
+  numTableSpec
+  tableWithSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -111,3 +114,63 @@ monthSpec = describe "month" $ do
   context "invalid" $
     it "should return an empty string" $
       month 0 `shouldBe` ""
+
+labelTableSpec :: Spec
+labelTableSpec = describe "labelTable" $
+  it "should format the table" $ let
+    input =
+      [ ( "foo",    "bar"  )
+      , ( "baz",    "quux" )
+      , ( "longer", "x"    )
+      ]
+
+    expected =
+      [ "   foo: bar"
+      , "   baz: quux"
+      , "longer: x"
+      ]
+
+    in labelTable input `shouldBe` expected
+
+numTableSpec :: Spec
+numTableSpec = describe "numTable" $
+  it "should format the table" $ let
+    headers = ["foo", "bar", "baz"]
+
+    rows =
+      [ ( "quux",  [ 1, 2,  3   ] )
+      , ( "xyzzy", [ 9, 99, 999 ] )
+      ]
+
+    expected =
+      [ "      foo bar baz"
+      , " quux   1   2   3"
+      , "xyzzy   9  99 999"
+      ]
+
+    in numTable headers rows `shouldBe` expected
+
+tableWithSpec :: Spec
+tableWithSpec = describe "tableWith" $ let
+  vals =
+    [ [ "foo",  "bar",   "baz" ]
+    , [ "quux", "xyzzy", "x"   ]
+    ]
+
+  in mapM_
+    (\(label, func, expected) -> context label $
+      it "should format the table" $
+        tableWith func vals `shouldBe` expected)
+    [ ( "align left"
+      , left
+      , [ "foo  bar   baz"
+        , "quux xyzzy x  "
+        ]
+      )
+    , ( "align right"
+      , right
+      , [ " foo   bar baz"
+        , "quux xyzzy   x"
+        ]
+      )
+    ]
