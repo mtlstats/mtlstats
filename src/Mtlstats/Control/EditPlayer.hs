@@ -27,6 +27,7 @@ import qualified UI.NCurses as C
 
 import Mtlstats.Helpers.Player
 import Mtlstats.Menu
+import Mtlstats.Menu.EditPlayer
 import Mtlstats.Prompt
 import Mtlstats.Prompt.EditPlayer
 import Mtlstats.Types
