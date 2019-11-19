@@ -67,10 +67,10 @@ positionC :: Controller
 positionC = promptController editPlayerPosPrompt
 
 ytdC :: Controller
-ytdC = undefined
+ytdC = menuControllerWith header editPlayerYtdMenu
 
 lifetimeC :: Controller
-lifetimeC = undefined
+lifetimeC = menuControllerWith header editPlayerLtMenu
 
 ytdGoalsC :: Controller
 ytdGoalsC = promptController editPlayerYtdGoalsPrompt
