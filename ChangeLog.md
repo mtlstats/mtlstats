@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Shortened views to fit within 25 lines
+
 ## 0.6.0
 - Generate lifetime statistics report
 - Implemented goalie editing
