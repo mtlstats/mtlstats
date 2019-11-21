@@ -19,22 +19,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-import Test.Hspec (hspec)
+module HelpersSpec (spec) where
 
-import qualified ActionsSpec as Actions
-import qualified FormatSpec as Format
-import qualified HandlersSpec as Handlers
-import qualified HelpersSpec as Helpers
-import qualified ReportSpec as Report
-import qualified TypesSpec as Types
-import qualified UtilSpec as Util
+import Test.Hspec (Spec, describe)
 
-main :: IO ()
-main = hspec $ do
-  Types.spec
-  Helpers.spec
-  Actions.spec
-  Format.spec
-  Handlers.spec
-  Report.spec
-  Util.spec
+import qualified Helpers.GoalieSpec as Goalie
+import qualified Helpers.PlayerSpec as Player
+
+spec :: Spec
+spec = describe "Helper" $ do
+  Player.spec
+  Goalie.spec

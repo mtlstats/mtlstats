@@ -30,7 +30,6 @@ module Mtlstats.Menu (
   newSeasonMenu,
   gameMonthMenu,
   gameTypeMenu,
-  editPlayerMenu,
   gameGoalieMenu
 ) where
 
@@ -40,7 +39,7 @@ import Data.Aeson (encodeFile)
 import Data.Char (toUpper)
 import qualified Data.Map as M
 import Data.Maybe (mapMaybe)
-import Lens.Micro ((^.), (.~), (?~))
+import Lens.Micro ((^.), (?~))
 import Lens.Micro.Extras (view)
 import System.EasyFile
   ( createDirectoryIfMissing
@@ -155,24 +154,6 @@ gameTypeMenu = Menu "Game type:" ()
     modify $ progMode.gameStateL.gameType ?~ HomeGame
   , MenuItem '2' "Away Game" $
     modify $ progMode.gameStateL.gameType ?~ AwayGame
-  ]
-
--- | The player edit menu
-editPlayerMenu :: Menu ()
-editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
-  (\(ch, label, mode) -> MenuItem ch label $ case mode of
-    Nothing -> modify $ progMode .~ MainMenu
-    Just m  -> modify $ progMode.editPlayerStateL.epsMode .~ m)
-  [ ( '1', "Change number",         Just EPNumber     )
-  , ( '2', "Change name",           Just EPName       )
-  , ( '3', "Change position",       Just EPPosition   )
-  , ( '4', "YTD goals",             Just EPYtdGoals   )
-  , ( '5', "YTD assists",           Just EPYtdAssists )
-  , ( '6', "YTD penalty mins",      Just EPYtdPMin    )
-  , ( '7', "Lifetime goals",        Just EPLtGoals    )
-  , ( '8', "Lifetime assists",      Just EPLtAssists  )
-  , ( '9', "Lifetime penalty mins", Just EPLtPMin     )
-  , ( '0', "Finished editing",      Nothing           )
   ]
 
 -- | Game goalie selection menu

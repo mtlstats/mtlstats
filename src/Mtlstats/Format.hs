@@ -26,7 +26,12 @@ module Mtlstats.Format
   , centre
   , overlay
   , month
+  , labelTable
+  , numTable
+  , tableWith
   ) where
+
+import Data.List (transpose)
 
 -- | Pad an 'Int' with leading zeroes to fit a certain character width
 padNum
@@ -101,3 +106,44 @@ month 10 = "OCT"
 month 11 = "NOV"
 month 12 = "DEC"
 month _  = ""
+
+-- | Creates a two-column table with labels
+labelTable :: [(String, String)] -> [String]
+labelTable xs = let
+  labelWidth = maximum $ map (length . fst) xs
+  in map
+    (\(label, val) -> right labelWidth label ++ ": " ++ val)
+    xs
+
+-- | Creates a variable column table of numbers with two axes
+numTable
+  :: [String]
+  -- ^ The top column labels
+  -> [(String, [Int])]
+  -- ^ The rows with their labels
+  -> [String]
+numTable headers rows = tableWith right $ header : body
+  where
+    header = "" : headers
+    body   = map
+      (\(label, row) ->
+        label : map show row)
+      rows
+
+-- | Creates a table from a two-dimensional list with a specified
+-- padding function
+tableWith
+  :: (Int -> String -> String)
+  -- ^ The padding function
+  -> [[String]]
+  -- ^ The cells
+  -> [String]
+tableWith func tdata = let
+  widths    = map (map length) tdata
+  colWidths = map maximum $ transpose widths
+  fitted    = map
+    (\row -> map
+      (\(str, len) -> func len str) $
+      zip row colWidths)
+    tdata
+  in map unwords fitted

@@ -25,7 +25,9 @@ import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
+import Mtlstats.Helpers.Player
 import Mtlstats.Menu
+import Mtlstats.Menu.EditPlayer
 import Mtlstats.Prompt
 import Mtlstats.Prompt.EditPlayer
 import Mtlstats.Types
@@ -40,6 +42,8 @@ editPlayerC eps
     EPNumber     -> numberC
     EPName       -> nameC
     EPPosition   -> positionC
+    EPYtd        -> ytdC
+    EPLifetime   -> lifetimeC
     EPYtdGoals   -> ytdGoalsC
     EPYtdAssists -> ytdAssistsC
     EPYtdPMin    -> ytdPMinC
@@ -48,96 +52,46 @@ editPlayerC eps
     EPLtPMin     -> ltPMinC
 
 selectPlayerC :: Controller
-selectPlayerC = Controller
-  { drawController   = drawPrompt playerToEditPrompt
-  , handleController = \e -> do
-    promptHandler playerToEditPrompt e
-    return True
-  }
+selectPlayerC = promptController playerToEditPrompt
 
 menuC :: Controller
-menuC = Controller
-  { drawController = \s -> do
-    let
-      header = fromMaybe "" $ do
-        pid <- s^.progMode.editPlayerStateL.epsSelectedPlayer
-        p   <- nth pid $ s^.database.dbPlayers
-        Just $ playerDetails p ++ "\n"
-    C.drawString header
-    drawMenu editPlayerMenu
-  , handleController = \e -> do
-    menuHandler editPlayerMenu e
-    return True
-  }
+menuC = menuControllerWith header editPlayerMenu
 
 numberC :: Controller
-numberC = Controller
-  { drawController = drawPrompt editPlayerNumPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerNumPrompt e
-    return True
-  }
+numberC = promptController editPlayerNumPrompt
 
 nameC :: Controller
-nameC = Controller
-  { drawController   = drawPrompt editPlayerNamePrompt
-  , handleController = \e -> do
-    promptHandler editPlayerNamePrompt e
-    return True
-  }
+nameC = promptController editPlayerNamePrompt
 
 positionC :: Controller
-positionC = Controller
-  { drawController   = drawPrompt editPlayerPosPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerPosPrompt e
-    return True
-  }
+positionC = promptController editPlayerPosPrompt
+
+ytdC :: Controller
+ytdC = menuControllerWith header editPlayerYtdMenu
+
+lifetimeC :: Controller
+lifetimeC = menuControllerWith header editPlayerLtMenu
 
 ytdGoalsC :: Controller
-ytdGoalsC = Controller
-  { drawController   = drawPrompt editPlayerYtdGoalsPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerYtdGoalsPrompt e
-    return True
-  }
+ytdGoalsC = promptController editPlayerYtdGoalsPrompt
 
 ytdAssistsC :: Controller
-ytdAssistsC = Controller
-  { drawController   = drawPrompt editPlayerYtdAssistsPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerYtdAssistsPrompt e
-    return True
-  }
+ytdAssistsC = promptController editPlayerYtdAssistsPrompt
 
 ytdPMinC :: Controller
-ytdPMinC = Controller
-  { drawController   = drawPrompt editPlayerYtdPMinPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerYtdPMinPrompt e
-    return True
-  }
+ytdPMinC = promptController editPlayerYtdPMinPrompt
 
 ltGoalsC :: Controller
-ltGoalsC = Controller
-  { drawController   = drawPrompt editPlayerLtGoalsPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerLtGoalsPrompt e
-    return True
-  }
+ltGoalsC = promptController editPlayerLtGoalsPrompt
 
 ltAssistsC :: Controller
-ltAssistsC = Controller
-  { drawController   = drawPrompt editPlayerLtAssistsPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerLtAssistsPrompt e
-    return True
-  }
+ltAssistsC = promptController editPlayerLtAssistsPrompt
 
 ltPMinC :: Controller
-ltPMinC = Controller
-  { drawController   = drawPrompt editPlayerLtPMinPrompt
-  , handleController = \e -> do
-    promptHandler editPlayerLtPMinPrompt e
-    return True
-  }
+ltPMinC = promptController editPlayerLtPMinPrompt
+
+header :: ProgState -> C.Update ()
+header s = C.drawString $ fromMaybe "" $ do
+  pid    <- s^.progMode.editPlayerStateL.epsSelectedPlayer
+  player <- nth pid $ s^.database.dbPlayers
+  Just $ playerDetails player ++ "\n"
