@@ -23,8 +23,10 @@ module HelpersSpec (spec) where
 
 import Test.Hspec (Spec, describe)
 
+import qualified Helpers.GoalieSpec as Goalie
 import qualified Helpers.PlayerSpec as Player
 
 spec :: Spec
-spec = describe "Helper"
+spec = describe "Helper" $ do
   Player.spec
+  Goalie.spec
