@@ -310,18 +310,20 @@ goalieStats n = newGoalieStats
   & gsGames        .~ n
   & gsMinsPlayed   .~ n + 1
   & gsGoalsAllowed .~ n + 2
-  & gsWins         .~ n + 3
-  & gsLosses       .~ n + 4
-  & gsTies         .~ n + 5
+  & gsShutouts     .~ n + 3
+  & gsWins         .~ n + 4
+  & gsLosses       .~ n + 5
+  & gsTies         .~ n + 6
 
 goalieStatsJSON :: Int -> Value
 goalieStatsJSON n = Object $ HM.fromList
   [ ( "games",         toJSON n       )
   , ( "mins_played",   toJSON $ n + 1 )
   , ( "goals_allowed", toJSON $ n + 2 )
-  , ( "wins",          toJSON $ n + 3 )
-  , ( "losses",        toJSON $ n + 4 )
-  , ( "ties",          toJSON $ n + 5 )
+  , ( "shutouts",      toJSON $ n + 3 )
+  , ( "wins",          toJSON $ n + 4 )
+  , ( "losses",        toJSON $ n + 5 )
+  , ( "ties",          toJSON $ n + 6 )
   ]
 
 gameStats :: Int -> GameStats
@@ -793,7 +795,7 @@ makeGoalieStats = GoalieStats
   <*> makeNum
   <*> makeNum
   <*> makeNum
-
+  <*> makeNum
 
 makeNum :: IO Int
 makeNum = randomRIO (1, 10)

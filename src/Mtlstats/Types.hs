@@ -120,6 +120,7 @@ module Mtlstats.Types (
   gsGames,
   gsMinsPlayed,
   gsGoalsAllowed,
+  gsShutouts,
   gsWins,
   gsLosses,
   gsTies,
@@ -182,6 +183,8 @@ import Data.Aeson
   , toJSON
   , withObject
   , (.:)
+  , (.:?)
+  , (.!=)
   , (.=)
   )
 import Data.List (isInfixOf)
@@ -513,6 +516,8 @@ data GoalieStats = GoalieStats
   -- ^ The number of minutes played
   , _gsGoalsAllowed :: Int
   -- ^ The number of goals allowed
+  , _gsShutouts     :: Int
+  -- ^ The number of shutouts the goalie has accumulated
   , _gsWins         :: Int
   -- ^ The number of wins
   , _gsLosses       :: Int
@@ -523,26 +528,29 @@ data GoalieStats = GoalieStats
 
 instance FromJSON GoalieStats where
   parseJSON = withObject "GoalieStats" $ \v -> GoalieStats
-    <$> v .: "games"
-    <*> v .: "mins_played"
-    <*> v .: "goals_allowed"
-    <*> v .: "wins"
-    <*> v .: "losses"
-    <*> v .: "ties"
+    <$> v .:? "games"         .!= 0
+    <*> v .:? "mins_played"   .!= 0
+    <*> v .:? "goals_allowed" .!= 0
+    <*> v .:? "shutouts"      .!= 0
+    <*> v .:? "wins"          .!= 0
+    <*> v .:? "losses"        .!= 0
+    <*> v .:? "ties"          .!= 0
 
 instance ToJSON GoalieStats where
-  toJSON (GoalieStats g m a w l t) = object
+  toJSON (GoalieStats g m a s w l t) = object
     [ "games"         .= g
     , "mins_played"   .= m
     , "goals_allowed" .= a
+    , "shutouts"      .= s
     , "wins"          .= w
     , "losses"        .= l
     , "ties"          .= t
     ]
-  toEncoding (GoalieStats g m a w l t) = pairs $
+  toEncoding (GoalieStats g m a s w l t) = pairs $
       "games"         .= g <>
       "mins_played"   .= m <>
       "goals_allowed" .= a <>
+      "shutouts"      .= s <>
       "wins"          .= w <>
       "losses"        .= l <>
       "ties"          .= t
@@ -786,6 +794,7 @@ newGoalieStats = GoalieStats
   { _gsGames        = 0
   , _gsMinsPlayed   = 0
   , _gsGoalsAllowed = 0
+  , _gsShutouts     = 0
   , _gsWins         = 0
   , _gsLosses       = 0
   , _gsTies         = 0
