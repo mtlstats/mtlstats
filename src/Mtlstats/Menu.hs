@@ -23,6 +23,7 @@ module Mtlstats.Menu (
   -- * Menu Functions
   menuController,
   menuControllerWith,
+  menuStateController,
   drawMenu,
   menuHandler,
   -- * Menus
@@ -72,6 +73,21 @@ menuControllerWith header menu = Controller
     header s
     drawMenu menu
   , handleController = \e -> do
+    menuHandler menu e
+    return True
+  }
+
+-- | Generate and create a controller for a menu based on the current
+-- 'ProgState'
+menuStateController
+  :: (ProgState -> Menu ())
+  -- ^ The function to generate the menu
+  -> Controller
+  -- ^ The resulting controller
+menuStateController menuFunc = Controller
+  { drawController = drawMenu . menuFunc
+  , handleController = \e -> do
+    menu <- gets menuFunc
     menuHandler menu e
     return True
   }

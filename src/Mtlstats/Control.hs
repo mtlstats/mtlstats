@@ -43,7 +43,7 @@ dispatch :: ProgState -> Controller
 dispatch s = case s^.progMode of
   MainMenu  -> mainMenuC
   NewSeason -> newSeasonC
-  NewGame _ -> newGameC s
+  NewGame gs -> newGameC gs
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC

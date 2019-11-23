@@ -33,16 +33,12 @@ import Mtlstats.Types
 import Mtlstats.Util
 
 -- | The dispatcher for handling goalie input
-goalieInputC :: ProgState -> Controller
-goalieInputC s = let
-  gs = s^.progMode.gameStateL
-  in if gs^.gameGoaliesRecorded
-    then selectGameGoalieC s
-  else if null $ gs^.gameSelectedGoalie
-    then selectGoalieC
-  else if null $ gs^.gameGoalieMinsPlayed
-    then minsPlayedC
-  else goalsAllowedC
+goalieInputC :: GameState -> Controller
+goalieInputC gs
+  | gs^.gameGoaliesRecorded         = selectGameGoalieC
+  | null $ gs^.gameSelectedGoalie   = selectGoalieC
+  | null $ gs^.gameGoalieMinsPlayed = minsPlayedC
+  | otherwise                       = goalsAllowedC
 
 selectGoalieC :: Controller
 selectGoalieC = promptController selectGameGoaliePrompt
@@ -53,8 +49,8 @@ minsPlayedC = promptControllerWith header goalieMinsPlayedPrompt
 goalsAllowedC :: Controller
 goalsAllowedC = promptControllerWith header goalsAllowedPrompt
 
-selectGameGoalieC :: ProgState -> Controller
-selectGameGoalieC = menuController . gameGoalieMenu
+selectGameGoalieC :: Controller
+selectGameGoalieC = menuStateController gameGoalieMenu
 
 header :: ProgState -> C.Update ()
 header s = C.drawString $ unlines

@@ -65,8 +65,9 @@ homeScorePrompt = numPrompt "Home score: " $
 
 -- | Prompts for the away score
 awayScorePrompt :: Prompt
-awayScorePrompt = numPrompt "Away score: " $
-  modify . (progMode.gameStateL.awayScore ?~)
+awayScorePrompt = numPrompt "Away score: " $ \score -> modify
+  $ overtimeCheck
+  . (progMode.gameStateL.awayScore ?~ score)
 
 -- | Prompts for the player who scored the goal
 recordGoalPrompt

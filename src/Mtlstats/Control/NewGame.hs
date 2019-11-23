@@ -39,95 +39,43 @@ import Mtlstats.Types
 import Mtlstats.Util
 
 -- | Dispatcher for a new game
-newGameC :: ProgState -> Controller
-newGameC s = let
-  gs = s^.progMode.gameStateL
-  in if null $ gs^.gameYear               then gameYearC
-  else if null $ gs^.gameMonth            then gameMonthC
-  else if null $ gs^.gameDay              then gameDayC
-  else if null $ gs^.gameType             then gameTypeC
-  else if null $ gs^.otherTeam            then otherTeamC
-  else if null $ gs^.homeScore            then homeScoreC
-  else if null $ gs^.awayScore            then awayScoreC
-  else if null $ gs^.overtimeFlag         then overtimeFlagC
-  else if not $ gs^.dataVerified          then verifyDataC
-  else if fromJust (unaccountedPoints gs) then goalInput gs
-  else if isJust $ gs^.gameSelectedPlayer then getPMinsC
-  else if not $ gs^.gamePMinsRecorded     then pMinPlayerC
-  else if not $ gs^.gameGoalieAssigned    then goalieInputC s
-  else reportC
+newGameC :: GameState -> Controller
+newGameC gs
+  | null $ gs^.gameYear             = gameYearC
+  | null $ gs^.gameMonth            = gameMonthC
+  | null $ gs^.gameDay              = gameDayC
+  | null $ gs^.gameType             = gameTypeC
+  | null $ gs^.otherTeam            = otherTeamC
+  | null $ gs^.homeScore            = homeScoreC
+  | null $ gs^.awayScore            = awayScoreC
+  | null $ gs^.overtimeFlag         = overtimeFlagC
+  | not $ gs^.dataVerified          = verifyDataC
+  | fromJust (unaccountedPoints gs) = goalInput gs
+  | isJust $ gs^.gameSelectedPlayer = getPMinsC
+  | not $ gs^.gamePMinsRecorded     = pMinPlayerC
+  | not $ gs^.gameGoalieAssigned    = goalieInputC gs
+  | otherwise                       = reportC
 
 gameYearC :: Controller
-gameYearC = Controller
-  { drawController = \s -> do
-    header s
-    drawPrompt gameYearPrompt s
-  , handleController = \e -> do
-    promptHandler gameYearPrompt e
-    return True
-  }
+gameYearC = promptControllerWith header gameYearPrompt
 
 gameMonthC :: Controller
-gameMonthC = Controller
-  { drawController = \s -> do
-    header s
-    drawMenu gameMonthMenu
-  , handleController = \e -> do
-    menuHandler gameMonthMenu e
-    return True
-  }
+gameMonthC = menuControllerWith header gameMonthMenu
 
 gameDayC :: Controller
-gameDayC = Controller
-  { drawController = \s -> do
-    header s
-    drawPrompt gameDayPrompt s
-  , handleController = \e -> do
-    promptHandler gameDayPrompt e
-    modify validateGameDate
-    return True
-  }
+gameDayC = promptControllerWith header gameDayPrompt
 
 gameTypeC :: Controller
-gameTypeC = Controller
-  { drawController = \s -> do
-    header s
-    drawMenu gameTypeMenu
-  , handleController = \e -> do
-    menuHandler gameTypeMenu e
-    return True
-  }
+gameTypeC = menuControllerWith header gameTypeMenu
 
 otherTeamC :: Controller
-otherTeamC = Controller
-  { drawController = \s -> do
-    header s
-    drawPrompt otherTeamPrompt s
-  , handleController = \e -> do
-    promptHandler otherTeamPrompt e
-    return True
-  }
+otherTeamC = promptControllerWith header otherTeamPrompt
 
 homeScoreC :: Controller
-homeScoreC = Controller
-  { drawController = \s -> do
-    header s
-    drawPrompt homeScorePrompt s
-  , handleController = \e -> do
-    promptHandler homeScorePrompt e
-    return True
-  }
+homeScoreC = promptControllerWith header homeScorePrompt
 
 awayScoreC :: Controller
-awayScoreC = Controller
-  { drawController = \s -> do
-    header s
-    drawPrompt awayScorePrompt s
-  , handleController = \e -> do
-    promptHandler awayScorePrompt e
-    modify overtimeCheck
-    return True
-  }
+awayScoreC = promptControllerWith header awayScorePrompt
 
 overtimeFlagC :: Controller
 overtimeFlagC = Controller
@@ -146,13 +94,15 @@ verifyDataC = Controller
     let gs = s^.progMode.gameStateL
     header s
     C.drawString "\n"
-    C.drawString $ "      Date: " ++ gameDate gs ++ "\n"
-    C.drawString $ " Game type: " ++ show (fromJust $ gs^.gameType) ++ "\n"
-    C.drawString $ "Other team: " ++ gs^.otherTeam ++ "\n"
-    C.drawString $ "Home score: " ++ show (fromJust $ gs^.homeScore) ++ "\n"
-    C.drawString $ "Away score: " ++ show (fromJust $ gs^.awayScore) ++ "\n"
-    C.drawString $ "  Overtime: " ++ show (fromJust $ gs^.overtimeFlag) ++ "\n\n"
-    C.drawString "Is the above information correct?  (Y/N)"
+    C.drawString $ unlines $ labelTable
+      [ ( "Date",       gameDate gs                        )
+      , ( "Game type",  show $ fromJust $ gs^.gameType     )
+      , ( "Other team", gs^.otherTeam                      )
+      , ( "Home score", show $ fromJust $ gs^.homeScore    )
+      , ( "Away score", show $ fromJust $ gs^.awayScore    )
+      , ( "Overtime",   show $ fromJust $ gs^.overtimeFlag )
+      ]
+    C.drawString "\nIs the above information correct?  (Y/N)"
     return C.CursorInvisible
   , handleController = \e -> do
     case ynHandler e of
