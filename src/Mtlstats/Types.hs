@@ -43,6 +43,7 @@ module Mtlstats.Types (
   GameStats (..),
   Prompt (..),
   SelectParams (..),
+  TableCell (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
@@ -621,6 +622,14 @@ data SelectParams a = SelectParams
   , spNotFound     :: String -> Action ()
   -- ^ The function to call when the selection doesn't exist
   }
+
+-- | Describes a table cell
+data TableCell
+  = CellText String
+  -- ^ A cell with text
+  | CellFill Char
+  -- ^ A cell filled with the given character
+  deriving (Eq, Show)
 
 makeLenses ''ProgState
 makeLenses ''GameState
