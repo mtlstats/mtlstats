@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Format
   ( padNum
   , left
@@ -29,9 +31,12 @@ module Mtlstats.Format
   , labelTable
   , numTable
   , tableWith
+  , complexTable
   ) where
 
 import Data.List (transpose)
+
+import Mtlstats.Types
 
 -- | Pad an 'Int' with leading zeroes to fit a certain character width
 padNum
@@ -138,12 +143,32 @@ tableWith
   -> [[String]]
   -- ^ The cells
   -> [String]
-tableWith func tdata = let
-  widths    = map (map length) tdata
+tableWith pFunc tData = complexTable
+  (repeat pFunc)
+  (map (map CellText) tData)
+
+-- | Creates a complex table
+complexTable
+  :: [Int -> String -> String]
+  -- ^ The padding function for each column
+  -> [[TableCell]]
+  -- ^ The table cells (an array of rows)
+  -> [String]
+complexTable pFuncs tData = let
+  widths = map
+    (map $ \case
+      CellText str -> length str
+      CellFill _   -> 0)
+    tData
   colWidths = map maximum $ transpose widths
-  fitted    = map
-    (\row -> map
-      (\(str, len) -> func len str) $
-      zip row colWidths)
-    tdata
-  in map unwords fitted
+
+  bFunc = \case
+    [] -> ""
+    [(f, len, CellText str)]       -> f len str
+    [(_, len, CellFill ch)]        -> replicate len ch
+    (f, len, CellText str) : cells -> f len str ++ " " ++ bFunc cells
+    (_, len, CellFill ch) : cells  -> replicate (succ len) ch ++ bFunc cells
+
+  in map
+    (bFunc . zip3 pFuncs colWidths)
+    tData

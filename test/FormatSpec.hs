@@ -24,6 +24,7 @@ module FormatSpec (spec) where
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Format
+import Mtlstats.Types
 
 spec :: Spec
 spec = describe "Mtlstats.Format" $ do
@@ -36,6 +37,7 @@ spec = describe "Mtlstats.Format" $ do
   labelTableSpec
   numTableSpec
   tableWithSpec
+  complexTableSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -174,3 +176,28 @@ tableWithSpec = describe "tableWith" $ let
         ]
       )
     ]
+
+complexTableSpec :: Spec
+complexTableSpec = describe "complexTable" $ mapM_
+  (\(label, pFuncs, cells, expected) -> context label $
+    it "should format correctly" $
+      complexTable pFuncs cells `shouldBe` expected)
+  [ ( "no fill"
+    , [left, right]
+    , [ [ CellText "foo",  CellText "bar"  ]
+      , [ CellText "baaz", CellText "quux" ]
+      ]
+    , [ "foo   bar"
+      , "baaz quux"
+      ]
+    )
+  , ( "with fill"
+    , [left, left, left]
+    , [ [ CellText "foo",  CellText "bar", CellText "baz" ]
+      , [ CellText "quux", CellFill '-',   CellFill '@'   ]
+      ]
+    , [ "foo  bar baz"
+      , "quux ----@@@"
+      ]
+    )
+  ]
