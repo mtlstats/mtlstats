@@ -106,9 +106,10 @@ verifyDataC = Controller
     return C.CursorInvisible
   , handleController = \e -> do
     case ynHandler e of
-      Just True  -> do
-        modify $ progMode.gameStateL.dataVerified .~ True
-        modify updateGameStats
+      Just True  -> modify
+        $ (progMode.gameStateL.dataVerified .~ True)
+        . updateGameStats
+        . awardShutouts
       Just False -> modify $ progMode.gameStateL .~ newGameState
       Nothing    -> return ()
     return True

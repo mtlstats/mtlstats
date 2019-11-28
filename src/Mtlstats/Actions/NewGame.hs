@@ -28,6 +28,7 @@ module Mtlstats.Actions.NewGame
   , awardAssist
   , resetGoalData
   , assignPMins
+  , awardShutouts
   ) where
 
 import qualified Data.Map as M
@@ -171,3 +172,20 @@ assignPMins mins s = fromMaybe s $ do
            (psPMin +~ mins)
          )
       .  (gameSelectedPlayer .~ Nothing)
+
+-- | Awards a shutout to any 'Goalie' who played and didn't allow any
+-- goals
+awardShutouts :: ProgState -> ProgState
+awardShutouts s = foldl
+  (\gs (gid, stats) -> if stats^.gsGoalsAllowed == 0
+    then gs
+      & database.dbGoalies %~ modifyNth gid
+        ( ( gYtd.gsShutouts      %~ succ )
+        . ( gLifetime.gsShutouts %~ succ )
+        )
+      & progMode.gameStateL.gameGoalieStats %~ M.adjust
+        (gsShutouts %~ succ)
+        gid
+    else gs)
+  s
+  (M.toList $ s^.progMode.gameStateL.gameGoalieStats)
