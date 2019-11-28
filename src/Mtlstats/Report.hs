@@ -118,41 +118,49 @@ gameDate gs = fromMaybe "" $ do
 
 playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
 playerReport width label ps = let
-  nameWidth = playerNameColWidth $ map fst ps
-  tStats    = foldr (addPlayerStats . snd) newPlayerStats ps
-  in
+  tStats = foldl addPlayerStats newPlayerStats $ map snd ps
+
+  rHeader =
     [ centre width (label ++ " STATISTICS")
     , ""
-    , centre width
-      $  "NO. "
-      ++ left nameWidth "PLAYER"
-      ++ right 3 "G"
-      ++ right 6 "A"
-      ++ right 6 "P"
-      ++ right 6 "PM"
-    ] ++ map
-      (\(p, stats) -> centre width
-        $  right 2 (show $ p^.pNumber)
-        ++ "  "
-        ++ left nameWidth (p^.pName)
-        ++ right 3 (show $ stats^.psGoals)
-        ++ right 6 (show $ stats^.psAssists)
-        ++ right 6 (show $ psPoints stats)
-        ++ right 6 (show $ stats^.psPMin))
-      ps ++
-    [ centre width
-      $  replicate (4 + nameWidth) ' '
-      ++ replicate (3 + 3 * 6) '-'
-    , overlay
-      (label ++ " TOTALS")
-      ( centre width
-        $  replicate (4 + nameWidth) ' '
-        ++ right 3 (show $ tStats^.psGoals)
-        ++ right 6 (show $ tStats^.psAssists)
-        ++ right 6 (show $ psPoints tStats)
-        ++ right 6 (show $ tStats^.psPMin)
-      )
     ]
+
+  tHeader =
+    [ CellText "NO."
+    , CellText "Player"
+    , CellText "   G"
+    , CellText "   A"
+    , CellText "   P"
+    , CellText "  PM"
+    ]
+
+  statsCells stats =
+    [ CellText $ show $ stats^.psGoals
+    , CellText $ show $ stats^.psAssists
+    , CellText $ show $ psPoints stats
+    , CellText $ show $ stats^.psPMin
+    ]
+
+  body = map
+    (\(p, stats) ->
+      [ CellText $ show (p^.pNumber) ++ " "
+      , CellText $ p^.pName
+      ] ++ statsCells stats)
+    ps
+
+  separator = replicate 2 (CellText "") ++ replicate 4 (CellFill '-')
+
+  totals =
+    [ CellText ""
+    , CellText ""
+    ] ++ statsCells tStats
+
+  table = overlayLast (label ++ " TOTALS")
+    $ map (centre width)
+    $ complexTable ([right, left] ++ repeat right)
+    $ tHeader : body ++ [separator, totals]
+
+  in rHeader ++ table
 
 playerNameColWidth :: [Player] -> Int
 playerNameColWidth = foldr

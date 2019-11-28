@@ -38,6 +38,7 @@ spec = describe "Mtlstats.Format" $ do
   numTableSpec
   tableWithSpec
   complexTableSpec
+  overlayLastSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -201,3 +202,27 @@ complexTableSpec = describe "complexTable" $ mapM_
       ]
     )
   ]
+
+overlayLastSpec :: Spec
+overlayLastSpec = describe "overlayLast" $ let
+  text = "foo"
+
+  sample =
+    [ "line 1"
+    , "line 2"
+    ]
+
+  edited =
+    [ "line 1"
+    , "fooe 2"
+    ]
+
+  in mapM_
+    (\(label, input, expected) -> context label $
+      it ("should be " ++ show expected) $
+        overlayLast text input `shouldBe` expected)
+
+    --  label,            input,  expected
+    [ ( "empty list",     [],     []       )
+    , ( "non-empty list", sample, edited   )
+    ]

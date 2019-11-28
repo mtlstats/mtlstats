@@ -32,6 +32,7 @@ module Mtlstats.Format
   , numTable
   , tableWith
   , complexTable
+  , overlayLast
   ) where
 
 import Data.List (transpose)
@@ -172,3 +173,15 @@ complexTable pFuncs tData = let
   in map
     (bFunc . zip3 pFuncs colWidths)
     tData
+
+-- | Places an overlay on the last line of an report
+overlayLast
+  :: String
+  -- ^ The text to overlay
+  -> [String]
+  -- ^ The report to modify
+  -> [String]
+  -- ^ The resulting report
+overlayLast _ []       = []
+overlayLast str [l]    = [overlay str l]
+overlayLast str (l:ls) = l : overlayLast str ls
