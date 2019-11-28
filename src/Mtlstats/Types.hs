@@ -989,4 +989,4 @@ goalieSummary g = g^.gName ++ " (" ++ show (g^.gNumber) ++ ")"
 -- | Determines whether or not a goalie has been active in the current
 -- season
 goalieIsActive :: Goalie -> Bool
-goalieIsActive = undefined
+goalieIsActive g = g^.gYtd.gsMinsPlayed /= 0

@@ -78,6 +78,7 @@ spec = describe "Mtlstats.Types" $ do
   goalieSearchSpec
   goalieSearchExactSpec
   goalieSummarySpec
+  goalieIsActiveSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -752,6 +753,24 @@ goalieSummarySpec :: Spec
 goalieSummarySpec = describe "goalieSummary" $
   it "should provide a summary string" $
     goalieSummary (newGoalie 2 "Joe") `shouldBe` "Joe (2)"
+
+goalieIsActiveSpec :: Spec
+goalieIsActiveSpec = describe "goalieIsActive" $ mapM_
+  (\(label, input, expected) -> context label $
+    it ("should be " ++ show expected) $
+      goalieIsActive input `shouldBe` expected)
+
+  --  label,      input,    expected
+  [ ( "inactive", inactive, False    )
+  , ( "active",   active,   True     )
+  ]
+
+  where
+    inactive = newGoalie 1 "Joe"
+      & gLifetime.gsMinsPlayed .~ 1
+
+    active = inactive
+      & gYtd.gsMinsPlayed .~ 1
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"
