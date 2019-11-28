@@ -43,6 +43,7 @@ module Mtlstats.Types (
   GameStats (..),
   Prompt (..),
   SelectParams (..),
+  TableCell (..),
   -- * Lenses
   -- ** ProgState Lenses
   database,
@@ -120,6 +121,7 @@ module Mtlstats.Types (
   gsGames,
   gsMinsPlayed,
   gsGoalsAllowed,
+  gsShutouts,
   gsWins,
   gsLosses,
   gsTies,
@@ -168,7 +170,11 @@ module Mtlstats.Types (
   -- ** Goalie Helpers
   goalieSearch,
   goalieSearchExact,
-  goalieSummary
+  goalieSummary,
+  goalieIsActive,
+  -- ** GoalieStats Helpers
+  addGoalieStats,
+  gsAverage
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -182,6 +188,8 @@ import Data.Aeson
   , toJSON
   , withObject
   , (.:)
+  , (.:?)
+  , (.!=)
   , (.=)
   )
 import Data.List (isInfixOf)
@@ -513,6 +521,8 @@ data GoalieStats = GoalieStats
   -- ^ The number of minutes played
   , _gsGoalsAllowed :: Int
   -- ^ The number of goals allowed
+  , _gsShutouts     :: Int
+  -- ^ The number of shutouts the goalie has accumulated
   , _gsWins         :: Int
   -- ^ The number of wins
   , _gsLosses       :: Int
@@ -523,26 +533,29 @@ data GoalieStats = GoalieStats
 
 instance FromJSON GoalieStats where
   parseJSON = withObject "GoalieStats" $ \v -> GoalieStats
-    <$> v .: "games"
-    <*> v .: "mins_played"
-    <*> v .: "goals_allowed"
-    <*> v .: "wins"
-    <*> v .: "losses"
-    <*> v .: "ties"
+    <$> v .:? "games"         .!= 0
+    <*> v .:? "mins_played"   .!= 0
+    <*> v .:? "goals_allowed" .!= 0
+    <*> v .:? "shutouts"      .!= 0
+    <*> v .:? "wins"          .!= 0
+    <*> v .:? "losses"        .!= 0
+    <*> v .:? "ties"          .!= 0
 
 instance ToJSON GoalieStats where
-  toJSON (GoalieStats g m a w l t) = object
+  toJSON (GoalieStats g m a s w l t) = object
     [ "games"         .= g
     , "mins_played"   .= m
     , "goals_allowed" .= a
+    , "shutouts"      .= s
     , "wins"          .= w
     , "losses"        .= l
     , "ties"          .= t
     ]
-  toEncoding (GoalieStats g m a w l t) = pairs $
+  toEncoding (GoalieStats g m a s w l t) = pairs $
       "games"         .= g <>
       "mins_played"   .= m <>
       "goals_allowed" .= a <>
+      "shutouts"      .= s <>
       "wins"          .= w <>
       "losses"        .= l <>
       "ties"          .= t
@@ -613,6 +626,14 @@ data SelectParams a = SelectParams
   , spNotFound     :: String -> Action ()
   -- ^ The function to call when the selection doesn't exist
   }
+
+-- | Describes a table cell
+data TableCell
+  = CellText String
+  -- ^ A cell with text
+  | CellFill Char
+  -- ^ A cell filled with the given character
+  deriving (Eq, Show)
 
 makeLenses ''ProgState
 makeLenses ''GameState
@@ -786,6 +807,7 @@ newGoalieStats = GoalieStats
   { _gsGames        = 0
   , _gsMinsPlayed   = 0
   , _gsGoalsAllowed = 0
+  , _gsShutouts     = 0
   , _gsWins         = 0
   , _gsLosses       = 0
   , _gsTies         = 0
@@ -966,3 +988,24 @@ goalieSearchExact sStr goalies = let
 -- | Provides a description string for a 'Goalie'
 goalieSummary :: Goalie -> String
 goalieSummary g = g^.gName ++ " (" ++ show (g^.gNumber) ++ ")"
+
+-- | Determines whether or not a goalie has been active in the current
+-- season
+goalieIsActive :: Goalie -> Bool
+goalieIsActive g = g^.gYtd.gsMinsPlayed /= 0
+
+-- | Adds two sets of 'GoalieStats'
+addGoalieStats :: GoalieStats -> GoalieStats -> GoalieStats
+addGoalieStats g1 g2 = GoalieStats
+  { _gsGames        = g1^.gsGames        + g2^.gsGames
+  , _gsMinsPlayed   = g1^.gsMinsPlayed   + g2^.gsMinsPlayed
+  , _gsGoalsAllowed = g1^.gsGoalsAllowed + g2^.gsGoalsAllowed
+  , _gsShutouts     = g1^.gsShutouts     + g2^.gsShutouts
+  , _gsWins         = g1^.gsWins         + g2^.gsWins
+  , _gsLosses       = g1^.gsLosses       + g2^.gsLosses
+  , _gsTies         = g1^.gsTies         + g2^.gsTies
+  }
+
+-- | Determines a goalie's average goals allowed per game.
+gsAverage :: GoalieStats -> Rational
+gsAverage gs = fromIntegral (gs^.gsGoalsAllowed) / fromIntegral (gs^.gsGames)

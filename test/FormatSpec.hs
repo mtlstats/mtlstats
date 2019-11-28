@@ -21,9 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module FormatSpec (spec) where
 
+import Data.Ratio ((%))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Format
+import Mtlstats.Types
 
 spec :: Spec
 spec = describe "Mtlstats.Format" $ do
@@ -36,6 +38,9 @@ spec = describe "Mtlstats.Format" $ do
   labelTableSpec
   numTableSpec
   tableWithSpec
+  complexTableSpec
+  overlayLastSpec
+  showFloatingSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -174,3 +179,60 @@ tableWithSpec = describe "tableWith" $ let
         ]
       )
     ]
+
+complexTableSpec :: Spec
+complexTableSpec = describe "complexTable" $ mapM_
+  (\(label, pFuncs, cells, expected) -> context label $
+    it "should format correctly" $
+      complexTable pFuncs cells `shouldBe` expected)
+  [ ( "no fill"
+    , [left, right]
+    , [ [ CellText "foo",  CellText "bar"  ]
+      , [ CellText "baaz", CellText "quux" ]
+      ]
+    , [ "foo   bar"
+      , "baaz quux"
+      ]
+    )
+  , ( "with fill"
+    , [left, left, left]
+    , [ [ CellText "foo",  CellText "bar", CellText "baz" ]
+      , [ CellText "quux", CellFill '-',   CellFill '@'   ]
+      ]
+    , [ "foo  bar baz"
+      , "quux ----@@@"
+      ]
+    )
+  ]
+
+overlayLastSpec :: Spec
+overlayLastSpec = describe "overlayLast" $ let
+  text = "foo"
+
+  sample =
+    [ "line 1"
+    , "line 2"
+    ]
+
+  edited =
+    [ "line 1"
+    , "fooe 2"
+    ]
+
+  in mapM_
+    (\(label, input, expected) -> context label $
+      it ("should be " ++ show expected) $
+        overlayLast text input `shouldBe` expected)
+
+    --  label,            input,  expected
+    [ ( "empty list",     [],     []       )
+    , ( "non-empty list", sample, edited   )
+    ]
+
+showFloatingSpec :: Spec
+showFloatingSpec = describe "showFloating" $ let
+  input = 3 % 2 :: Rational
+  expected = "1.50"
+
+  in it ("should be " ++ expected) $
+    showFloating input `shouldBe` expected

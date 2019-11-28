@@ -28,9 +28,8 @@ import Mtlstats.Report
 import Mtlstats.Types
 
 spec :: Spec
-spec = describe "Mtlstats.Report" $ do
+spec = describe "Mtlstats.Report"
   gameDateSpec
-  playerNameColWidthSpec
 
 gameDateSpec :: Spec
 gameDateSpec = describe "gameDate" $ do
@@ -46,20 +45,3 @@ gameDateSpec = describe "gameDate" $ do
   context "invalid date" $
     it "should return an empty string" $
       gameDate newGameState `shouldBe` ""
-
-playerNameColWidthSpec :: Spec
-playerNameColWidthSpec = describe "playerNameColWidth" $ do
-  let
-    short1 = newPlayer 1 "short" "foo"
-    short2 = newPlayer 2 "shorty" "bar"
-    long   = newPlayer 3 "123456789012345" "baz"
-
-  mapM_
-    (\(label, players, expected) -> context label $
-      it ("should be " ++ show expected) $
-        playerNameColWidth players `shouldBe` expected)
-    --  label,         players,          expected
-    [ ( "empty list",  [],               10       )
-    , ( "short names", [short1, short2], 10       )
-    , ( "long name",   [short1, long],   16       )
-    ]

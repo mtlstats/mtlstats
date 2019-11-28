@@ -44,6 +44,7 @@ spec = describe "NewGame" $ do
   awardAssistSpec
   resetGoalDataSpec
   assignPMinsSpec
+  awardShutoutsSpec
   GoalieInput.spec
 
 overtimeCheckSpec :: Spec
@@ -480,4 +481,46 @@ assignPMinsSpec = describe "assignPMins" $ let
     , ( Just 1,  4,      3,       2,        8,      7,       2        )
     , ( Just 2,  4,      3,       2,        6,      5,       0        )
     , ( Nothing, 4,      3,       2,        6,      5,       0        )
+    ]
+
+awardShutoutsSpec :: Spec
+awardShutoutsSpec = describe "awardShutouts" $ let
+  joe = newGoalie 2 "Joe"
+    & gYtd.gsShutouts      .~ 1
+    & gLifetime.gsShutouts .~ 2
+
+  bob = newGoalie 3 "Bob"
+    & gYtd.gsShutouts      .~ 3
+    & gLifetime.gsShutouts .~ 4
+
+  steve = newGoalie 5 "Steve"
+    & gYtd.gsShutouts      .~ 5
+    & gLifetime.gsShutouts .~ 6
+
+  ps = newProgState
+    & database.dbGoalies .~ [joe, bob, steve]
+    & progMode.gameStateL.gameGoalieStats .~ M.fromList
+      [ ( 0, newGoalieStats & gsGoalsAllowed .~ 1 )
+      , ( 1, newGoalieStats                       )
+      ]
+    & awardShutouts
+
+  in mapM_
+    (\(name, gid, expectedGame, expectedYtd, expectedLt) -> context name $ let
+      game = M.findWithDefault newGoalieStats gid $
+        ps^.progMode.gameStateL.gameGoalieStats
+      goalie = (ps^.database.dbGoalies) !! gid
+      in mapM_
+        (\(label, actual, expected) -> context label $
+          it ("should be " ++ show actual) $
+            actual `shouldBe` expected)
+        --  label,      actual,                       expected
+        [ ( "Game",     game^.gsShutouts,             expectedGame )
+        , ( "YTD",      goalie^.gYtd.gsShutouts,      expectedYtd  )
+        , ( "lifetime", goalie^.gLifetime.gsShutouts, expectedLt   )
+        ])
+    --  goalie,  goalie ID, Game, YTD, lifetime
+    [ ( "Joe",   0,         0,    1,   2        )
+    , ( "Bob",   1,         1,    4,   5        )
+    , ( "Steve", 2,         0,    5,   6        )
     ]

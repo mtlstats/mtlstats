@@ -19,10 +19,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Report (report, gameDate, playerNameColWidth) where
+module Mtlstats.Report (report, gameDate) where
 
 import qualified Data.Map as M
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Lens.Micro ((^.))
 
 import Mtlstats.Config
@@ -60,54 +60,104 @@ standingsReport width s = fromMaybe [] $ do
     tStats = addGameStats hStats aStats
   hScore <- gs^.homeScore
   aScore <- gs^.awayScore
-  Just
-    [ overlay
-      ("GAME NUMBER " ++ padNum 2 gNum)
-      (centre width
-        $  aTeam ++ " " ++ show aScore ++ "  AT  "
-        ++ hTeam ++ " " ++ show hScore)
-    , date
-    , centre width "STANDINGS"
-    , ""
-    , centre width
-      $  left 11 myTeam
-      ++ right 2 "G"
-      ++ right 4 "W"
-      ++ right 4 "L"
-      ++ right 4 "OT"
-      ++ right 4 "GF"
-      ++ right 4 "GA"
-      ++ right 4 "P"
-    , centre width
-      $  left 11 "HOME"
-      ++ showStats hStats
-    , centre width
-      $ left 11 "ROAD"
-      ++ showStats aStats
-    , centre width
-      $  replicate 11 ' '
-      ++ replicate (2 + 4 * 6) '-'
-    , centre width
-      $  left 11 "TOTALS"
-      ++ showStats tStats
-    ]
+  let
+    rHeader =
+      [ overlay
+        ("GAME NUMBER " ++ padNum 2 gNum)
+        (centre width
+          $  aTeam ++ " " ++ show aScore ++ "  AT  "
+          ++ hTeam ++ " " ++ show hScore)
+      , date
+      , centre width "STANDINGS"
+      , ""
+      ]
+
+    tHeader =
+      [ CellText myTeam
+      , CellText " G"
+      , CellText "   W"
+      , CellText "   L"
+      , CellText "  OT"
+      , CellText "  GF"
+      , CellText "  GA"
+      , CellText "   P"
+      ]
+
+    rowCells stats =
+      [ CellText $ show $ gmsGames stats
+      , CellText $ show $ stats^.gmsWins
+      , CellText $ show $ stats^.gmsLosses
+      , CellText $ show $ stats^.gmsOvertime
+      , CellText $ show $ stats^.gmsGoalsFor
+      , CellText $ show $ stats^.gmsGoalsAgainst
+      , CellText $ show $ gmsPoints stats
+      ]
+
+    body =
+      [ CellText "HOME" : rowCells hStats
+      , CellText "ROAD" : rowCells aStats
+      ]
+
+    separator = CellText "" : replicate 7 (CellFill '-')
+    totals = CellText "TOTALS" : rowCells tStats
+
+    table = map (centre width) $
+      complexTable
+      (left : repeat right)
+      (tHeader : body ++ [separator, totals])
+
+  Just $ rHeader ++ table
 
 gameStatsReport :: Int -> ProgState -> [String]
-gameStatsReport width s = playerReport width "GAME" $
-  fromMaybe [] $ mapM
+gameStatsReport width s = let
+  gs = s^.progMode.gameStateL
+  db = s^.database
+
+  playerStats = mapMaybe
     (\(pid, stats) -> do
-      p <- nth pid $ s^.database.dbPlayers
+      p <- nth pid $ db^.dbPlayers
       Just (p, stats))
-    (M.toList $ s^.progMode.gameStateL.gamePlayerStats)
+    (M.toList $ gs^.gamePlayerStats)
+
+  goalieStats = mapMaybe
+    (\(gid, stats) -> do
+      g <- nth gid $ db^.dbGoalies
+      Just (g, stats))
+    (M.toList $ gs^.gameGoalieStats)
+
+  in playerReport width "GAME" playerStats
+  ++ [""]
+  ++ goalieReport width goalieStats
 
 yearToDateStatsReport :: Int -> ProgState -> [String]
-yearToDateStatsReport width s = playerReport width "YEAR TO DATE" $
-  map (\p -> (p, p^.pYtd)) $
-  filter playerIsActive $ s^.database.dbPlayers
+yearToDateStatsReport width s = let
+  db = s^.database
+
+  playerStats = map (\p -> (p, p^.pYtd))
+    $ filter playerIsActive
+    $ db^.dbPlayers
+
+  goalieStats = map (\g -> (g, g^.gYtd))
+    $ filter goalieIsActive
+    $ db^.dbGoalies
+
+  in playerReport width "YEAR TO DATE" playerStats
+  ++ [""]
+  ++ goalieReport width goalieStats
 
 lifetimeStatsReport :: Int -> ProgState -> [String]
-lifetimeStatsReport width s = playerReport width "LIFETIME" $
-  map (\p -> (p, p^.pLifetime)) $ s^.database.dbPlayers
+lifetimeStatsReport width s = let
+  db = s^.database
+
+  playerStats = map (\p -> (p, p^.pYtd))
+    $ db^.dbPlayers
+
+  goalieStats = map (\g -> (g, g^.gYtd))
+    $ db^.dbGoalies
+
+  in playerReport width "LIFETIME" playerStats
+  ++ [""]
+  ++ goalieReport width goalieStats
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
@@ -118,53 +168,89 @@ gameDate gs = fromMaybe "" $ do
 
 playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
 playerReport width label ps = let
-  nameWidth = playerNameColWidth $ map fst ps
-  tStats    = foldr (addPlayerStats . snd) newPlayerStats ps
-  in
+  tStats = foldl addPlayerStats newPlayerStats $ map snd ps
+
+  rHeader =
     [ centre width (label ++ " STATISTICS")
     , ""
-    , centre width
-      $  "NO. "
-      ++ left nameWidth "PLAYER"
-      ++ right 3 "G"
-      ++ right 6 "A"
-      ++ right 6 "P"
-      ++ right 6 "PM"
-    ] ++ map
-      (\(p, stats) -> centre width
-        $  right 2 (show $ p^.pNumber)
-        ++ "  "
-        ++ left nameWidth (p^.pName)
-        ++ right 3 (show $ stats^.psGoals)
-        ++ right 6 (show $ stats^.psAssists)
-        ++ right 6 (show $ psPoints stats)
-        ++ right 6 (show $ stats^.psPMin))
-      ps ++
-    [ centre width
-      $  replicate (4 + nameWidth) ' '
-      ++ replicate (3 + 3 * 6) '-'
-    , overlay
-      (label ++ " TOTALS")
-      ( centre width
-        $  replicate (4 + nameWidth) ' '
-        ++ right 3 (show $ tStats^.psGoals)
-        ++ right 6 (show $ tStats^.psAssists)
-        ++ right 6 (show $ psPoints tStats)
-        ++ right 6 (show $ tStats^.psPMin)
-      )
     ]
 
-playerNameColWidth :: [Player] -> Int
-playerNameColWidth = foldr
-  (\player current -> max current $ succ $ length $ player^.pName)
-  10
+  tHeader =
+    [ CellText "NO."
+    , CellText "Player"
+    , CellText "   G"
+    , CellText "   A"
+    , CellText "   P"
+    , CellText "  PM"
+    ]
 
-showStats :: GameStats -> String
-showStats gs
-  =  right 2 (show $ gmsGames gs)
-  ++ right 4 (show $ gs^.gmsWins)
-  ++ right 4 (show $ gs^.gmsLosses)
-  ++ right 4 (show $ gs^.gmsOvertime)
-  ++ right 4 (show $ gs^.gmsGoalsFor)
-  ++ right 4 (show $ gs^.gmsGoalsAgainst)
-  ++ right 4 (show $ gmsPoints gs)
+  statsCells stats =
+    [ CellText $ show $ stats^.psGoals
+    , CellText $ show $ stats^.psAssists
+    , CellText $ show $ psPoints stats
+    , CellText $ show $ stats^.psPMin
+    ]
+
+  body = map
+    (\(p, stats) ->
+      [ CellText $ show (p^.pNumber) ++ " "
+      , CellText $ p^.pName
+      ] ++ statsCells stats)
+    ps
+
+  separator = replicate 2 (CellText "") ++ replicate 4 (CellFill '-')
+
+  totals =
+    [ CellText ""
+    , CellText ""
+    ] ++ statsCells tStats
+
+  table = overlayLast (label ++ " TOTALS")
+    $ map (centre width)
+    $ complexTable ([right, left] ++ repeat right)
+    $ tHeader : body ++ [separator, totals]
+
+  in rHeader ++ table
+
+goalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
+goalieReport width goalieData = let
+  olayText = "GOALTENDING TOTALS"
+
+  tData = foldl addGoalieStats newGoalieStats
+    $ map snd goalieData
+
+  header =
+    [ CellText "NO."
+    , CellText $ left (length olayText) "GOALTENDER"
+    , CellText "GP"
+    , CellText " MIN"
+    , CellText "  GA"
+    , CellText "  SO"
+    , CellText "AVE"
+    ]
+
+  rowCells stats =
+    [ CellText $ show $ stats^.gsGames
+    , CellText $ show $ stats^.gsMinsPlayed
+    , CellText $ show $ stats^.gsGoalsAllowed
+    , CellText $ show $ stats^.gsShutouts
+    , CellText $ showFloating $ gsAverage stats
+    ]
+
+  body = map
+    (\(goalie, stats) ->
+      [ CellText $ show (goalie^.gNumber) ++ " "
+      , CellText $ show $ goalie^.gName
+      ] ++ rowCells stats)
+    goalieData
+
+  separator
+    =  replicate 2 (CellText "")
+    ++ replicate 5 (CellFill '-')
+
+  summary = replicate 2 (CellText  "") ++ rowCells tData
+
+  in map (centre width)
+    $ overlayLast olayText
+    $ complexTable ([right, left] ++ repeat right)
+    $ header : body ++ [separator, summary]
