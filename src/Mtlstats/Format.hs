@@ -33,6 +33,7 @@ module Mtlstats.Format
   , tableWith
   , complexTable
   , overlayLast
+  , showFloating
   ) where
 
 import Data.List (transpose)
@@ -185,3 +186,7 @@ overlayLast
 overlayLast _ []       = []
 overlayLast str [l]    = [overlay str l]
 overlayLast str (l:ls) = l : overlayLast str ls
+
+-- | Converts a non-integer into a string
+showFloating :: Fractional n => n -> String
+showFloating = undefined

@@ -171,7 +171,10 @@ module Mtlstats.Types (
   goalieSearch,
   goalieSearchExact,
   goalieSummary,
-  goalieIsActive
+  goalieIsActive,
+  -- ** GoalieStats Helpers
+  addGoalieStats,
+  gsAverage
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -990,3 +993,11 @@ goalieSummary g = g^.gName ++ " (" ++ show (g^.gNumber) ++ ")"
 -- season
 goalieIsActive :: Goalie -> Bool
 goalieIsActive g = g^.gYtd.gsMinsPlayed /= 0
+
+-- | Adds two sets of 'GoalieStats'
+addGoalieStats :: GoalieStats -> GoalieStats -> GoalieStats
+addGoalieStats = undefined
+
+-- | Determines a goalie's average goals allowed per game.
+gsAverage :: GoalieStats -> Rational
+gsAverage = undefined

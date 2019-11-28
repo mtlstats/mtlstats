@@ -213,4 +213,44 @@ playerReport width label ps = let
   in rHeader ++ table
 
 goalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
-goalieReport = undefined
+goalieReport width goalieData = let
+  olayText = "GOALTENDING TOTALS"
+
+  tData = foldl addGoalieStats newGoalieStats
+    $ map snd goalieData
+
+  header =
+    [ CellText "NO."
+    , CellText $ left (length olayText) "GOALTENDER"
+    , CellText "GP"
+    , CellText " MIN"
+    , CellText "  GA"
+    , CellText "  SO"
+    , CellText "AVE"
+    ]
+
+  rowCells stats =
+    [ CellText $ show $ stats^.gsGames
+    , CellText $ show $ stats^.gsMinsPlayed
+    , CellText $ show $ stats^.gsGoalsAllowed
+    , CellText $ show $ stats^.gsShutouts
+    , CellText $ showFloating $ gsAverage stats
+    ]
+
+  body = map
+    (\(goalie, stats) ->
+      [ CellText $ show (goalie^.gNumber) ++ " "
+      , CellText $ show $ goalie^.gName
+      ] ++ rowCells stats)
+    goalieData
+
+  separator
+    =  replicate 2 (CellText "")
+    ++ replicate 5 (CellFill '-')
+
+  summary = replicate 2 (CellText  "") ++ rowCells tData
+
+  in map (centre width)
+    $ overlayLast olayText
+    $ complexTable ([right, left] ++ repeat right)
+    $ header : body ++ [separator, summary]
