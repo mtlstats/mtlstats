@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Report (report, gameDate, playerNameColWidth) where
+module Mtlstats.Report (report, gameDate) where
 
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe)
@@ -177,8 +177,3 @@ playerReport width label ps = let
     $ tHeader : body ++ [separator, totals]
 
   in rHeader ++ table
-
-playerNameColWidth :: [Player] -> Int
-playerNameColWidth = foldr
-  (\player current -> max current $ succ $ length $ player^.pName)
-  10
