@@ -170,7 +170,8 @@ module Mtlstats.Types (
   -- ** Goalie Helpers
   goalieSearch,
   goalieSearchExact,
-  goalieSummary
+  goalieSummary,
+  goalieIsActive
 ) where
 
 import Control.Monad.Trans.State (StateT)
@@ -984,3 +985,8 @@ goalieSearchExact sStr goalies = let
 -- | Provides a description string for a 'Goalie'
 goalieSummary :: Goalie -> String
 goalieSummary g = g^.gName ++ " (" ++ show (g^.gNumber) ++ ")"
+
+-- | Determines whether or not a goalie has been active in the current
+-- season
+goalieIsActive :: Goalie -> Bool
+goalieIsActive = undefined

@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Report (report, gameDate) where
 
 import qualified Data.Map as M
-import Data.Maybe (fromMaybe)
+import Data.Maybe (fromMaybe, mapMaybe)
 import Lens.Micro ((^.))
 
 import Mtlstats.Config
@@ -109,21 +109,55 @@ standingsReport width s = fromMaybe [] $ do
   Just $ rHeader ++ table
 
 gameStatsReport :: Int -> ProgState -> [String]
-gameStatsReport width s = playerReport width "GAME" $
-  fromMaybe [] $ mapM
+gameStatsReport width s = let
+  gs = s^.progMode.gameStateL
+  db = s^.database
+
+  playerStats = mapMaybe
     (\(pid, stats) -> do
-      p <- nth pid $ s^.database.dbPlayers
+      p <- nth pid $ db^.dbPlayers
       Just (p, stats))
-    (M.toList $ s^.progMode.gameStateL.gamePlayerStats)
+    (M.toList $ gs^.gamePlayerStats)
+
+  goalieStats = mapMaybe
+    (\(gid, stats) -> do
+      g <- nth gid $ db^.dbGoalies
+      Just (g, stats))
+    (M.toList $ gs^.gameGoalieStats)
+
+  in playerReport width "GAME" playerStats
+  ++ [""]
+  ++ goalieReport width goalieStats
 
 yearToDateStatsReport :: Int -> ProgState -> [String]
-yearToDateStatsReport width s = playerReport width "YEAR TO DATE" $
-  map (\p -> (p, p^.pYtd)) $
-  filter playerIsActive $ s^.database.dbPlayers
+yearToDateStatsReport width s = let
+  db = s^.database
+
+  playerStats = map (\p -> (p, p^.pYtd))
+    $ filter playerIsActive
+    $ db^.dbPlayers
+
+  goalieStats = map (\g -> (g, g^.gYtd))
+    $ filter goalieIsActive
+    $ db^.dbGoalies
+
+  in playerReport width "YEAR TO DATE" playerStats
+  ++ [""]
+  ++ goalieReport width goalieStats
 
 lifetimeStatsReport :: Int -> ProgState -> [String]
-lifetimeStatsReport width s = playerReport width "LIFETIME" $
-  map (\p -> (p, p^.pLifetime)) $ s^.database.dbPlayers
+lifetimeStatsReport width s = let
+  db = s^.database
+
+  playerStats = map (\p -> (p, p^.pYtd))
+    $ db^.dbPlayers
+
+  goalieStats = map (\g -> (g, g^.gYtd))
+    $ db^.dbGoalies
+
+  in playerReport width "LIFETIME" playerStats
+  ++ [""]
+  ++ goalieReport width goalieStats
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
@@ -177,3 +211,6 @@ playerReport width label ps = let
     $ tHeader : body ++ [separator, totals]
 
   in rHeader ++ table
+
+goalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
+goalieReport = undefined
