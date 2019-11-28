@@ -188,5 +188,9 @@ overlayLast str [l]    = [overlay str l]
 overlayLast str (l:ls) = l : overlayLast str ls
 
 -- | Converts a non-integer into a string
-showFloating :: Fractional n => n -> String
-showFloating = undefined
+showFloating :: RealFrac n => n -> String
+showFloating n = let
+  i        = round $ n * 100
+  whole    = i `div` 100
+  fraction = i `mod` 100
+  in show whole ++ "." ++ padNum 2 fraction

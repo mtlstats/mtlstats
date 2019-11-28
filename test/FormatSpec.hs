@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module FormatSpec (spec) where
 
+import Data.Ratio ((%))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Format
@@ -39,6 +40,7 @@ spec = describe "Mtlstats.Format" $ do
   tableWithSpec
   complexTableSpec
   overlayLastSpec
+  showFloatingSpec
 
 padNumSpec :: Spec
 padNumSpec = describe "padNum" $ do
@@ -226,3 +228,11 @@ overlayLastSpec = describe "overlayLast" $ let
     [ ( "empty list",     [],     []       )
     , ( "non-empty list", sample, edited   )
     ]
+
+showFloatingSpec :: Spec
+showFloatingSpec = describe "showFloating" $ let
+  input = 3 % 2 :: Rational
+  expected = "1.50"
+
+  in it ("should be " ++ expected) $
+    showFloating input `shouldBe` expected
