@@ -2,6 +2,7 @@
 
 ## current
 - Shortened views to fit within 25 lines
+- Implemented goalie reports
 
 ## 0.6.0
 - Generate lifetime statistics report
