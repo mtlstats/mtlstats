@@ -177,8 +177,8 @@ assignPMins mins s = fromMaybe s $ do
 -- goals
 awardShutouts :: ProgState -> ProgState
 awardShutouts s = foldl
-  (\gs (gid, stats) -> if stats^.gsGoalsAllowed == 0
-    then gs
+  (\s' (gid, stats) -> if stats^.gsGoalsAllowed == 0
+    then s'
       & database.dbGoalies %~ modifyNth gid
         ( ( gYtd.gsShutouts      %~ succ )
         . ( gLifetime.gsShutouts %~ succ )
@@ -186,6 +186,6 @@ awardShutouts s = foldl
       & progMode.gameStateL.gameGoalieStats %~ M.adjust
         (gsShutouts %~ succ)
         gid
-    else gs)
+    else s')
   s
   (M.toList $ s^.progMode.gameStateL.gameGoalieStats)
