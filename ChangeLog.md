@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.7.0
 - Shortened views to fit within 25 lines
 - Implemented goalie reports
 
