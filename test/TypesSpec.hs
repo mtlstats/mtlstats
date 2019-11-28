@@ -34,6 +34,7 @@ import Control.Monad (replicateM)
 import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
 import qualified Data.HashMap.Strict as HM
+import Data.Ratio ((%))
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
 import System.Random (randomRIO)
 import Test.Hspec (Spec, context, describe, it, shouldBe)
@@ -80,6 +81,7 @@ spec = describe "Mtlstats.Types" $ do
   goalieSummarySpec
   goalieIsActiveSpec
   addGoalieStatsSpec
+  gsAverageSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -809,6 +811,17 @@ addGoalieStatsSpec = describe "addGoalieStats" $ let
 
   in it ("should be " ++ show expected) $
     actual `shouldBe` expected
+
+gsAverageSpec :: Spec
+gsAverageSpec = describe "gsAverage" $ let
+  gs = newGoalieStats
+    & gsGames        .~ 2
+    & gsGoalsAllowed .~ 3
+
+  expected = 3 % 2
+
+  in it ("should be " ++ show expected) $
+    gsAverage gs `shouldBe` expected
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"

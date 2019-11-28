@@ -1008,4 +1008,4 @@ addGoalieStats g1 g2 = GoalieStats
 
 -- | Determines a goalie's average goals allowed per game.
 gsAverage :: GoalieStats -> Rational
-gsAverage = undefined
+gsAverage gs = fromIntegral (gs^.gsGoalsAllowed) / fromIntegral (gs^.gsGames)
