@@ -79,6 +79,7 @@ spec = describe "Mtlstats.Types" $ do
   goalieSearchExactSpec
   goalieSummarySpec
   goalieIsActiveSpec
+  addGoalieStatsSpec
   Menu.spec
 
 playerSpec :: Spec
@@ -771,6 +772,43 @@ goalieIsActiveSpec = describe "goalieIsActive" $ mapM_
 
     active = inactive
       & gYtd.gsMinsPlayed .~ 1
+
+addGoalieStatsSpec :: Spec
+addGoalieStatsSpec = describe "addGoalieStats" $ let
+  g1 = GoalieStats
+    { _gsGames        = 1
+    , _gsMinsPlayed   = 2
+    , _gsGoalsAllowed = 3
+    , _gsShutouts     = 4
+    , _gsWins         = 5
+    , _gsLosses       = 6
+    , _gsTies         = 7
+    }
+
+  g2 = GoalieStats
+    { _gsGames        = 8
+    , _gsMinsPlayed   = 9
+    , _gsGoalsAllowed = 10
+    , _gsShutouts     = 11
+    , _gsWins         = 12
+    , _gsLosses       = 13
+    , _gsTies         = 14
+    }
+
+  expected = GoalieStats
+    { _gsGames        = 9
+    , _gsMinsPlayed   = 11
+    , _gsGoalsAllowed = 13
+    , _gsShutouts     = 15
+    , _gsWins         = 17
+    , _gsLosses       = 19
+    , _gsTies         = 21
+    }
+
+  actual = g1 `addGoalieStats` g2
+
+  in it ("should be " ++ show expected) $
+    actual `shouldBe` expected
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"

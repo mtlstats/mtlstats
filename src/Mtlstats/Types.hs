@@ -996,7 +996,15 @@ goalieIsActive g = g^.gYtd.gsMinsPlayed /= 0
 
 -- | Adds two sets of 'GoalieStats'
 addGoalieStats :: GoalieStats -> GoalieStats -> GoalieStats
-addGoalieStats = undefined
+addGoalieStats g1 g2 = GoalieStats
+  { _gsGames        = g1^.gsGames        + g2^.gsGames
+  , _gsMinsPlayed   = g1^.gsMinsPlayed   + g2^.gsMinsPlayed
+  , _gsGoalsAllowed = g1^.gsGoalsAllowed + g2^.gsGoalsAllowed
+  , _gsShutouts     = g1^.gsShutouts     + g2^.gsShutouts
+  , _gsWins         = g1^.gsWins         + g2^.gsWins
+  , _gsLosses       = g1^.gsLosses       + g2^.gsLosses
+  , _gsTies         = g1^.gsTies         + g2^.gsTies
+  }
 
 -- | Determines a goalie's average goals allowed per game.
 gsAverage :: GoalieStats -> Rational
