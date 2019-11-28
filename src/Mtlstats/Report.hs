@@ -60,37 +60,53 @@ standingsReport width s = fromMaybe [] $ do
     tStats = addGameStats hStats aStats
   hScore <- gs^.homeScore
   aScore <- gs^.awayScore
-  Just
-    [ overlay
-      ("GAME NUMBER " ++ padNum 2 gNum)
-      (centre width
-        $  aTeam ++ " " ++ show aScore ++ "  AT  "
-        ++ hTeam ++ " " ++ show hScore)
-    , date
-    , centre width "STANDINGS"
-    , ""
-    , centre width
-      $  left 11 myTeam
-      ++ right 2 "G"
-      ++ right 4 "W"
-      ++ right 4 "L"
-      ++ right 4 "OT"
-      ++ right 4 "GF"
-      ++ right 4 "GA"
-      ++ right 4 "P"
-    , centre width
-      $  left 11 "HOME"
-      ++ showStats hStats
-    , centre width
-      $ left 11 "ROAD"
-      ++ showStats aStats
-    , centre width
-      $  replicate 11 ' '
-      ++ replicate (2 + 4 * 6) '-'
-    , centre width
-      $  left 11 "TOTALS"
-      ++ showStats tStats
-    ]
+  let
+    rHeader =
+      [ overlay
+        ("GAME NUMBER " ++ padNum 2 gNum)
+        (centre width
+          $  aTeam ++ " " ++ show aScore ++ "  AT  "
+          ++ hTeam ++ " " ++ show hScore)
+      , date
+      , centre width "STANDINGS"
+      , ""
+      ]
+
+    tHeader =
+      [ CellText myTeam
+      , CellText " G"
+      , CellText "   W"
+      , CellText "   L"
+      , CellText "  OT"
+      , CellText "  GF"
+      , CellText "  GA"
+      , CellText "   P"
+      ]
+
+    rowCells stats =
+      [ CellText $ show $ gmsGames stats
+      , CellText $ show $ stats^.gmsWins
+      , CellText $ show $ stats^.gmsLosses
+      , CellText $ show $ stats^.gmsOvertime
+      , CellText $ show $ stats^.gmsGoalsFor
+      , CellText $ show $ stats^.gmsGoalsAgainst
+      , CellText $ show $ gmsPoints stats
+      ]
+
+    body =
+      [ CellText "HOME" : rowCells hStats
+      , CellText "ROAD" : rowCells aStats
+      ]
+
+    separator = CellText "" : replicate 7 (CellFill '-')
+    totals = CellText "TOTALS" : rowCells tStats
+
+    table = map (centre width) $
+      complexTable
+      (left : repeat right)
+      (tHeader : body ++ [separator, totals])
+
+  Just $ rHeader ++ table
 
 gameStatsReport :: Int -> ProgState -> [String]
 gameStatsReport width s = playerReport width "GAME" $
@@ -166,13 +182,3 @@ playerNameColWidth :: [Player] -> Int
 playerNameColWidth = foldr
   (\player current -> max current $ succ $ length $ player^.pName)
   10
-
-showStats :: GameStats -> String
-showStats gs
-  =  right 2 (show $ gmsGames gs)
-  ++ right 4 (show $ gs^.gmsWins)
-  ++ right 4 (show $ gs^.gmsLosses)
-  ++ right 4 (show $ gs^.gmsOvertime)
-  ++ right 4 (show $ gs^.gmsGoalsFor)
-  ++ right 4 (show $ gs^.gmsGoalsAgainst)
-  ++ right 4 (show $ gmsPoints gs)
