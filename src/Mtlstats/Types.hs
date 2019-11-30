@@ -192,6 +192,7 @@ import Data.Aeson
   , (.!=)
   , (.=)
   )
+import Data.Char (toUpper)
 import Data.List (isInfixOf)
 import qualified Data.Map as M
 import Data.Maybe (listToMaybe)
@@ -904,7 +905,7 @@ playerSearch
   -- ^ The matching players with their index numbers
 playerSearch sStr =
   filter match . zip [0..]
-  where match (_, p) = sStr `isInfixOf` (p^.pName)
+  where match (_, p) = map toUpper sStr `isInfixOf` map toUpper (p^.pName)
 
 -- | Searches for a player by exact match on name
 playerSearchExact
@@ -967,8 +968,9 @@ goalieSearch
   -- ^ The list to search
   -> [(Int, Goalie)]
   -- ^ The search results with their corresponding index numbers
-goalieSearch sStr = filter (\(_, goalie) -> sStr `isInfixOf` (goalie^.gName)) .
-  zip [0..]
+goalieSearch sStr =
+  filter match . zip [0..]
+  where match (_, g) = map toUpper sStr `isInfixOf` map toUpper (g^.gName)
 
 -- | Searches a list of goalies for an exact match
 goalieSearchExact
