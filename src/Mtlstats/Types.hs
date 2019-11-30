@@ -599,13 +599,13 @@ instance ToJSON GameStats where
 
 -- | Defines a user prompt
 data Prompt = Prompt
-  { promptDrawer     :: ProgState -> C.Update ()
+  { promptDrawer      :: ProgState -> C.Update ()
   -- ^ Draws the prompt to the screen
-  , promptCharCheck  :: Char -> Bool
-  -- ^ Determines whether or not the character is valid
-  , promptAction     :: String -> Action ()
+  , promptProcessChar :: Char -> String -> String
+  -- ^ Modifies the string based on the character entered
+  , promptAction      :: String -> Action ()
   -- ^ Action to perform when the value is entered
-  , promptSpecialKey :: C.Key -> Action ()
+  , promptSpecialKey  :: C.Key -> Action ()
   -- ^ Action to perform when a special key is pressed
   }
 
