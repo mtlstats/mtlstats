@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Bugfix: removed quotation marks from goalie names in report
+
 ## 0.7.0
 - Shortened views to fit within 25 lines
 - Implemented goalie reports
