@@ -240,7 +240,7 @@ goalieReport width goalieData = let
   body = map
     (\(goalie, stats) ->
       [ CellText $ show (goalie^.gNumber) ++ " "
-      , CellText $ show $ goalie^.gName
+      , CellText $ goalie^.gName
       ] ++ rowCells stats)
     goalieData
 
