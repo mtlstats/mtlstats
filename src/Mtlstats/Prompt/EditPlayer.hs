@@ -51,7 +51,7 @@ editPlayerNamePrompt = strPrompt "Player name: " $
 
 -- | Prompt to edit a player's position
 editPlayerPosPrompt :: Prompt
-editPlayerPosPrompt = strPrompt "Player position: " $
+editPlayerPosPrompt = ucStrPrompt "Player position: " $
   editPlayer . (pPosition .~)
 
 -- | Prompt to edit a player's year-to-date goals
