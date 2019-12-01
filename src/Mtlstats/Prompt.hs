@@ -28,6 +28,7 @@ module Mtlstats.Prompt (
   promptControllerWith,
   promptController,
   strPrompt,
+  ucStrPrompt,
   numPrompt,
   selectPrompt,
   -- * Individual prompts
@@ -46,7 +47,7 @@ import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
 import Data.Foldable (forM_)
-import Lens.Micro ((^.), (&), (.~), (?~))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
 import qualified UI.NCurses as C
@@ -68,10 +69,8 @@ promptHandler p (C.EventCharacter '\n') = do
   val <- gets $ view inputBuffer
   modify $ inputBuffer .~ ""
   promptAction p val
-promptHandler p (C.EventCharacter c) = let
-  c' = toUpper c
-  in when (promptCharCheck p c') $
-   modify $ addChar c'
+promptHandler p (C.EventCharacter c) =
+  modify $ inputBuffer %~ promptProcessChar p c
 promptHandler _ (C.EventSpecialKey C.KeyBackspace) =
   modify removeChar
 promptHandler p (C.EventSpecialKey k) =
@@ -111,11 +110,21 @@ strPrompt
   -- ^ The callback function for the result
   -> Prompt
 strPrompt pStr act = Prompt
-  { promptDrawer     = drawSimplePrompt pStr
-  , promptCharCheck  = const True
-  , promptAction     = act
-  , promptSpecialKey = const $ return ()
+  { promptDrawer      = drawSimplePrompt pStr
+  , promptProcessChar = \ch -> (++ [ch])
+  , promptAction      = act
+  , promptSpecialKey  = const $ return ()
   }
+
+-- | Creates an upper case string prompt
+ucStrPrompt
+  :: String
+  -- ^ The prompt string
+  -> (String -> Action ())
+  -- ^ The callback function for the result
+  -> Prompt
+ucStrPrompt pStr act = (ucStrPrompt pStr act)
+  { promptProcessChar = \ch -> (++ [toUpper ch]) }
 
 -- | Builds a numeric prompt
 numPrompt
@@ -125,10 +134,12 @@ numPrompt
   -- ^ The callback function for the result
   -> Prompt
 numPrompt pStr act = Prompt
-  { promptDrawer     = drawSimplePrompt pStr
-  , promptCharCheck  = isDigit
-  , promptAction     = \inStr -> forM_ (readMaybe inStr) act
-  , promptSpecialKey = const $ return ()
+  { promptDrawer      = drawSimplePrompt pStr
+  , promptProcessChar = \ch str -> if isDigit ch
+    then str ++ [ch]
+    else str
+  , promptAction      = \inStr -> forM_ (readMaybe inStr) act
+  , promptSpecialKey  = const $ return ()
   }
 
 -- | Builds a selection prompt
@@ -146,7 +157,7 @@ selectPrompt params = Prompt
         in "F" ++ show n ++ ") " ++ desc)
       results
     C.moveCursor row col
-  , promptCharCheck = const True
+  , promptProcessChar = \ch -> (++[ch])
   , promptAction = \sStr -> if null sStr
     then spCallback params Nothing
     else do
@@ -180,7 +191,7 @@ playerNamePrompt = strPrompt "Player name: " $
 
 -- | Prompts for a new player's position
 playerPosPrompt :: Prompt
-playerPosPrompt = strPrompt "Player position: " $
+playerPosPrompt = ucStrPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
 
 -- | Prompts tor the goalie's number

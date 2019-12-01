@@ -591,7 +591,7 @@ playerSearchSpec = describe "playerSearch" $ mapM_
       ps = [joe, bob, steve]
       in playerSearch sStr ps `shouldBe` expected)
   --  search, result
-  [ ( "Joe",  [(0, joe)]             )
+  [ ( "joe",  [(0, joe)]             )
   , ( "o",    [(0, joe), (1, bob)]   )
   , ( "e",    [(0, joe), (2, steve)] )
   , ( "x",    []                     )
@@ -725,8 +725,8 @@ goalieSearchSpec = describe "goalieSearch" $ do
       goalieSearch "x" goalies `shouldBe` []
 
   context "exact match" $
-    it "should return Steve" $
-      goalieSearch "Bob" goalies `shouldBe` [result 1]
+    it "should return Bob" $
+      goalieSearch "bob" goalies `shouldBe` [result 1]
 
 goalieSearchExactSpec :: Spec
 goalieSearchExactSpec = describe "goalieSearchExact" $ do

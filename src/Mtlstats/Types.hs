@@ -192,6 +192,7 @@ import Data.Aeson
   , (.!=)
   , (.=)
   )
+import Data.Char (toUpper)
 import Data.List (isInfixOf)
 import qualified Data.Map as M
 import Data.Maybe (listToMaybe)
@@ -599,13 +600,13 @@ instance ToJSON GameStats where
 
 -- | Defines a user prompt
 data Prompt = Prompt
-  { promptDrawer     :: ProgState -> C.Update ()
+  { promptDrawer      :: ProgState -> C.Update ()
   -- ^ Draws the prompt to the screen
-  , promptCharCheck  :: Char -> Bool
-  -- ^ Determines whether or not the character is valid
-  , promptAction     :: String -> Action ()
+  , promptProcessChar :: Char -> String -> String
+  -- ^ Modifies the string based on the character entered
+  , promptAction      :: String -> Action ()
   -- ^ Action to perform when the value is entered
-  , promptSpecialKey :: C.Key -> Action ()
+  , promptSpecialKey  :: C.Key -> Action ()
   -- ^ Action to perform when a special key is pressed
   }
 
@@ -904,7 +905,7 @@ playerSearch
   -- ^ The matching players with their index numbers
 playerSearch sStr =
   filter match . zip [0..]
-  where match (_, p) = sStr `isInfixOf` (p^.pName)
+  where match (_, p) = map toUpper sStr `isInfixOf` map toUpper (p^.pName)
 
 -- | Searches for a player by exact match on name
 playerSearchExact
@@ -967,8 +968,9 @@ goalieSearch
   -- ^ The list to search
   -> [(Int, Goalie)]
   -- ^ The search results with their corresponding index numbers
-goalieSearch sStr = filter (\(_, goalie) -> sStr `isInfixOf` (goalie^.gName)) .
-  zip [0..]
+goalieSearch sStr =
+  filter match . zip [0..]
+  where match (_, g) = map toUpper sStr `isInfixOf` map toUpper (g^.gName)
 
 -- | Searches a list of goalies for an exact match
 goalieSearchExact
