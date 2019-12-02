@@ -55,7 +55,7 @@ gameDayPrompt = numPrompt "Day of month: " $
 
 -- | Prompts for the other team name
 otherTeamPrompt :: Prompt
-otherTeamPrompt = strPrompt "Other team: " $
+otherTeamPrompt = ucStrPrompt "Other team: " $
   modify . (progMode.gameStateL.otherTeam .~)
 
 -- | Prompts for the home score
