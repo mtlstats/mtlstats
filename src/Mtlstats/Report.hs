@@ -125,7 +125,9 @@ gameStatsReport width s = let
       Just (g, stats))
     (M.toList $ gs^.gameGoalieStats)
 
-  in playerReport width "GAME" playerStats
+  criteria (_, ps) = psPoints ps > 0
+
+  in filteredPlayerReport width "GAME" criteria playerStats
   ++ [""]
   ++ goalieReport width goalieStats
 
@@ -167,8 +169,18 @@ gameDate gs = fromMaybe "" $ do
   Just $ m ++ " " ++ d ++ " " ++ y
 
 playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
-playerReport width label ps = let
+playerReport width label ps =
+  filteredPlayerReport width label (const True) ps
+
+filteredPlayerReport
+  :: Int
+  -> String
+  -> ((Player, PlayerStats) -> Bool)
+  -> [(Player, PlayerStats)]
+  -> [String]
+filteredPlayerReport width label criteria ps = let
   tStats = foldl addPlayerStats newPlayerStats $ map snd ps
+  fps    = filter criteria ps
 
   rHeader =
     [ centre width (label ++ " STATISTICS")
@@ -196,7 +208,7 @@ playerReport width label ps = let
       [ CellText $ show (p^.pNumber) ++ " "
       , CellText $ p^.pName
       ] ++ statsCells stats)
-    ps
+    fps
 
   separator = replicate 2 (CellText "") ++ replicate 4 (CellFill '-')
 
