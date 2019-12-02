@@ -123,7 +123,7 @@ ucStrPrompt
   -> (String -> Action ())
   -- ^ The callback function for the result
   -> Prompt
-ucStrPrompt pStr act = (ucStrPrompt pStr act)
+ucStrPrompt pStr act = (strPrompt pStr act)
   { promptProcessChar = \ch -> (++ [toUpper ch]) }
 
 -- | Builds a numeric prompt
