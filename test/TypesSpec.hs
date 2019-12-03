@@ -813,15 +813,20 @@ addGoalieStatsSpec = describe "addGoalieStats" $ let
     actual `shouldBe` expected
 
 gsAverageSpec :: Spec
-gsAverageSpec = describe "gsAverage" $ let
-  gs = newGoalieStats
-    & gsGames        .~ 2
-    & gsGoalsAllowed .~ 3
+gsAverageSpec = describe "gsAverage" $ mapM_
+  (\(label, stats, expected) -> context label $
+    it ("should be " ++ show expected) $
+      gsAverage stats `shouldBe` expected)
 
-  expected = 3 % 2
+  --  label,          stats,           expected
+  [ ( "with minutes", gs,              3 % 2    )
+  , ( "no minutes",   newGoalieStats , 0        )
+  ]
 
-  in it ("should be " ++ show expected) $
-    gsAverage gs `shouldBe` expected
+  where
+    gs = newGoalieStats
+      & gsMinsPlayed   .~ 2 * gameLength
+      & gsGoalsAllowed .~ 3
 
 joe :: Player
 joe = newPlayer 2 "Joe" "center"
