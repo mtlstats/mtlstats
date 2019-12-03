@@ -129,7 +129,7 @@ gameStatsReport width s = let
 
   in filteredPlayerReport width "GAME" criteria playerStats
   ++ [""]
-  ++ goalieReport width goalieStats
+  ++ gameGoalieReport width goalieStats
 
 yearToDateStatsReport :: Int -> ProgState -> [String]
 yearToDateStatsReport width s = let
@@ -266,3 +266,27 @@ goalieReport width goalieData = let
     $ overlayLast olayText
     $ complexTable ([right, left] ++ repeat right)
     $ header : body ++ [separator, summary]
+
+gameGoalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
+gameGoalieReport width goalieData = let
+  header =
+    [ CellText "NO."
+    , CellText "GOALTENDER"
+    , CellText "   MIN"
+    , CellText "    GA"
+    , CellText "   AVE"
+    ]
+
+  body = map
+    (\(goalie, stats) ->
+      [ CellText $ show (goalie^.gNumber) ++ " "
+      , CellText $ goalie^.gName
+      , CellText $ show $ stats^.gsMinsPlayed
+      , CellText $ show $ stats^.gsGoalsAllowed
+      , CellText $ showFloating $ gsAverage stats
+      ])
+    goalieData
+
+  in map (centre width)
+    $ complexTable ([right, left] ++ repeat right)
+    $ header : body

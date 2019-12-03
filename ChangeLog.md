@@ -4,6 +4,7 @@
 - Bugfix: removed quotation marks from goalie names in report
 - Allow lower case player names
 - Don't show players without points in game report
+- Removed unnecessary goalie statistics from game report
 
 ## 0.7.0
 - Shortened views to fit within 25 lines
