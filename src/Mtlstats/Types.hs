@@ -1010,4 +1010,10 @@ addGoalieStats g1 g2 = GoalieStats
 
 -- | Determines a goalie's average goals allowed per game.
 gsAverage :: GoalieStats -> Rational
-gsAverage gs = fromIntegral (gs^.gsGoalsAllowed) / fromIntegral (gs^.gsGames)
+gsAverage gs = let
+  allowed = fromIntegral $ gs^.gsGoalsAllowed
+  mins    = fromIntegral $ gs^.gsMinsPlayed
+  gLen    = fromIntegral gameLength
+  in if mins == 0
+    then 0
+    else allowed / mins * gLen
