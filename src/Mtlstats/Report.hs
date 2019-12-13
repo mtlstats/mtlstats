@@ -169,8 +169,8 @@ gameDate gs = fromMaybe "" $ do
   Just $ m ++ " " ++ d ++ " " ++ y
 
 playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
-playerReport width label ps =
-  filteredPlayerReport width label (const True) ps
+playerReport width label =
+  filteredPlayerReport width label (const True)
 
 filteredPlayerReport
   :: Int
