@@ -32,6 +32,7 @@ spec = describe "Mtlstats.Util" $ do
   modifyNthSpec
   updateMapSpec
   sliceSpec
+  capitalizeNameSpec
 
 nthSpec :: Spec
 nthSpec = describe "nth" $ mapM_
@@ -93,3 +94,23 @@ sliceSpec = describe "slice" $ do
   context "negative offset" $
     it "should return the correct number of elements from the beginning" $
       slice (-10) 2 list `shouldBe` [2, 4]
+
+capitalizeNameSpec :: Spec
+capitalizeNameSpec = describe "capitalizeName" $ mapM_
+  (\(label, ch, str, expected) -> context label $
+    it ("should be " ++ expected) $
+      capitalizeName ch str `shouldBe` expected)
+  --  label,                        character, string,   expected
+  [ ( "initial lower",              'a',       "",       "A"       )
+  , ( "initial upper",              'A',       "",       "A"       )
+  , ( "initial non-alpha",          '0',       "",       "0"       )
+  , ( "pre-comma lower",            'a',       "A",      "AA"      )
+  , ( "pre-comma upper",            'A',       "A",      "AA"      )
+  , ( "pre-comma non-alpha",        '0',       "A",      "A0"      )
+  , ( "post-comma first lower",     'a',       "FOO, ",  "FOO, A"  )
+  , ( "post-comma first upper",     'A',       "FOO, ",  "FOO, A"  )
+  , ( "post-comma first non-alpha", '0',       "FOO, ",  "FOO, 0"  )
+  , ( "unrestricted upper",         'A',       "FOO, A", "FOO, AA" )
+  , ( "unrestricted lower",         'a',       "FOO, A", "FOO, Aa" )
+  , ( "unrestricted non-alpha",     '0',       "FOO, A", "FOO, A0" )
+  ]

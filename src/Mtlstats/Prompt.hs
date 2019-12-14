@@ -29,6 +29,7 @@ module Mtlstats.Prompt (
   promptController,
   strPrompt,
   ucStrPrompt,
+  namePrompt,
   numPrompt,
   selectPrompt,
   -- * Individual prompts
@@ -126,6 +127,17 @@ ucStrPrompt
 ucStrPrompt pStr act = (strPrompt pStr act)
   { promptProcessChar = \ch -> (++ [toUpper ch]) }
 
+-- | Creates a prompt which forces capitalization of input to
+-- accomodate a player or goalie name
+namePrompt
+  :: String
+  -- ^ The prompt string
+  -> (String -> Action ())
+  -- ^ The callback function for the result
+  -> Prompt
+namePrompt pStr act = (strPrompt pStr act)
+  { promptProcessChar = capitalizeName }
+
 -- | Builds a numeric prompt
 numPrompt
   :: String
@@ -157,7 +169,7 @@ selectPrompt params = Prompt
         in "F" ++ show n ++ ") " ++ desc)
       results
     C.moveCursor row col
-  , promptProcessChar = \ch -> (++[ch])
+  , promptProcessChar = spProcessChar params
   , promptAction = \sStr -> if null sStr
     then spCallback params Nothing
     else do
@@ -186,7 +198,7 @@ playerNumPrompt = numPrompt "Player number: " $
 
 -- | Prompts for a new player's name
 playerNamePrompt :: Prompt
-playerNamePrompt = strPrompt "Player name: " $
+playerNamePrompt = namePrompt "Player name: " $
   modify . (progMode.createPlayerStateL.cpsName .~)
 
 -- | Prompts for a new player's position
@@ -201,7 +213,7 @@ goalieNumPrompt = numPrompt "Goalie number: " $
 
 -- | Prompts for the goalie's name
 goalieNamePrompt :: Prompt
-goalieNamePrompt = strPrompt "Goalie name: " $
+goalieNamePrompt = namePrompt "Goalie name: " $
   modify . (progMode.createGoalieStateL.cgsName .~)
 
 -- | Selects a player (creating one if necessary)
@@ -218,6 +230,7 @@ selectPlayerPrompt pStr callback = selectPrompt SelectParams
   , spSearch       = \sStr db -> playerSearch sStr (db^.dbPlayers)
   , spSearchExact  = \sStr db -> fst <$> playerSearchExact sStr (db^.dbPlayers)
   , spElemDesc     = playerSummary
+  , spProcessChar  = capitalizeName
   , spCallback     = callback
   , spNotFound     = \sStr -> do
     mode <- gets (^.progMode)
@@ -246,6 +259,7 @@ selectGoaliePrompt pStr callback = selectPrompt SelectParams
   , spSearch       = \sStr db -> goalieSearch sStr (db^.dbGoalies)
   , spSearchExact  = \sStr db -> fst <$> goalieSearchExact sStr (db^.dbGoalies)
   , spElemDesc     = goalieSummary
+  , spProcessChar  = capitalizeName
   , spCallback     = callback
   , spNotFound     = \sStr -> do
     mode <- gets (^.progMode)
