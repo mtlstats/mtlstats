@@ -151,10 +151,10 @@ lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
   db = s^.database
 
-  playerStats = map (\p -> (p, p^.pYtd))
+  playerStats = map (\p -> (p, p^.pLifetime))
     $ db^.dbPlayers
 
-  goalieStats = map (\g -> (g, g^.gYtd))
+  goalieStats = map (\g -> (g, g^.gLifetime))
     $ db^.dbGoalies
 
   in playerReport width "LIFETIME" playerStats
@@ -169,8 +169,8 @@ gameDate gs = fromMaybe "" $ do
   Just $ m ++ " " ++ d ++ " " ++ y
 
 playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
-playerReport width label ps =
-  filteredPlayerReport width label (const True) ps
+playerReport width label =
+  filteredPlayerReport width label (const True)
 
 filteredPlayerReport
   :: Int

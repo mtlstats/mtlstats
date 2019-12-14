@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Bugfix: Display lifetime stats ib report, not YTD
+
 ## 0.8.0
 - Bugfix: removed quotation marks from goalie names in report
 - Allow lower case player names
