@@ -622,6 +622,8 @@ data SelectParams a = SelectParams
   -- ^ Search function looking for an exact match
   , spElemDesc     :: a -> String
   -- ^ Provides a string description of an element
+  , spProcessChar  :: Char -> String -> String
+  -- ^ Processes a character entered by the user
   , spCallback     :: Maybe Int -> Action ()
   -- ^ The function when the selection is made
   , spNotFound     :: String -> Action ()

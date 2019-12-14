@@ -19,8 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Util (nth, modifyNth, updateMap, slice) where
+module Mtlstats.Util
+  ( nth
+  , modifyNth
+  , updateMap
+  , slice
+  , capitalizeName
+  ) where
 
+import Data.Char (isSpace, toUpper)
 import qualified Data.Map as M
 
 -- | Attempt to select the element from a list at a given index
@@ -75,3 +82,25 @@ slice
   -- ^ The list to take a subset of
   -> [a]
 slice offset len = take len . drop offset
+
+-- | Name capitalization function for a player
+capitalizeName
+  :: Char
+  -- ^ The character being input
+  -> String
+  -- ^ The current string
+  -> String
+  -- ^ The resulting string
+capitalizeName ch str = str ++ [ch']
+  where
+    ch' = if lockFlag str
+      then toUpper ch
+      else ch
+    lockFlag "" = True
+    lockFlag (c:cs)
+      | c == ','  = lockFlag' cs
+      | otherwise = lockFlag cs
+    lockFlag' "" = True
+    lockFlag' (c:cs)
+      | isSpace c = lockFlag' cs
+      | otherwise = False

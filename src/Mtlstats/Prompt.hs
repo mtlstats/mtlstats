@@ -157,7 +157,7 @@ selectPrompt params = Prompt
         in "F" ++ show n ++ ") " ++ desc)
       results
     C.moveCursor row col
-  , promptProcessChar = \ch -> (++[ch])
+  , promptProcessChar = spProcessChar params
   , promptAction = \sStr -> if null sStr
     then spCallback params Nothing
     else do
@@ -218,6 +218,7 @@ selectPlayerPrompt pStr callback = selectPrompt SelectParams
   , spSearch       = \sStr db -> playerSearch sStr (db^.dbPlayers)
   , spSearchExact  = \sStr db -> fst <$> playerSearchExact sStr (db^.dbPlayers)
   , spElemDesc     = playerSummary
+  , spProcessChar  = capitalizeName
   , spCallback     = callback
   , spNotFound     = \sStr -> do
     mode <- gets (^.progMode)
@@ -246,6 +247,7 @@ selectGoaliePrompt pStr callback = selectPrompt SelectParams
   , spSearch       = \sStr db -> goalieSearch sStr (db^.dbGoalies)
   , spSearchExact  = \sStr db -> fst <$> goalieSearchExact sStr (db^.dbGoalies)
   , spElemDesc     = goalieSummary
+  , spProcessChar  = capitalizeName
   , spCallback     = callback
   , spNotFound     = \sStr -> do
     mode <- gets (^.progMode)
