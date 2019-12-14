@@ -2,6 +2,7 @@
 
 ## current
 - Bugfix: Display lifetime stats ib report, not YTD
+- Force expected capitalization on player/goalie names
 
 ## 0.8.0
 - Bugfix: removed quotation marks from goalie names in report
