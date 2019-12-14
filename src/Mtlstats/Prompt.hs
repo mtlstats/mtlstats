@@ -29,6 +29,7 @@ module Mtlstats.Prompt (
   promptController,
   strPrompt,
   ucStrPrompt,
+  namePrompt,
   numPrompt,
   selectPrompt,
   -- * Individual prompts
@@ -126,6 +127,17 @@ ucStrPrompt
 ucStrPrompt pStr act = (strPrompt pStr act)
   { promptProcessChar = \ch -> (++ [toUpper ch]) }
 
+-- | Creates a prompt which forces capitalization of input to
+-- accomodate a player or goalie name
+namePrompt
+  :: String
+  -- ^ The prompt string
+  -> (String -> Action ())
+  -- ^ The callback function for the result
+  -> Prompt
+namePrompt pStr act = (strPrompt pStr act)
+  { promptProcessChar = capitalizeName }
+
 -- | Builds a numeric prompt
 numPrompt
   :: String
@@ -186,7 +198,7 @@ playerNumPrompt = numPrompt "Player number: " $
 
 -- | Prompts for a new player's name
 playerNamePrompt :: Prompt
-playerNamePrompt = strPrompt "Player name: " $
+playerNamePrompt = namePrompt "Player name: " $
   modify . (progMode.createPlayerStateL.cpsName .~)
 
 -- | Prompts for a new player's position
@@ -201,7 +213,7 @@ goalieNumPrompt = numPrompt "Goalie number: " $
 
 -- | Prompts for the goalie's name
 goalieNamePrompt :: Prompt
-goalieNamePrompt = strPrompt "Goalie name: " $
+goalieNamePrompt = namePrompt "Goalie name: " $
   modify . (progMode.createGoalieStateL.cgsName .~)
 
 -- | Selects a player (creating one if necessary)
