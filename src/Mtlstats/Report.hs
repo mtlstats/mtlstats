@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Report (report, gameDate) where
 
+import Data.List (sortOn)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe, mapMaybe)
 import Lens.Micro ((^.))
@@ -135,7 +136,9 @@ yearToDateStatsReport :: Int -> ProgState -> [String]
 yearToDateStatsReport width s = let
   db = s^.database
 
-  playerStats = map (\p -> (p, p^.pYtd))
+  playerStats = reverse
+    $ sortOn (psPoints . snd)
+    $ map (\p -> (p, p^.pYtd))
     $ filter playerIsActive
     $ db^.dbPlayers
 
@@ -151,7 +154,9 @@ lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
   db = s^.database
 
-  playerStats = map (\p -> (p, p^.pLifetime))
+  playerStats = reverse
+    $ sortOn (psPoints . snd)
+    $ map (\p -> (p, p^.pLifetime))
     $ db^.dbPlayers
 
   goalieStats = map (\g -> (g, g^.gLifetime))
