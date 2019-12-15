@@ -26,6 +26,7 @@ module Mtlstats.Format
   , left
   , right
   , centre
+  , padRight
   , overlay
   , month
   , labelTable
@@ -86,6 +87,16 @@ centre n str = let
   pLen = (n - sLen) `div` 2
   pad  = replicate pLen ' '
   in take n $ pad ++ str ++ repeat ' '
+
+-- | Pads text on the right with spaces to fit a minimum width
+padRight
+  :: Int
+  -- ^ The width to pad to
+  -> String
+  -- ^ The text to pad
+  -> String
+padRight width str =
+  overlay str $ replicate width ' '
 
 -- | Overlays one string on top of another
 overlay

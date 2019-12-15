@@ -127,7 +127,7 @@ gameStatsReport width s = let
 
   criteria (_, ps) = psPoints ps > 0
 
-  in filteredPlayerReport width "GAME" criteria playerStats
+  in filteredPlayerReport width "GAME" criteria True playerStats
   ++ [""]
   ++ gameGoalieReport width goalieStats
 
@@ -143,9 +143,9 @@ yearToDateStatsReport width s = let
     $ filter goalieIsActive
     $ db^.dbGoalies
 
-  in playerReport width "YEAR TO DATE" playerStats
+  in playerReport width "YEAR TO DATE" True playerStats
   ++ [""]
-  ++ goalieReport width goalieStats
+  ++ goalieReport width True goalieStats
 
 lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
@@ -157,9 +157,9 @@ lifetimeStatsReport width s = let
   goalieStats = map (\g -> (g, g^.gLifetime))
     $ db^.dbGoalies
 
-  in playerReport width "LIFETIME" playerStats
+  in playerReport width "LIFETIME" False playerStats
   ++ [""]
-  ++ goalieReport width goalieStats
+  ++ goalieReport width False goalieStats
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
@@ -168,7 +168,12 @@ gameDate gs = fromMaybe "" $ do
   d <- padNum 2 <$> gs^.gameDay
   Just $ m ++ " " ++ d ++ " " ++ y
 
-playerReport :: Int -> String -> [(Player, PlayerStats)] -> [String]
+playerReport
+  :: Int
+  -> String
+  -> Bool
+  -> [(Player, PlayerStats)]
+  -> [String]
 playerReport width label =
   filteredPlayerReport width label (const True)
 
@@ -176,9 +181,10 @@ filteredPlayerReport
   :: Int
   -> String
   -> ((Player, PlayerStats) -> Bool)
+  -> Bool
   -> [(Player, PlayerStats)]
   -> [String]
-filteredPlayerReport width label criteria ps = let
+filteredPlayerReport width label criteria showTotals ps = let
   tStats = foldl addPlayerStats newPlayerStats $ map snd ps
   fps    = filter criteria ps
 
@@ -217,23 +223,35 @@ filteredPlayerReport width label criteria ps = let
     , CellText ""
     ] ++ statsCells tStats
 
-  table = overlayLast (label ++ " TOTALS")
+  olayText = if showTotals
+    then label ++ " TOTALS"
+    else ""
+
+  table = overlayLast olayText
     $ map (centre width)
     $ complexTable ([right, left] ++ repeat right)
-    $ tHeader : body ++ [separator, totals]
+    $ tHeader : body ++ if showTotals
+      then [separator, totals]
+      else []
 
   in rHeader ++ table
 
-goalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
-goalieReport width goalieData = let
-  olayText = "GOALTENDING TOTALS"
+goalieReport
+  :: Int
+  -> Bool
+  -> [(Goalie, GoalieStats)]
+  -> [String]
+goalieReport width showTotals goalieData = let
+  olayText = if showTotals
+    then "GOALTENDING TOTALS"
+    else ""
 
   tData = foldl addGoalieStats newGoalieStats
     $ map snd goalieData
 
   header =
     [ CellText "NO."
-    , CellText $ left (length olayText) "GOALTENDER"
+    , CellText $ padRight (length olayText) "GOALTENDER"
     , CellText "GP"
     , CellText " MIN"
     , CellText "  GA"
@@ -265,7 +283,9 @@ goalieReport width goalieData = let
   in map (centre width)
     $ overlayLast olayText
     $ complexTable ([right, left] ++ repeat right)
-    $ header : body ++ [separator, summary]
+    $ header : body ++ if showTotals
+      then [separator, summary]
+      else []
 
 gameGoalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
 gameGoalieReport width goalieData = let
