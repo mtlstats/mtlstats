@@ -4,6 +4,7 @@
 - Bugfix: Display lifetime stats in report, not YTD
 - Force expected capitalization on player/goalie names
 - Don't show lifetime totals in report
+- Sort players in YTD and lifetime reports by points
 
 ## 0.8.0
 - Bugfix: removed quotation marks from goalie names in report
