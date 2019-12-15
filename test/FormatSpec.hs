@@ -33,6 +33,7 @@ spec = describe "Mtlstats.Format" $ do
   leftSpec
   rightSpec
   centreSpec
+  padRightSpec
   overlaySpec
   monthSpec
   labelTableSpec
@@ -97,6 +98,16 @@ centreSpec = describe "centre" $ do
   context "overflow" $
     it "should truncate the text" $
       centre 2 "foo" `shouldBe` "fo"
+
+padRightSpec :: Spec
+padRightSpec = describe "padRight" $ mapM_
+  (\(label, width, str, expected) -> context label $
+    it ("should be " ++ show expected) $
+      padRight width str `shouldBe` expected)
+  --  label,          width, input string, expected
+  [ ( "text shorter", 5,     "foo",        "foo  "  )
+  , ( "text longer",  3,     "foobar",     "foobar" )
+  ]
 
 overlaySpec :: Spec
 overlaySpec = describe "overlay" $ do
