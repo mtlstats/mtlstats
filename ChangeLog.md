@@ -1,7 +1,7 @@
 # Changelog for mtlstats
 
 ## current
-- Bugfix: Display lifetime stats ib report, not YTD
+- Bugfix: Display lifetime stats in report, not YTD
 - Force expected capitalization on player/goalie names
 
 ## 0.8.0
