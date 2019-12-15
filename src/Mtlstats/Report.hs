@@ -136,7 +136,8 @@ yearToDateStatsReport :: Int -> ProgState -> [String]
 yearToDateStatsReport width s = let
   db = s^.database
 
-  playerStats = sortOn (psPoints . snd)
+  playerStats = reverse
+    $ sortOn (psPoints . snd)
     $ map (\p -> (p, p^.pYtd))
     $ filter playerIsActive
     $ db^.dbPlayers
@@ -153,7 +154,8 @@ lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
   db = s^.database
 
-  playerStats = sortOn (psPoints . snd)
+  playerStats = reverse
+    $ sortOn (psPoints . snd)
     $ map (\p -> (p, p^.pLifetime))
     $ db^.dbPlayers
 
