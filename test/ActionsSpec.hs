@@ -52,6 +52,7 @@ spec = describe "Mtlstats.Actions" $ do
   removeCharSpec
   createPlayerSpec
   createGoalieSpec
+  editSpec
   editPlayerSpec
   editGoalieSpec
   addPlayerSpec
@@ -197,6 +198,12 @@ createGoalieSpec = describe "createGoalie" $
   it "should change the mode appropriately" $ let
     s = createGoalie newProgState
     in show (s^.progMode) `shouldBe` "CreateGoalie"
+
+editSpec :: Spec
+editSpec = describe "edit" $
+  it "should change the mode to EditMenu" $ let
+    ps = edit newProgState
+    in show (ps^.progMode) `shouldBe` "EditMenu"
 
 editPlayerSpec :: Spec
 editPlayerSpec = describe "editPlayer" $

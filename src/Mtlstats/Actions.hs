@@ -100,7 +100,7 @@ createGoalie = let
 
 -- | Launches the edit menu
 edit :: ProgState -> ProgState
-edit = undefined
+edit = progMode .~ EditMenu
 
 -- | Starts the player editing process
 editPlayer :: ProgState -> ProgState
