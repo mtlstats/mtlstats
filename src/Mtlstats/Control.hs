@@ -72,7 +72,7 @@ newSeasonC = Controller
   }
 
 editMenuC :: Controller
-editMenuC = undefined
+editMenuC = menuController editMenu
 
 getPlayerNumC :: Controller
 getPlayerNumC = Controller

@@ -31,7 +31,8 @@ module Mtlstats.Menu (
   newSeasonMenu,
   gameMonthMenu,
   gameTypeMenu,
-  gameGoalieMenu
+  gameGoalieMenu,
+  editMenu
 ) where
 
 import Control.Monad.IO.Class (liftIO)
@@ -186,3 +187,7 @@ gameGoalieMenu s = let
     (\(ch, (gid, goalie)) -> MenuItem ch (goalieSummary goalie) $
       modify $ GI.setGameGoalie gid) $
     zip ['1'..] goalies
+
+-- | The edit menu
+editMenu :: Menu ()
+editMenu = undefined
