@@ -190,4 +190,11 @@ gameGoalieMenu s = let
 
 -- | The edit menu
 editMenu :: Menu ()
-editMenu = undefined
+editMenu = Menu "*** EDIT ***" ()
+  [ MenuItem '1' "Edit Player" $
+    modify editPlayer
+  , MenuItem '2' "Edit Goalie" $
+    modify editGoalie
+  , MenuItem 'R' "Return to Main Menu" $
+    modify backHome
+  ]
