@@ -30,6 +30,7 @@ module Mtlstats.Actions
   , removeChar
   , createPlayer
   , createGoalie
+  , edit
   , editPlayer
   , editGoalie
   , addPlayer
@@ -96,6 +97,10 @@ createGoalie = let
     & cgsSuccessCallback .~ callback
     & cgsFailureCallback .~ callback
   in progMode .~ CreateGoalie cgs
+
+-- | Launches the edit menu
+edit :: ProgState -> ProgState
+edit = undefined
 
 -- | Starts the player editing process
 editPlayer :: ProgState -> ProgState
