@@ -41,9 +41,10 @@ import Mtlstats.Types
 -- run
 dispatch :: ProgState -> Controller
 dispatch s = case s^.progMode of
-  MainMenu  -> mainMenuC
-  NewSeason -> newSeasonC
+  MainMenu   -> mainMenuC
+  NewSeason  -> newSeasonC
   NewGame gs -> newGameC gs
+  EditMenu   -> editMenuC
   CreatePlayer cps
     | null $ cps^.cpsNumber   -> getPlayerNumC
     | null $ cps^.cpsName     -> getPlayerNameC
@@ -69,6 +70,9 @@ newSeasonC = Controller
     menuHandler newSeasonMenu e
     return True
   }
+
+editMenuC :: Controller
+editMenuC = undefined
 
 getPlayerNumC :: Controller
 getPlayerNumC = Controller

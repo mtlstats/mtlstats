@@ -230,6 +230,7 @@ data ProgMode
   = MainMenu
   | NewSeason
   | NewGame GameState
+  | EditMenu
   | CreatePlayer CreatePlayerState
   | CreateGoalie CreateGoalieState
   | EditPlayer EditPlayerState
@@ -239,6 +240,7 @@ instance Show ProgMode where
   show MainMenu         = "MainMenu"
   show NewSeason        = "NewSeason"
   show (NewGame _)      = "NewGame"
+  show EditMenu         = "EditMenu"
   show (CreatePlayer _) = "CreatePlayer"
   show (CreateGoalie _) = "CreateGoalie"
   show (EditPlayer _)   = "EditPlayer"
