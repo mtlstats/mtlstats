@@ -24,6 +24,7 @@ module Mtlstats.Report (report, gameDate) where
 import Data.List (sortOn)
 import qualified Data.Map as M
 import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Ord (Down (Down))
 import Lens.Micro ((^.))
 
 import Mtlstats.Config
@@ -136,8 +137,7 @@ yearToDateStatsReport :: Int -> ProgState -> [String]
 yearToDateStatsReport width s = let
   db = s^.database
 
-  playerStats = reverse
-    $ sortOn (psPoints . snd)
+  playerStats = sortOn (Down . psPoints . snd)
     $ map (\p -> (p, p^.pYtd))
     $ filter playerIsActive
     $ db^.dbPlayers
@@ -154,8 +154,7 @@ lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
   db = s^.database
 
-  playerStats = reverse
-    $ sortOn (psPoints . snd)
+  playerStats = sortOn (Down . psPoints . snd)
     $ map (\p -> (p, p^.pLifetime))
     $ db^.dbPlayers
 
