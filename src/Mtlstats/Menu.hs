@@ -114,11 +114,7 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify startNewSeason >> return True
   , MenuItem '2' "New Game" $
     modify startNewGame >> return True
-  , MenuItem '3' "Create Player" $
-    modify createPlayer >> return True
-  , MenuItem '4' "Create Goalie" $
-    modify createGoalie >> return True
-  , MenuItem '5' "Edit" $
+  , MenuItem '3' "Edit" $
     modify edit >> return True
   , MenuItem 'X' "Exit" $ do
     db <- gets $ view database
@@ -189,9 +185,13 @@ gameGoalieMenu s = let
 -- | The edit menu
 editMenu :: Menu ()
 editMenu = Menu "*** EDIT ***" ()
-  [ MenuItem '1' "Edit Player" $
+  [ MenuItem '1' "Create Player" $
+    modify createPlayer
+  , MenuItem '2' "Create Goalie" $
+    modify createGoalie
+  , MenuItem '3' "Edit Player" $
     modify editPlayer
-  , MenuItem '2' "Edit Goalie" $
+  , MenuItem '4' "Edit Goalie" $
     modify editGoalie
   , MenuItem 'R' "Return to Main Menu" $
     modify backHome
