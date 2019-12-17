@@ -83,7 +83,7 @@ removeChar = inputBuffer %~ \case
 -- | Starts player creation mode
 createPlayer :: ProgState -> ProgState
 createPlayer = let
-  callback = modify $ progMode .~ MainMenu
+  callback = modify edit
   cps = newCreatePlayerState
     & cpsSuccessCallback .~ callback
     & cpsFailureCallback .~ callback
@@ -92,7 +92,7 @@ createPlayer = let
 -- | Starts goalie creation mode
 createGoalie :: ProgState -> ProgState
 createGoalie = let
-  callback = modify $ progMode .~ MainMenu
+  callback = modify edit
   cgs = newCreateGoalieState
     & cgsSuccessCallback .~ callback
     & cgsFailureCallback .~ callback
