@@ -28,15 +28,17 @@ module Mtlstats.Menu.EditPlayer
 import Control.Monad.Trans.State (modify)
 import Lens.Micro ((.~))
 
+import Mtlstats.Actions
 import Mtlstats.Types
 import Mtlstats.Types.Menu
 
 -- | The 'Player' edit menu
 editPlayerMenu :: Menu ()
 editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
-  (\(ch, label, mode) -> MenuItem ch label $ case mode of
-    Nothing -> modify $ progMode .~ MainMenu
-    Just m  -> modify $ progMode.editPlayerStateL.epsMode .~ m)
+  (\(ch, label, mode) -> MenuItem ch label $
+    modify $ case mode of
+      Nothing -> edit
+      Just m  -> progMode.editPlayerStateL.epsMode .~ m)
   --  key, label,                 value
   [ ( '1', "Edit number",         Just EPNumber   )
   , ( '2', "Edit name",           Just EPName     )

@@ -26,19 +26,19 @@ module Mtlstats.Menu.EditGoalie
   ) where
 
 import Control.Monad.Trans.State (modify)
-import Data.Maybe (maybe)
 import Lens.Micro ((.~))
 
+import Mtlstats.Actions
 import Mtlstats.Types
 import Mtlstats.Types.Menu
 
 -- | The 'Goalie' edit menu
 editGoalieMenu :: Menu ()
 editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
-  (\(key, label, val) -> MenuItem key label $ modify $ maybe
-    (progMode .~ MainMenu)
-    (progMode.editGoalieStateL.egsMode .~)
-    val)
+  (\(ch, label, mode) -> MenuItem ch label $
+    modify $ case mode of
+      Nothing -> edit
+      Just m  -> progMode.editGoalieStateL.egsMode .~ m)
   --  key, label,                 value
   [ ( '1', "Edit number",         Just EGNumber   )
   , ( '2', "Edit name",           Just EGName     )
