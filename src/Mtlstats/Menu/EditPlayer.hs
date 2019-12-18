@@ -45,7 +45,7 @@ editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
   , ( '3', "Edit position",       Just EPPosition )
   , ( '4', "Edit YTD stats",      Just EPYtd      )
   , ( '5', "Edit lifetime stats", Just EPLifetime )
-  , ( 'R', "Finished editing",    Nothing         )
+  , ( 'R', "Return to Edit Menu", Nothing         )
   ]
 
 -- | The 'Player' YTD stats edit menu

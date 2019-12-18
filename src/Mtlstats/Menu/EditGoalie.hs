@@ -44,7 +44,7 @@ editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
   , ( '2', "Edit name",           Just EGName     )
   , ( '3', "Edit YTD stats",      Just EGYtd      )
   , ( '4', "Edit Lifetime stats", Just EGLifetime )
-  , ( 'R', "Return to Main Menu", Nothing         )
+  , ( 'R', "Return to Edit Menu", Nothing         )
   ]
 
 -- | The 'Goalie' YTD edit menu
