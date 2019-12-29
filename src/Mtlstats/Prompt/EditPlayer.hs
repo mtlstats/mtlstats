@@ -42,51 +42,51 @@ import Mtlstats.Util
 -- | Prompt to edit a player's number
 editPlayerNumPrompt :: Prompt
 editPlayerNumPrompt = numPrompt "Player number: " $
-  editPlayer . (pNumber .~)
+  editPlayer EPMenu . (pNumber .~)
 
 -- | Prompt to edit a player's name
 editPlayerNamePrompt :: Prompt
 editPlayerNamePrompt = namePrompt "Player name: " $
-  editPlayer . (pName .~)
+  editPlayer EPMenu . (pName .~)
 
 -- | Prompt to edit a player's position
 editPlayerPosPrompt :: Prompt
 editPlayerPosPrompt = ucStrPrompt "Player position: " $
-  editPlayer . (pPosition .~)
+  editPlayer EPMenu . (pPosition .~)
 
 -- | Prompt to edit a player's year-to-date goals
 editPlayerYtdGoalsPrompt :: Prompt
 editPlayerYtdGoalsPrompt = numPrompt "Year-to-date goals: " $
-  editPlayer . (pYtd.psGoals .~)
+  editPlayer EPYtd . (pYtd.psGoals .~)
 
 -- | Prompt to edit a player's year-to-date assists
 editPlayerYtdAssistsPrompt :: Prompt
 editPlayerYtdAssistsPrompt = numPrompt "Year-to-date assists: " $
-  editPlayer . (pYtd.psAssists .~)
+  editPlayer EPYtd . (pYtd.psAssists .~)
 
 -- | Prompt to edit a player's year-to-date penalty minutes
 editPlayerYtdPMinPrompt :: Prompt
 editPlayerYtdPMinPrompt = numPrompt "Year-to-date penalty minutes: " $
-  editPlayer . (pYtd.psPMin .~)
+  editPlayer EPYtd . (pYtd.psPMin .~)
 
 -- | Prompt to edit a player's lifetime goals
 editPlayerLtGoalsPrompt :: Prompt
 editPlayerLtGoalsPrompt = numPrompt "Lifetime goals: " $
-  editPlayer . (pLifetime.psGoals .~)
+  editPlayer EPLifetime . (pLifetime.psGoals .~)
 
 -- | Prompt to edit a player's lifetime assists
 editPlayerLtAssistsPrompt :: Prompt
 editPlayerLtAssistsPrompt = numPrompt "Lifetime assists: " $
-  editPlayer . (pLifetime.psAssists .~)
+  editPlayer EPLifetime . (pLifetime.psAssists .~)
 
 -- | Prompt to edit a player's lifetime penalty minutes
 editPlayerLtPMinPrompt :: Prompt
 editPlayerLtPMinPrompt = numPrompt "Lifetime penalty minutes: " $
-  editPlayer . (pLifetime.psPMin .~)
+  editPlayer EPLifetime . (pLifetime.psPMin .~)
 
-editPlayer :: (Player -> Player) -> Action ()
-editPlayer f =
+editPlayer :: EditPlayerMode -> (Player -> Player) -> Action ()
+editPlayer mode f =
   whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid ->
     modify
       $ (database.dbPlayers %~ modifyNth pid f)
-      . (progMode.editPlayerStateL.epsMode .~ EPMenu)
+      . (progMode.editPlayerStateL.epsMode .~ mode)
