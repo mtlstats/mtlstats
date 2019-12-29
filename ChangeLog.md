@@ -3,6 +3,7 @@
 ## current
 - Don't show player number zero in reports
 - Fixed player/goalie name capitalisation on edit
+- Return to correct edit menus after editing player stats
 
 ## 0.9.0
 - Bugfix: Display lifetime stats in report, not YTD
