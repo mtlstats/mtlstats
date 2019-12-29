@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Don't show player number zero in reports
+
 ## 0.9.0
 - Bugfix: Display lifetime stats in report, not YTD
 - Force expected capitalization on player/goalie names
