@@ -56,7 +56,7 @@ editGoalieNumberPrompt = numPrompt "Goalie number: " $
 
 -- | Prompt to edit a goalie's name
 editGoalieNamePrompt :: Prompt
-editGoalieNamePrompt = strPrompt "Goalie name: " $
+editGoalieNamePrompt = namePrompt "Goalie name: " $
   modify . editGoalieName
 
 -- | Prompt to edit a goalie's YTD games played

@@ -46,7 +46,7 @@ editPlayerNumPrompt = numPrompt "Player number: " $
 
 -- | Prompt to edit a player's name
 editPlayerNamePrompt :: Prompt
-editPlayerNamePrompt = strPrompt "Player name: " $
+editPlayerNamePrompt = namePrompt "Player name: " $
   editPlayer . (pName .~)
 
 -- | Prompt to edit a player's position
