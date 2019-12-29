@@ -189,8 +189,9 @@ filteredPlayerReport
   -> [(Player, PlayerStats)]
   -> [String]
 filteredPlayerReport width label criteria showTotals ps = let
-  tStats = foldl addPlayerStats newPlayerStats $ map snd ps
-  fps    = filter criteria ps
+  tStats    = foldl addPlayerStats newPlayerStats $ map snd ps
+  criteria' = (&&) <$> criteria <*> \(p, _) -> p^.pNumber /= 0
+  fps       = filter criteria' ps
 
   rHeader =
     [ centre width (label ++ " STATISTICS")
