@@ -41,52 +41,67 @@ import Mtlstats.Util
 
 -- | Prompt to edit a player's number
 editPlayerNumPrompt :: Prompt
-editPlayerNumPrompt = numPrompt "Player number: " $
-  editPlayer EPMenu . (pNumber .~)
+editPlayerNumPrompt = editNum "Player number: " EPMenu
+  (pNumber .~)
 
 -- | Prompt to edit a player's name
 editPlayerNamePrompt :: Prompt
-editPlayerNamePrompt = namePrompt "Player name: " $
-  editPlayer EPMenu . (pName .~)
+editPlayerNamePrompt = namePrompt "Player name: " $ \name ->
+  if null name
+  then goto EPMenu
+  else editPlayer EPMenu $ pName .~ name
 
 -- | Prompt to edit a player's position
 editPlayerPosPrompt :: Prompt
-editPlayerPosPrompt = ucStrPrompt "Player position: " $
-  editPlayer EPMenu . (pPosition .~)
+editPlayerPosPrompt = ucStrPrompt "Player position: " $ \pos ->
+  if null pos
+  then goto EPMenu
+  else editPlayer EPMenu $ pPosition .~ pos
 
 -- | Prompt to edit a player's year-to-date goals
 editPlayerYtdGoalsPrompt :: Prompt
-editPlayerYtdGoalsPrompt = numPrompt "Year-to-date goals: " $
-  editPlayer EPYtd . (pYtd.psGoals .~)
+editPlayerYtdGoalsPrompt = editNum "Year-to-date goals: " EPYtd
+  (pYtd.psGoals .~)
 
 -- | Prompt to edit a player's year-to-date assists
 editPlayerYtdAssistsPrompt :: Prompt
-editPlayerYtdAssistsPrompt = numPrompt "Year-to-date assists: " $
-  editPlayer EPYtd . (pYtd.psAssists .~)
+editPlayerYtdAssistsPrompt = editNum "Year-to-date assists: " EPYtd
+  (pYtd.psAssists .~)
 
 -- | Prompt to edit a player's year-to-date penalty minutes
 editPlayerYtdPMinPrompt :: Prompt
-editPlayerYtdPMinPrompt = numPrompt "Year-to-date penalty minutes: " $
-  editPlayer EPYtd . (pYtd.psPMin .~)
+editPlayerYtdPMinPrompt = editNum "Year-to-date penalty minutes: " EPYtd
+  (pYtd.psPMin .~)
 
 -- | Prompt to edit a player's lifetime goals
 editPlayerLtGoalsPrompt :: Prompt
-editPlayerLtGoalsPrompt = numPrompt "Lifetime goals: " $
-  editPlayer EPLifetime . (pLifetime.psGoals .~)
+editPlayerLtGoalsPrompt = editNum "Lifetime goals: " EPLifetime
+  (pLifetime.psGoals .~)
 
 -- | Prompt to edit a player's lifetime assists
 editPlayerLtAssistsPrompt :: Prompt
-editPlayerLtAssistsPrompt = numPrompt "Lifetime assists: " $
-  editPlayer EPLifetime . (pLifetime.psAssists .~)
+editPlayerLtAssistsPrompt = editNum "Lifetime assists: " EPLifetime
+  (pLifetime.psAssists .~)
 
 -- | Prompt to edit a player's lifetime penalty minutes
 editPlayerLtPMinPrompt :: Prompt
-editPlayerLtPMinPrompt = numPrompt "Lifetime penalty minutes: " $
-  editPlayer EPLifetime . (pLifetime.psPMin .~)
+editPlayerLtPMinPrompt = editNum "Lifetime penalty minutes: " EPLifetime
+  (pLifetime.psPMin .~)
+
+editNum
+  :: String
+  -> EditPlayerMode
+  -> (Int -> Player -> Player)
+  -> Prompt
+editNum pStr mode f = numPromptWithFallback pStr
+  (goto mode)
+  (editPlayer mode . f)
 
 editPlayer :: EditPlayerMode -> (Player -> Player) -> Action ()
 editPlayer mode f =
-  whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid ->
-    modify
-      $ (database.dbPlayers %~ modifyNth pid f)
-      . (progMode.editPlayerStateL.epsMode .~ mode)
+  whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid -> do
+    modify $ database.dbPlayers %~ modifyNth pid f
+    goto mode
+
+goto :: EditPlayerMode -> Action ()
+goto = modify . (progMode.editPlayerStateL.epsMode .~)
