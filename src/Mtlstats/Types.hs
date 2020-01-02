@@ -347,11 +347,11 @@ data EditPlayerMode
   | EPPosition
   | EPYtd
   | EPLifetime
-  | EPYtdGoals
-  | EPYtdAssists
+  | EPYtdGoals Bool
+  | EPYtdAssists Bool
   | EPYtdPMin
-  | EPLtGoals
-  | EPLtAssists
+  | EPLtGoals Bool
+  | EPLtAssists Bool
   | EPLtPMin
   deriving (Eq, Show)
 

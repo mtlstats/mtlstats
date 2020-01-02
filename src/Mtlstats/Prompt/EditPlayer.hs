@@ -59,14 +59,24 @@ editPlayerPosPrompt = ucStrPrompt "Player position: " $ \pos ->
   else editPlayer EPMenu $ pPosition .~ pos
 
 -- | Prompt to edit a player's year-to-date goals
-editPlayerYtdGoalsPrompt :: Prompt
-editPlayerYtdGoalsPrompt = editNum "Year-to-date goals: " EPYtd
+editPlayerYtdGoalsPrompt
+  :: Bool
+  -- ^ Indicates wheter or not we're editing in batch mode
+  -> Prompt
+editPlayerYtdGoalsPrompt batchMode = editNum "Year-to-date goals: " mode
   (pYtd.psGoals .~)
+  where
+    mode = if batchMode then EPYtdAssists True else EPYtd
 
 -- | Prompt to edit a player's year-to-date assists
-editPlayerYtdAssistsPrompt :: Prompt
-editPlayerYtdAssistsPrompt = editNum "Year-to-date assists: " EPYtd
+editPlayerYtdAssistsPrompt
+  :: Bool
+  -- ^ Indicates wheter or not we're editing in batch mode
+  -> Prompt
+editPlayerYtdAssistsPrompt batchMode = editNum "Year-to-date assists: " mode
   (pYtd.psAssists .~)
+  where
+    mode = if batchMode then EPYtdPMin else EPYtd
 
 -- | Prompt to edit a player's year-to-date penalty minutes
 editPlayerYtdPMinPrompt :: Prompt
@@ -74,14 +84,24 @@ editPlayerYtdPMinPrompt = editNum "Year-to-date penalty minutes: " EPYtd
   (pYtd.psPMin .~)
 
 -- | Prompt to edit a player's lifetime goals
-editPlayerLtGoalsPrompt :: Prompt
-editPlayerLtGoalsPrompt = editNum "Lifetime goals: " EPLifetime
+editPlayerLtGoalsPrompt
+  :: Bool
+  -- ^ Indicates wheter or not we're editing in batch mode
+  -> Prompt
+editPlayerLtGoalsPrompt batchMode = editNum "Lifetime goals: " mode
   (pLifetime.psGoals .~)
+  where
+    mode = if batchMode then EPLtAssists True else EPLifetime
 
 -- | Prompt to edit a player's lifetime assists
-editPlayerLtAssistsPrompt :: Prompt
-editPlayerLtAssistsPrompt = editNum "Lifetime assists: " EPLifetime
+editPlayerLtAssistsPrompt
+  :: Bool
+  -- ^ Indicates wheter or not we're editing in batch mode
+  -> Prompt
+editPlayerLtAssistsPrompt batchMode = editNum "Lifetime assists: " mode
   (pLifetime.psAssists .~)
+  where
+    mode = if batchMode then EPLtPMin else EPLifetime
 
 -- | Prompt to edit a player's lifetime penalty minutes
 editPlayerLtPMinPrompt :: Prompt
