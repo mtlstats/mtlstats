@@ -53,10 +53,11 @@ editPlayerYtdMenu :: Menu ()
 editPlayerYtdMenu = editMenu
   "*** EDIT PLAYER YEAR-TO-DATE ***"
   --  key, label,                        value
-  [ ( '1', "Edit YTD goals",             EPYtdGoals   )
-  , ( '2', "Edit YTD assists",           EPYtdAssists )
-  , ( '3', "Edit YTD penalty mins",      EPYtdPMin    )
-  , ( 'R', "Return to player edit menu", EPMenu       )
+  [ ( '1', "Edit all YTD stats",         EPYtdGoals   True  )
+  , ( '2', "Edit YTD goals",             EPYtdGoals   False )
+  , ( '3', "Edit YTD assists",           EPYtdAssists False )
+  , ( '4', "Edit YTD penalty mins",      EPYtdPMin          )
+  , ( 'R', "Return to player edit menu", EPMenu             )
   ]
 
 -- | The 'Player' lifetime stats edit menu
@@ -64,10 +65,11 @@ editPlayerLtMenu :: Menu ()
 editPlayerLtMenu = editMenu
   "*** EDIT PLAYER LIFETIME ***"
   --  key, label,                        value
-  [ ( '1', "Edit lifetime goals",        EPLtGoals   )
-  , ( '2', "Edit lifetime assits",       EPLtAssists )
-  , ( '3', "Edit lifetime penalty mins", EPLtPMin    )
-  , ( 'R', "Return to edit player menu", EPMenu      )
+  [ ( '1', "Edit all lifetime stats",    EPLtGoals   True  )
+  , ( '2', "Edit lifetime goals",        EPLtGoals   False )
+  , ( '3', "Edit lifetime assits",       EPLtAssists False )
+  , ( '4', "Edit lifetime penalty mins", EPLtPMin          )
+  , ( 'R', "Return to edit player menu", EPMenu            )
   ]
 
 editMenu :: String -> [(Char, String, EditPlayerMode)] -> Menu ()

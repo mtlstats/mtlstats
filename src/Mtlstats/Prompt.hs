@@ -31,6 +31,7 @@ module Mtlstats.Prompt (
   ucStrPrompt,
   namePrompt,
   numPrompt,
+  numPromptWithFallback,
   selectPrompt,
   -- * Individual prompts
   playerNumPrompt,
@@ -47,7 +48,6 @@ import Control.Monad (when)
 import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Char (isDigit, toUpper)
-import Data.Foldable (forM_)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
@@ -145,12 +145,25 @@ numPrompt
   -> (Int -> Action ())
   -- ^ The callback function for the result
   -> Prompt
-numPrompt pStr act = Prompt
+numPrompt pStr = numPromptWithFallback pStr $ return ()
+
+-- | Builds a numeric prompt with a fallback action
+numPromptWithFallback
+  :: String
+  -- ^ The prompt string
+  -> Action ()
+  -- ^ The action to call on invalid (or blank) input
+  -> (Int -> Action ())
+  -- ^ The callback function for the result
+  -> Prompt
+numPromptWithFallback pStr fallback act = Prompt
   { promptDrawer      = drawSimplePrompt pStr
   , promptProcessChar = \ch str -> if isDigit ch
     then str ++ [ch]
     else str
-  , promptAction      = \inStr -> forM_ (readMaybe inStr) act
+  , promptAction      = \inStr -> case readMaybe inStr of
+      Nothing -> fallback
+      Just n  -> act n
   , promptSpecialKey  = const $ return ()
   }
 

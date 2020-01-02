@@ -46,23 +46,23 @@ selectC = promptController goalieToEditPrompt
 
 editC :: EditGoalieMode -> Controller
 editC = \case
-  EGMenu      -> menuC
-  EGNumber    -> numberC
-  EGName      -> nameC
-  EGYtd       -> ytdMenuC
-  EGLifetime  -> lifetimeMenuC
-  EGYtdGames  -> ytdGamesC
-  EGYtdMins   -> ytdMinsC
-  EGYtdGoals  -> ytdGoalsC
-  EGYtdWins   -> ytdWinsC
-  EGYtdLosses -> ytdLossesC
-  EGYtdTies   -> ytdTiesC
-  EGLtGames   -> ltGamesC
-  EGLtMins    -> ltMinsC
-  EGLtGoals   -> ltGoalsC
-  EGLtWins    -> ltWinsC
-  EGLtLosses  -> ltLossesC
-  EGLtTies    -> ltTiesC
+  EGMenu        -> menuC
+  EGNumber      -> numberC
+  EGName        -> nameC
+  EGYtd         -> ytdMenuC
+  EGLifetime    -> lifetimeMenuC
+  EGYtdGames  b -> ytdGamesC  b
+  EGYtdMins   b -> ytdMinsC   b
+  EGYtdGoals  b -> ytdGoalsC  b
+  EGYtdWins   b -> ytdWinsC   b
+  EGYtdLosses b -> ytdLossesC b
+  EGYtdTies     -> ytdTiesC
+  EGLtGames   b -> ltGamesC   b
+  EGLtMins    b -> ltMinsC    b
+  EGLtGoals   b -> ltGoalsC   b
+  EGLtWins    b -> ltWinsC    b
+  EGLtLosses  b -> ltLossesC  b
+  EGLtTies      -> ltTiesC
 
 menuC :: Controller
 menuC = menuControllerWith header editGoalieMenu
@@ -79,38 +79,38 @@ ytdMenuC = menuControllerWith header editGoalieYtdMenu
 lifetimeMenuC :: Controller
 lifetimeMenuC = menuControllerWith header editGoalieLtMenu
 
-ytdGamesC :: Controller
-ytdGamesC = promptController editGoalieYtdGamesPrompt
+ytdGamesC :: Bool -> Controller
+ytdGamesC = promptController . editGoalieYtdGamesPrompt
 
-ytdMinsC :: Controller
-ytdMinsC = promptController editGoalieYtdMinsPrompt
+ytdMinsC :: Bool -> Controller
+ytdMinsC = promptController . editGoalieYtdMinsPrompt
 
-ytdGoalsC :: Controller
-ytdGoalsC = promptController editGoalieYtdGoalsPrompt
+ytdGoalsC :: Bool -> Controller
+ytdGoalsC = promptController . editGoalieYtdGoalsPrompt
 
-ytdWinsC :: Controller
-ytdWinsC = promptController editGoalieYtdWinsPrompt
+ytdWinsC :: Bool -> Controller
+ytdWinsC = promptController . editGoalieYtdWinsPrompt
 
-ytdLossesC :: Controller
-ytdLossesC = promptController editGoalieYtdLossesPrompt
+ytdLossesC :: Bool -> Controller
+ytdLossesC = promptController . editGoalieYtdLossesPrompt
 
 ytdTiesC :: Controller
 ytdTiesC = promptController editGoalieYtdTiesPrompt
 
-ltGamesC :: Controller
-ltGamesC = promptController editGoalieLtGamesPrompt
+ltGamesC :: Bool -> Controller
+ltGamesC = promptController . editGoalieLtGamesPrompt
 
-ltMinsC :: Controller
-ltMinsC = promptController editGoalieLtMinsPrompt
+ltMinsC :: Bool -> Controller
+ltMinsC = promptController . editGoalieLtMinsPrompt
 
-ltGoalsC :: Controller
-ltGoalsC = promptController editGoalieLtGoalsPrompt
+ltGoalsC :: Bool -> Controller
+ltGoalsC = promptController . editGoalieLtGoalsPrompt
 
-ltWinsC :: Controller
-ltWinsC = promptController editGoalieLtWinsPrompt
+ltWinsC :: Bool -> Controller
+ltWinsC = promptController . editGoalieLtWinsPrompt
 
-ltLossesC :: Controller
-ltLossesC = promptController editGoalieLtLossesPrompt
+ltLossesC :: Bool -> Controller
+ltLossesC = promptController . editGoalieLtLossesPrompt
 
 ltTiesC :: Controller
 ltTiesC = promptController editGoalieLtTiesPrompt

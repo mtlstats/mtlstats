@@ -38,18 +38,18 @@ editPlayerC :: EditPlayerState -> Controller
 editPlayerC eps
   | null $ eps^.epsSelectedPlayer = selectPlayerC
   | otherwise = case eps^.epsMode of
-    EPMenu       -> menuC
-    EPNumber     -> numberC
-    EPName       -> nameC
-    EPPosition   -> positionC
-    EPYtd        -> ytdC
-    EPLifetime   -> lifetimeC
-    EPYtdGoals   -> ytdGoalsC
-    EPYtdAssists -> ytdAssistsC
-    EPYtdPMin    -> ytdPMinC
-    EPLtGoals    -> ltGoalsC
-    EPLtAssists  -> ltAssistsC
-    EPLtPMin     -> ltPMinC
+    EPMenu         -> menuC
+    EPNumber       -> numberC
+    EPName         -> nameC
+    EPPosition     -> positionC
+    EPYtd          -> ytdC
+    EPLifetime     -> lifetimeC
+    EPYtdGoals   b -> ytdGoalsC   b
+    EPYtdAssists b -> ytdAssistsC b
+    EPYtdPMin      -> ytdPMinC
+    EPLtGoals    b -> ltGoalsC    b
+    EPLtAssists  b -> ltAssistsC  b
+    EPLtPMin       -> ltPMinC
 
 selectPlayerC :: Controller
 selectPlayerC = promptController playerToEditPrompt
@@ -72,20 +72,20 @@ ytdC = menuControllerWith header editPlayerYtdMenu
 lifetimeC :: Controller
 lifetimeC = menuControllerWith header editPlayerLtMenu
 
-ytdGoalsC :: Controller
-ytdGoalsC = promptController editPlayerYtdGoalsPrompt
+ytdGoalsC :: Bool -> Controller
+ytdGoalsC = promptController . editPlayerYtdGoalsPrompt
 
-ytdAssistsC :: Controller
-ytdAssistsC = promptController editPlayerYtdAssistsPrompt
+ytdAssistsC :: Bool -> Controller
+ytdAssistsC = promptController . editPlayerYtdAssistsPrompt
 
 ytdPMinC :: Controller
 ytdPMinC = promptController editPlayerYtdPMinPrompt
 
-ltGoalsC :: Controller
-ltGoalsC = promptController editPlayerLtGoalsPrompt
+ltGoalsC :: Bool -> Controller
+ltGoalsC = promptController . editPlayerLtGoalsPrompt
 
-ltAssistsC :: Controller
-ltAssistsC = promptController editPlayerLtAssistsPrompt
+ltAssistsC :: Bool -> Controller
+ltAssistsC = promptController . editPlayerLtAssistsPrompt
 
 ltPMinC :: Controller
 ltPMinC = promptController editPlayerLtPMinPrompt
