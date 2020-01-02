@@ -37,12 +37,13 @@ module Mtlstats.Prompt.EditGoalie
   , editGoalieLtTiesPrompt
   ) where
 
-import Control.Monad.Trans.State (modify)
-import Lens.Micro ((.~))
+import Control.Monad.Extra (whenJustM)
+import Control.Monad.Trans.State (gets, modify)
+import Lens.Micro ((^.), (.~), (%~))
 
-import Mtlstats.Actions.EditGoalie
 import Mtlstats.Prompt
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Prompt to select a 'Goalie' for editing
 goalieToEditPrompt :: Prompt
@@ -51,70 +52,90 @@ goalieToEditPrompt = selectGoaliePrompt "Goalie to edit: " $
 
 -- | Prompt to edit a goalie's number
 editGoalieNumberPrompt :: Prompt
-editGoalieNumberPrompt = numPrompt "Goalie number: " $
-  modify . editGoalieNumber
+editGoalieNumberPrompt = editNum "Goalie number: " EGMenu
+  (gNumber .~)
 
 -- | Prompt to edit a goalie's name
 editGoalieNamePrompt :: Prompt
-editGoalieNamePrompt = namePrompt "Goalie name: " $
-  modify . editGoalieName
+editGoalieNamePrompt = namePrompt "Goalie name: " $ \name ->
+  if null name
+  then goto EGMenu
+  else editGoalie EGMenu $ gName .~ name
 
 -- | Prompt to edit a goalie's YTD games played
 editGoalieYtdGamesPrompt :: Prompt
-editGoalieYtdGamesPrompt = numPrompt "Year-to-date games played: " $
-  modify . editGoalieYtdGames
+editGoalieYtdGamesPrompt = editNum "Year-to-date games played: " EGYtd
+  (gYtd.gsGames .~)
 
 -- | Prompt to edit a goalie's YTD minutes played
 editGoalieYtdMinsPrompt :: Prompt
-editGoalieYtdMinsPrompt = numPrompt "Year-to-date minutes played: " $
-  modify . editGoalieYtdMins
+editGoalieYtdMinsPrompt = editNum "Year-to-date minutes played: " EGYtd
+  (gYtd.gsMinsPlayed .~)
 
 -- | Prompt to edit a goalie's YTD goales allowed
 editGoalieYtdGoalsPrompt :: Prompt
-editGoalieYtdGoalsPrompt = numPrompt "Year-to-date goals allowed: " $
-  modify . editGoalieYtdGoals
+editGoalieYtdGoalsPrompt = editNum "Year-to-date goals allowed: " EGYtd
+  (gYtd.gsGoalsAllowed .~)
 
 -- | Prompt to edit a goalie's YTD wins
 editGoalieYtdWinsPrompt :: Prompt
-editGoalieYtdWinsPrompt = numPrompt "Year-to-date wins: " $
-  modify . editGoalieYtdWins
+editGoalieYtdWinsPrompt = editNum "Year-to-date wins: " EGYtd
+  (gYtd.gsWins .~)
 
 -- | Prompt to edit a goalie's YTD losses
 editGoalieYtdLossesPrompt :: Prompt
-editGoalieYtdLossesPrompt = numPrompt "Year-to-date losses: " $
-  modify . editGoalieYtdLosses
+editGoalieYtdLossesPrompt = editNum "Year-to-date losses: " EGYtd
+  (gYtd.gsLosses .~)
 
 -- | Prompt to edit a goalie's YTD ties
 editGoalieYtdTiesPrompt :: Prompt
-editGoalieYtdTiesPrompt = numPrompt "Year-to-date ties: " $
-  modify . editGoalieYtdTies
+editGoalieYtdTiesPrompt = editNum "Year-to-date ties: " EGYtd
+  (gYtd.gsTies .~)
 
 -- | Prompt to edit a goalie's lifetime games played
 editGoalieLtGamesPrompt :: Prompt
-editGoalieLtGamesPrompt = numPrompt "Lifetime games played: " $
-  modify . editGoalieLtGames
+editGoalieLtGamesPrompt = editNum "Lifetime games played: " EGLifetime
+  (gLifetime.gsGames .~)
 
 -- | Prompt to edit a goalie's lifetime minutes played
 editGoalieLtMinsPrompt :: Prompt
-editGoalieLtMinsPrompt = numPrompt "Lifetime minutes played: " $
-  modify . editGoalieLtMins
+editGoalieLtMinsPrompt = editNum "Lifetime minutes played: " EGLifetime
+  (gLifetime.gsMinsPlayed .~)
 
 -- | Prompt to edit a goalie's lifetime goals allowed
 editGoalieLtGoalsPrompt :: Prompt
-editGoalieLtGoalsPrompt = numPrompt "Lifetime goals allowed: " $
-  modify . editGoalieLtGoals
+editGoalieLtGoalsPrompt = editNum "Lifetime goals allowed: " EGLifetime
+  (gLifetime.gsGoalsAllowed .~)
 
 -- | Prompt to edit a goalie's lifetime wins
 editGoalieLtWinsPrompt :: Prompt
-editGoalieLtWinsPrompt = numPrompt "Lifetime wins: " $
-  modify . editGoalieLtWins
+editGoalieLtWinsPrompt = editNum "Lifetime wins: " EGLifetime
+  (gLifetime.gsWins .~)
 
 -- | Prompt to edit a goalie's lifetime losses
 editGoalieLtLossesPrompt :: Prompt
-editGoalieLtLossesPrompt = numPrompt "Lifetime losses: " $
-  modify . editGoalieLtLosses
+editGoalieLtLossesPrompt = editNum "Lifetime losses: " EGLifetime
+  (gLifetime.gsLosses .~)
 
 -- | Prompt to edit a goalie's lifetime ties
 editGoalieLtTiesPrompt :: Prompt
-editGoalieLtTiesPrompt = numPrompt "Lifetime ties: " $
-  modify . editGoalieLtTies
+editGoalieLtTiesPrompt = editNum "Lifetime ties: " EGLifetime
+  (gLifetime.gsTies .~)
+
+editNum
+  :: String
+  -> EditGoalieMode
+  -> (Int -> Goalie -> Goalie)
+  -> Prompt
+editNum pStr mode f = numPromptWithFallback pStr
+  (goto mode)
+  (editGoalie mode . f)
+
+editGoalie :: EditGoalieMode -> (Goalie -> Goalie) -> Action ()
+editGoalie mode f =
+  whenJustM (gets (^.progMode.editGoalieStateL.egsSelectedGoalie)) $ \gid -> do
+    modify $ database.dbGoalies %~ modifyNth gid f
+    goto mode
+
+goto :: EditGoalieMode -> Action ()
+goto = modify . (progMode.editGoalieStateL.egsMode .~)
