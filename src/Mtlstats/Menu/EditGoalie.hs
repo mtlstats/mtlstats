@@ -51,13 +51,14 @@ editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
 editGoalieYtdMenu :: Menu ()
 editGoalieYtdMenu = editMenu "*** EDIT GOALTENDER YEAR-TO-DATE ***"
   --  key, label,                 value
-  [ ( '1', "Edit YTD games",      EGYtdGames  )
-  , ( '2', "Edit YTD minutes",    EGYtdMins   )
-  , ( '3', "Edit YTD goals",      EGYtdGoals  )
-  , ( '4', "Edit YTD wins",       EGYtdWins   )
-  , ( '5', "Edit YTD losses",     EGYtdLosses )
-  , ( '6', "Edit YTD ties",       EGYtdTies   )
-  , ( 'R', "Return to edit menu", EGMenu      )
+  [ ( '1', "Edit all YTD stats",  EGYtdGames  True  )
+  , ( '2', "Edit YTD games",      EGYtdGames  False )
+  , ( '3', "Edit YTD minutes",    EGYtdMins   False )
+  , ( '4', "Edit YTD goals",      EGYtdGoals  False )
+  , ( '5', "Edit YTD wins",       EGYtdWins   False )
+  , ( '6', "Edit YTD losses",     EGYtdLosses False )
+  , ( '7', "Edit YTD ties",       EGYtdTies         )
+  , ( 'R', "Return to edit menu", EGMenu            )
   ]
 
 -- | The 'Goalie' lifetime edit menu
@@ -65,13 +66,14 @@ editGoalieLtMenu :: Menu ()
 editGoalieLtMenu = editMenu
   "*** EDIT GOALTENDER LIFETIME ***"
   --  key, label,                   value
-  [ ( '1', "Edit lifetime games",   EGLtGames  )
-  , ( '2', "Edit lifetime minutes", EGLtMins   )
-  , ( '3', "Edit lifetime goals",   EGLtGoals  )
-  , ( '4', "Edit lifetime wins",    EGLtWins   )
-  , ( '5', "Edit lifetime losses",  EGLtLosses )
-  , ( '6', "Edit lifetime ties",    EGLtTies   )
-  , ( 'R', "Return to edit menu",   EGMenu     )
+  [ ( '1', "Edit all lifetime stats", EGLtGames  True  )
+  , ( '2', "Edit lifetime games",     EGLtGames  False )
+  , ( '3', "Edit lifetime minutes",   EGLtMins   False )
+  , ( '4', "Edit lifetime goals",     EGLtGoals  False )
+  , ( '5', "Edit lifetime wins",      EGLtWins   False )
+  , ( '6', "Edit lifetime losses",    EGLtLosses False )
+  , ( '7', "Edit lifetime ties",      EGLtTies         )
+  , ( 'R', "Return to edit menu",     EGMenu           )
   ]
 
 editMenu :: String -> [(Char, String, EditGoalieMode)] -> Menu ()

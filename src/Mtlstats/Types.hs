@@ -369,17 +369,17 @@ data EditGoalieMode
   | EGName
   | EGYtd
   | EGLifetime
-  | EGYtdGames
-  | EGYtdMins
-  | EGYtdGoals
-  | EGYtdWins
-  | EGYtdLosses
+  | EGYtdGames  Bool
+  | EGYtdMins   Bool
+  | EGYtdGoals  Bool
+  | EGYtdWins   Bool
+  | EGYtdLosses Bool
   | EGYtdTies
-  | EGLtGames
-  | EGLtMins
-  | EGLtGoals
-  | EGLtWins
-  | EGLtLosses
+  | EGLtGames   Bool
+  | EGLtMins    Bool
+  | EGLtGoals   Bool
+  | EGLtWins    Bool
+  | EGLtLosses  Bool
   | EGLtTies
   deriving (Eq, Show)
 
