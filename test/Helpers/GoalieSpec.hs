@@ -38,28 +38,31 @@ goalieDetailsSpec = describe "goalieDetails" $ let
       %~ ( gsGames        .~ 2  )
       .  ( gsMinsPlayed   .~ 3  )
       .  ( gsGoalsAllowed .~ 4  )
-      .  ( gsWins         .~ 5  )
-      .  ( gsLosses       .~ 6  )
-      .  ( gsTies         .~ 7  )
+      .  ( gsShutouts     .~ 5  )
+      .  ( gsWins         .~ 6  )
+      .  ( gsLosses       .~ 7  )
+      .  ( gsTies         .~ 8  )
     & gLifetime
-      %~ ( gsGames        .~ 8  )
-      .  ( gsMinsPlayed   .~ 9  )
-      .  ( gsGoalsAllowed .~ 10 )
-      .  ( gsWins         .~ 11 )
-      .  ( gsLosses       .~ 12 )
-      .  ( gsTies         .~ 13 )
+      %~ ( gsGames        .~ 9  )
+      .  ( gsMinsPlayed   .~ 10 )
+      .  ( gsGoalsAllowed .~ 11 )
+      .  ( gsShutouts     .~ 12 )
+      .  ( gsWins         .~ 13 )
+      .  ( gsLosses       .~ 14 )
+      .  ( gsTies         .~ 15 )
 
   expected = unlines
     [ "Number: 1"
     , "  Name: Joe"
     , ""
     , "              YTD Lifetime"
-    , " Games played   2        8"
-    , "  Mins played   3        9"
-    , "Goals allowed   4       10"
-    , "         Wins   5       11"
-    , "       Losses   6       12"
-    , "         Ties   7       13"
+    , " Games played   2        9"
+    , "  Mins played   3       10"
+    , "Goals allowed   4       11"
+    , "     Shutouts   5       12"
+    , "         Wins   6       13"
+    , "       Losses   7       14"
+    , "         Ties   8       15"
     ]
 
   in it "should format the output correctly" $

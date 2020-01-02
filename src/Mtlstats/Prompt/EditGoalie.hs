@@ -26,12 +26,14 @@ module Mtlstats.Prompt.EditGoalie
   , editGoalieYtdGamesPrompt
   , editGoalieYtdMinsPrompt
   , editGoalieYtdGoalsPrompt
+  , editGoalieYtdShutoutsPrompt
   , editGoalieYtdWinsPrompt
   , editGoalieYtdLossesPrompt
   , editGoalieYtdTiesPrompt
   , editGoalieLtGamesPrompt
   , editGoalieLtMinsPrompt
   , editGoalieLtGoalsPrompt
+  , editGoalieLtShutoutsPrompt
   , editGoalieLtWinsPrompt
   , editGoalieLtLossesPrompt
   , editGoalieLtTiesPrompt
@@ -93,6 +95,17 @@ editGoalieYtdGoalsPrompt batchMode =
   editNum "Year-to-date goals allowed: " mode
   (gYtd.gsGoalsAllowed .~)
   where
+    mode = if batchMode then EGYtdShutouts True else EGYtd
+
+-- | Prompt to edit a goalie's YTD shutouts
+editGoalieYtdShutoutsPrompt
+  :: Bool
+  -- ^ Indicates whether or not we're in batch mode
+  -> Prompt
+editGoalieYtdShutoutsPrompt batchMode =
+  editNum "Year-to-date shutouts: " mode
+  (gYtd.gsShutouts .~)
+  where
     mode = if batchMode then EGYtdWins True else EGYtd
 
 -- | Prompt to edit a goalie's YTD wins
@@ -152,6 +165,17 @@ editGoalieLtGoalsPrompt
 editGoalieLtGoalsPrompt batchMode =
   editNum "Lifetime goals allowed: " mode
   (gLifetime.gsGoalsAllowed .~)
+  where
+    mode = if batchMode then EGLtShutouts True else EGLifetime
+
+-- | Prompt to edit a goalie's lifetime shutouts
+editGoalieLtShutoutsPrompt
+  :: Bool
+  -- ^ Indicates whether or not we're in batch mode
+  -> Prompt
+editGoalieLtShutoutsPrompt batchMode =
+  editNum "Lifetime shutouts: " mode
+  (gLifetime.gsShutouts .~)
   where
     mode = if batchMode then EGLtWins True else EGLifetime
 
