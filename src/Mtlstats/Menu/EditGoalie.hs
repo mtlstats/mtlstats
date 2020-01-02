@@ -51,14 +51,15 @@ editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
 editGoalieYtdMenu :: Menu ()
 editGoalieYtdMenu = editMenu "*** EDIT GOALTENDER YEAR-TO-DATE ***"
   --  key, label,                 value
-  [ ( '1', "Edit all YTD stats",  EGYtdGames  True  )
-  , ( '2', "Edit YTD games",      EGYtdGames  False )
-  , ( '3', "Edit YTD minutes",    EGYtdMins   False )
-  , ( '4', "Edit YTD goals",      EGYtdGoals  False )
-  , ( '5', "Edit YTD wins",       EGYtdWins   False )
-  , ( '6', "Edit YTD losses",     EGYtdLosses False )
-  , ( '7', "Edit YTD ties",       EGYtdTies         )
-  , ( 'R', "Return to edit menu", EGMenu            )
+  [ ( '1', "Edit all YTD stats",  EGYtdGames    True  )
+  , ( '2', "Edit YTD games",      EGYtdGames    False )
+  , ( '3', "Edit YTD minutes",    EGYtdMins     False )
+  , ( '4', "Edit YTD goals",      EGYtdGoals    False )
+  , ( '5', "Edit YTD shutouts",   EGYtdShutouts False )
+  , ( '6', "Edit YTD wins",       EGYtdWins     False )
+  , ( '7', "Edit YTD losses",     EGYtdLosses   False )
+  , ( '8', "Edit YTD ties",       EGYtdTies           )
+  , ( 'R', "Return to edit menu", EGMenu              )
   ]
 
 -- | The 'Goalie' lifetime edit menu
@@ -66,14 +67,15 @@ editGoalieLtMenu :: Menu ()
 editGoalieLtMenu = editMenu
   "*** EDIT GOALTENDER LIFETIME ***"
   --  key, label,                   value
-  [ ( '1', "Edit all lifetime stats", EGLtGames  True  )
-  , ( '2', "Edit lifetime games",     EGLtGames  False )
-  , ( '3', "Edit lifetime minutes",   EGLtMins   False )
-  , ( '4', "Edit lifetime goals",     EGLtGoals  False )
-  , ( '5', "Edit lifetime wins",      EGLtWins   False )
-  , ( '6', "Edit lifetime losses",    EGLtLosses False )
-  , ( '7', "Edit lifetime ties",      EGLtTies         )
-  , ( 'R', "Return to edit menu",     EGMenu           )
+  [ ( '1', "Edit all lifetime stats", EGLtGames    True  )
+  , ( '2', "Edit lifetime games",     EGLtGames    False )
+  , ( '3', "Edit lifetime minutes",   EGLtMins     False )
+  , ( '4', "Edit lifetime goals",     EGLtGoals    False )
+  , ( '5', "Edit lifetime shutouts",  EGLtShutouts False )
+  , ( '6', "Edit lifetime wins",      EGLtWins     False )
+  , ( '7', "Edit lifetime losses",    EGLtLosses   False )
+  , ( '8', "Edit lifetime ties",      EGLtTies           )
+  , ( 'R', "Return to edit menu",     EGMenu             )
   ]
 
 editMenu :: String -> [(Char, String, EditGoalieMode)] -> Menu ()

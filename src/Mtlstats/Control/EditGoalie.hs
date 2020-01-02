@@ -46,23 +46,25 @@ selectC = promptController goalieToEditPrompt
 
 editC :: EditGoalieMode -> Controller
 editC = \case
-  EGMenu        -> menuC
-  EGNumber      -> numberC
-  EGName        -> nameC
-  EGYtd         -> ytdMenuC
-  EGLifetime    -> lifetimeMenuC
-  EGYtdGames  b -> ytdGamesC  b
-  EGYtdMins   b -> ytdMinsC   b
-  EGYtdGoals  b -> ytdGoalsC  b
-  EGYtdWins   b -> ytdWinsC   b
-  EGYtdLosses b -> ytdLossesC b
-  EGYtdTies     -> ytdTiesC
-  EGLtGames   b -> ltGamesC   b
-  EGLtMins    b -> ltMinsC    b
-  EGLtGoals   b -> ltGoalsC   b
-  EGLtWins    b -> ltWinsC    b
-  EGLtLosses  b -> ltLossesC  b
-  EGLtTies      -> ltTiesC
+  EGMenu          -> menuC
+  EGNumber        -> numberC
+  EGName          -> nameC
+  EGYtd           -> ytdMenuC
+  EGLifetime      -> lifetimeMenuC
+  EGYtdGames b    -> ytdGamesC b
+  EGYtdMins b     -> ytdMinsC b
+  EGYtdGoals b    -> ytdGoalsC b
+  EGYtdShutouts b -> ytdShutoutsC b
+  EGYtdWins b     -> ytdWinsC b
+  EGYtdLosses b   -> ytdLossesC b
+  EGYtdTies       -> ytdTiesC
+  EGLtGames b     -> ltGamesC b
+  EGLtMins b      -> ltMinsC b
+  EGLtGoals b     -> ltGoalsC b
+  EGLtShutouts b  -> ltShutoutsC b
+  EGLtWins b      -> ltWinsC b
+  EGLtLosses b    -> ltLossesC b
+  EGLtTies        -> ltTiesC
 
 menuC :: Controller
 menuC = menuControllerWith header editGoalieMenu
@@ -88,6 +90,9 @@ ytdMinsC = promptController . editGoalieYtdMinsPrompt
 ytdGoalsC :: Bool -> Controller
 ytdGoalsC = promptController . editGoalieYtdGoalsPrompt
 
+ytdShutoutsC :: Bool -> Controller
+ytdShutoutsC = promptController . editGoalieYtdShutoutsPrompt
+
 ytdWinsC :: Bool -> Controller
 ytdWinsC = promptController . editGoalieYtdWinsPrompt
 
@@ -105,6 +110,9 @@ ltMinsC = promptController . editGoalieLtMinsPrompt
 
 ltGoalsC :: Bool -> Controller
 ltGoalsC = promptController . editGoalieLtGoalsPrompt
+
+ltShutoutsC :: Bool -> Controller
+ltShutoutsC = promptController . editGoalieLtShutoutsPrompt
 
 ltWinsC :: Bool -> Controller
 ltWinsC = promptController . editGoalieLtWinsPrompt

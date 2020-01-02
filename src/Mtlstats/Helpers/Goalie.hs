@@ -39,6 +39,7 @@ goalieDetails g = let
     [ ( "Games played",  gsGames        )
     , ( "Mins played",   gsMinsPlayed   )
     , ( "Goals allowed", gsGoalsAllowed )
+    , ( "Shutouts",      gsShutouts     )
     , ( "Wins",          gsWins         )
     , ( "Losses",        gsLosses       )
     , ( "Ties",          gsTies         )
