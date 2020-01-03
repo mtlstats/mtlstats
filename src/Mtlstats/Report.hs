@@ -148,7 +148,7 @@ yearToDateStatsReport width s = let
 
   in playerReport width "YEAR TO DATE" True False playerStats
   ++ [""]
-  ++ goalieReport width True goalieStats
+  ++ goalieReport width True False goalieStats
 
 lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
@@ -163,7 +163,7 @@ lifetimeStatsReport width s = let
 
   in playerReport width "LIFETIME" False True playerStats
   ++ [""]
-  ++ goalieReport width False goalieStats
+  ++ goalieReport width False True goalieStats
 
 gameDate :: GameState -> String
 gameDate gs = fromMaybe "" $ do
@@ -251,9 +251,10 @@ filteredPlayerReport width label criteria showTotals lineNumbers ps = let
 goalieReport
   :: Int
   -> Bool
+  -> Bool
   -> [(Goalie, GoalieStats)]
   -> [String]
-goalieReport width showTotals goalieData = let
+goalieReport width showTotals lineNumbers goalieData = let
   olayText = if showTotals
     then "GOALTENDING TOTALS"
     else ""
@@ -292,7 +293,12 @@ goalieReport width showTotals goalieData = let
 
   summary = replicate 2 (CellText  "") ++ rowCells tData
 
-  in map (centre width)
+  lnOverlay = if lineNumbers
+    then "" : [right 2 $ show x | x <- [(1 :: Int)..]]
+    else repeat ""
+
+  in map (\(ln, line) -> overlay ln $ centre width line)
+    $ zip lnOverlay
     $ overlayLast olayText
     $ complexTable ([right, left] ++ repeat right)
     $ header : body ++ if showTotals
