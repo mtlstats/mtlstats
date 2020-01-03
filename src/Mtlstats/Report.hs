@@ -129,7 +129,7 @@ gameStatsReport width s = let
 
   criteria (_, ps) = psPoints ps > 0
 
-  in filteredPlayerReport width "GAME" criteria True playerStats
+  in filteredPlayerReport width "GAME" criteria True False playerStats
   ++ [""]
   ++ gameGoalieReport width goalieStats
 
@@ -146,7 +146,7 @@ yearToDateStatsReport width s = let
     $ filter goalieIsActive
     $ db^.dbGoalies
 
-  in playerReport width "YEAR TO DATE" True playerStats
+  in playerReport width "YEAR TO DATE" True False playerStats
   ++ [""]
   ++ goalieReport width True goalieStats
 
@@ -161,7 +161,7 @@ lifetimeStatsReport width s = let
   goalieStats = map (\g -> (g, g^.gLifetime))
     $ db^.dbGoalies
 
-  in playerReport width "LIFETIME" False playerStats
+  in playerReport width "LIFETIME" False True playerStats
   ++ [""]
   ++ goalieReport width False goalieStats
 
@@ -176,6 +176,7 @@ playerReport
   :: Int
   -> String
   -> Bool
+  -> Bool
   -> [(Player, PlayerStats)]
   -> [String]
 playerReport width label =
@@ -186,9 +187,10 @@ filteredPlayerReport
   -> String
   -> ((Player, PlayerStats) -> Bool)
   -> Bool
+  -> Bool
   -> [(Player, PlayerStats)]
   -> [String]
-filteredPlayerReport width label criteria showTotals ps = let
+filteredPlayerReport width label criteria showTotals lineNumbers ps = let
   tStats    = foldl addPlayerStats newPlayerStats $ map snd ps
   criteria' = (&&) <$> criteria <*> \(p, _) -> p^.pNumber /= 0
   fps       = filter criteria' ps
@@ -232,8 +234,13 @@ filteredPlayerReport width label criteria showTotals ps = let
     then label ++ " TOTALS"
     else ""
 
+  lnOverlay = if lineNumbers
+    then "" : [right 2 $ show x | x <- [(1 :: Int)..]]
+    else repeat ""
+
   table = overlayLast olayText
-    $ map (centre width)
+    $ map (\(ln, line) -> overlay ln $ centre width line)
+    $ zip lnOverlay
     $ complexTable ([right, left] ++ repeat right)
     $ tHeader : body ++ if showTotals
       then [separator, totals]
