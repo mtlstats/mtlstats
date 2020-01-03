@@ -6,6 +6,7 @@
 - Return to correct edit menus after editing player stats
 - Enabled batch editing of player/goalie YTD/lifetime stats
 - Bugfix: allow user to edit goalie shutouts
+- Added line numbers to lifetime player/goalie reports
 
 ## 0.9.0
 - Bugfix: Display lifetime stats in report, not YTD
