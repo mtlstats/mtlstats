@@ -32,7 +32,7 @@ playerDetails p = unlines $ top ++ [""] ++ table
   where
     top = labelTable
       [ ( "Number",   show $ p^.pNumber )
-      , ( "Name",     p^.pName          )
+      , ( "Name",     playerName p      )
       , ( "Position", p^.pPosition      )
       ]
 

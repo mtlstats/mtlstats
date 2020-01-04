@@ -37,6 +37,7 @@ playerDetailsSpec = describe "playerDetails" $
   it "should give a detailed description" $ let
 
     p = newPlayer 1 "Joe" "centre"
+      & pRookie .~ True
       & pYtd .~ PlayerStats
         { _psGoals   = 2
         , _psAssists = 3
@@ -50,7 +51,7 @@ playerDetailsSpec = describe "playerDetails" $
 
     expected = unlines
       [ "  Number: 1"
-      , "    Name: Joe"
+      , "    Name: Joe*"
       , "Position: centre"
       , ""
       , "             YTD Lifetime"
