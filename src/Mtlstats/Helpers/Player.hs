@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Helpers.Player (playerDetails) where
+module Mtlstats.Helpers.Player (playerDetails, playerName) where
 
 import Lens.Micro ((^.))
 
@@ -43,3 +43,14 @@ playerDetails p = unlines $ top ++ [""] ++ table
       , ( "Assists",      psAssists )
       , ( "Penalty mins", psPMin    )
       ]
+
+-- | Presents a modified version of the player's name indicating
+-- whether or not they're a rookie
+playerName :: Player -> String
+playerName p = let
+
+  suffix = if p^.pRookie
+    then "*"
+    else ""
+
+  in p^.pName ++ suffix
