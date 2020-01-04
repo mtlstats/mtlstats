@@ -528,11 +528,11 @@ makeLenses ''GameStats
 
 instance FromJSON Database where
   parseJSON = withObject "Database" $ \v -> Database
-    <$> v .: "players"
-    <*> v .: "goalies"
-    <*> v .: "games"
-    <*> v .: "home_game_stats"
-    <*> v .: "away_game_stats"
+    <$> v .:? "players"         .!= []
+    <*> v .:? "goalies"         .!= []
+    <*> v .:? "games"           .!= 0
+    <*> v .:? "home_game_stats" .!= newGameStats
+    <*> v .:? "away_game_stats" .!= newGameStats
 
 instance ToJSON Database where
   toJSON (Database players goalies games hgs ags) = object
