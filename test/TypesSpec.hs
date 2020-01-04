@@ -36,7 +36,7 @@ import Data.Aeson.Types (Value (Object))
 import qualified Data.HashMap.Strict as HM
 import Data.Ratio ((%))
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
-import System.Random (randomRIO)
+import System.Random (randomIO, randomRIO)
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Config
@@ -271,6 +271,7 @@ lensSpec lens getters setters = do
 
 player :: Player
 player = newPlayer 1 "Joe" "centre"
+  & pRookie   .~ False
   & pYtd      .~ playerStats 1
   & pLifetime .~ playerStats 2
 
@@ -279,6 +280,7 @@ playerJSON = Object $ HM.fromList
   [ ( "number",   toJSON (1 :: Int)           )
   , ( "name",     toJSON ("Joe" :: String)    )
   , ( "position", toJSON ("centre" :: String) )
+  , ( "rookie",   toJSON False                )
   , ( "ytd",      playerStatsJSON 1           )
   , ( "lifetime", playerStatsJSON 2           )
   ]
@@ -298,6 +300,7 @@ playerStatsJSON n = Object $ HM.fromList
 
 goalie :: Goalie
 goalie = newGoalie 1 "Joe"
+  & gRookie   .~ False
   & gYtd      .~ goalieStats 1
   & gLifetime .~ goalieStats 2
 
@@ -305,6 +308,7 @@ goalieJSON :: Value
 goalieJSON = Object $ HM.fromList
   [ ( "number",   toJSON (1 :: Int)         )
   , ( "name",     toJSON ("Joe" :: String ) )
+  , ( "rookie",   toJSON False              )
   , ( "ytd",      goalieStatsJSON 1         )
   , ( "lifetime", goalieStatsJSON 2         )
   ]
@@ -843,6 +847,7 @@ makePlayer = Player
   <$> makeNum
   <*> makeName
   <*> makeName
+  <*> makeBool
   <*> makePlayerStats
   <*> makePlayerStats
 
@@ -851,6 +856,7 @@ makeGoalie :: IO Goalie
 makeGoalie = Goalie
   <$> makeNum
   <*> makeName
+  <*> makeBool
   <*> makeGoalieStats
   <*> makeGoalieStats
 
@@ -874,6 +880,9 @@ makeGoalieStats = GoalieStats
 
 makeNum :: IO Int
 makeNum = randomRIO (1, 10)
+
+makeBool :: IO Bool
+makeBool = randomIO
 
 makeName :: IO String
 makeName = replicateM 10 $ randomRIO ('A', 'Z')
