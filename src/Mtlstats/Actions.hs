@@ -34,6 +34,7 @@ module Mtlstats.Actions
   , editPlayer
   , editSelectedPlayer
   , editGoalie
+  , editSelectedGoalie
   , addPlayer
   , addGoalie
   , resetCreatePlayerState
@@ -124,6 +125,19 @@ editSelectedPlayer f s = fromMaybe s $ do
 -- | Starts the 'Goalie' editing process
 editGoalie :: ProgState -> ProgState
 editGoalie = progMode .~ EditGoalie newEditGoalieState
+
+-- | Edits the selected 'Goalie'
+editSelectedGoalie
+  :: (Goalie -> Goalie)
+  -- ^ The modification to be made to the 'Goalie'
+  -> ProgState
+  -> ProgState
+editSelectedGoalie f s = fromMaybe s $ do
+  n <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+  let
+    goalies  = s^.database.dbGoalies
+    goalies' = modifyNth n f goalies
+  Just $ s & database.dbGoalies .~ goalies'
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
