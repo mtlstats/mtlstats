@@ -39,13 +39,12 @@ module Mtlstats.Prompt.EditGoalie
   , editGoalieLtTiesPrompt
   ) where
 
-import Control.Monad.Extra (whenJustM)
-import Control.Monad.Trans.State (gets, modify)
-import Lens.Micro ((^.), (.~), (%~))
+import Control.Monad.Trans.State (modify)
+import Lens.Micro ((.~))
 
+import Mtlstats.Actions
 import Mtlstats.Prompt
 import Mtlstats.Types
-import Mtlstats.Util
 
 -- | Prompt to select a 'Goalie' for editing
 goalieToEditPrompt :: Prompt
@@ -62,7 +61,7 @@ editGoalieNamePrompt :: Prompt
 editGoalieNamePrompt = namePrompt "Goalie name: " $ \name ->
   if null name
   then goto EGMenu
-  else editGoalie EGMenu $ gName .~ name
+  else doEdit EGMenu $ gName .~ name
 
 -- | Prompt to edit a goalie's YTD games played
 editGoalieYtdGamesPrompt
@@ -213,13 +212,12 @@ editNum
   -> Prompt
 editNum pStr mode f = numPromptWithFallback pStr
   (goto mode)
-  (editGoalie mode . f)
+  (doEdit mode . f)
 
-editGoalie :: EditGoalieMode -> (Goalie -> Goalie) -> Action ()
-editGoalie mode f =
-  whenJustM (gets (^.progMode.editGoalieStateL.egsSelectedGoalie)) $ \gid -> do
-    modify $ database.dbGoalies %~ modifyNth gid f
-    goto mode
+doEdit :: EditGoalieMode -> (Goalie -> Goalie) -> Action ()
+doEdit mode f = do
+  modify $ editSelectedGoalie f
+  goto mode
 
 goto :: EditGoalieMode -> Action ()
 goto = modify . (progMode.editGoalieStateL.egsMode .~)
