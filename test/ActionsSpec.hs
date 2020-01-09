@@ -53,6 +53,7 @@ spec = describe "Mtlstats.Actions" $ do
   createGoalieSpec
   editSpec
   editPlayerSpec
+  editSelectedPlayerSpec
   editGoalieSpec
   addPlayerSpec
   addGoalieSpec
@@ -208,6 +209,32 @@ editPlayerSpec = describe "editPlayer" $
   it "should change the mode appropriately" $ let
     s = editPlayer newProgState
     in show (s^.progMode) `shouldBe` "EditPlayer"
+
+editSelectedPlayerSpec :: Spec
+editSelectedPlayerSpec = describe "editSelectedPlayer" $ mapM_
+  (\(label, pState, expected) -> context label $
+    it "should edit the players appropriately" $ let
+      pState'  = editSelectedPlayer (pName .~ "foo") pState
+      players' = pState'^.database.dbPlayers
+      in players' `shouldBe` expected)
+
+  --  label,           initial state,         expected
+  [ ( "wrong mode",    baseState,             players  )
+  , ( "not selected",  changePlayer Nothing,  players  )
+  , ( "player 0",      changePlayer $ Just 0, changed0 )
+  , ( "player 1",      changePlayer $ Just 1, changed1 )
+  , ( "out of bounds", changePlayer $ Just 2, players  )
+  ]
+
+  where
+    baseState      = newProgState & database.dbPlayers .~ players
+    changePlayer n = baseState
+      & (progMode.editPlayerStateL.epsSelectedPlayer .~ n)
+    players        = [ player 0,  player 1  ]
+    changed0       = [ player' 0, player 1  ]
+    changed1       = [ player 0,  player' 1 ]
+    player n       = newPlayer n ("Player " ++ show n) "pos"
+    player' n      = newPlayer n "foo" "pos"
 
 editGoalieSpec :: Spec
 editGoalieSpec = describe "editGoalie" $
