@@ -29,6 +29,8 @@ import Lens.Micro ((^.))
 
 import Mtlstats.Config
 import Mtlstats.Format
+import Mtlstats.Helpers.Goalie
+import Mtlstats.Helpers.Player
 import Mtlstats.Types
 import Mtlstats.Util
 
@@ -219,7 +221,7 @@ filteredPlayerReport width label criteria showTotals lineNumbers ps = let
   body = map
     (\(p, stats) ->
       [ CellText $ show (p^.pNumber) ++ " "
-      , CellText $ p^.pName
+      , CellText $ playerName p
       ] ++ statsCells stats)
     fps
 
@@ -283,7 +285,7 @@ goalieReport width showTotals lineNumbers goalieData = let
   body = map
     (\(goalie, stats) ->
       [ CellText $ show (goalie^.gNumber) ++ " "
-      , CellText $ goalie^.gName
+      , CellText $ goalieName goalie
       ] ++ rowCells stats)
     goalieData
 
@@ -318,7 +320,7 @@ gameGoalieReport width goalieData = let
   body = map
     (\(goalie, stats) ->
       [ CellText $ show (goalie^.gNumber) ++ " "
-      , CellText $ goalie^.gName
+      , CellText $ goalieName goalie
       , CellText $ show $ stats^.gsMinsPlayed
       , CellText $ show $ stats^.gsGoalsAllowed
       , CellText $ showFloating $ gsAverage stats
