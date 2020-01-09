@@ -22,20 +22,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Helpers.PlayerSpec (spec) where
 
 import Lens.Micro ((&), (.~))
-import Test.Hspec (Spec, describe, it, shouldBe)
+import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Helpers.Player
 import Mtlstats.Types
 
 spec :: Spec
-spec = describe "Player"
+spec = describe "Player" $ do
   playerDetailsSpec
+  playerNameSpec
 
 playerDetailsSpec :: Spec
 playerDetailsSpec = describe "playerDetails" $
   it "should give a detailed description" $ let
 
     p = newPlayer 1 "Joe" "centre"
+      & pRookie .~ True
       & pYtd .~ PlayerStats
         { _psGoals   = 2
         , _psAssists = 3
@@ -49,7 +51,7 @@ playerDetailsSpec = describe "playerDetails" $
 
     expected = unlines
       [ "  Number: 1"
-      , "    Name: Joe"
+      , "    Name: Joe*"
       , "Position: centre"
       , ""
       , "             YTD Lifetime"
@@ -59,3 +61,19 @@ playerDetailsSpec = describe "playerDetails" $
       ]
 
     in playerDetails p `shouldBe` expected
+
+playerNameSpec :: Spec
+playerNameSpec = describe "playerName" $ mapM_
+  (\(label, p, expected) -> context label $
+    it ("should be " ++ expected) $
+      playerName p `shouldBe` expected)
+
+  --  label,        player,    expected
+  [ ( "rookie",     rookie,    "foo*"   )
+  , ( "non-rookie", nonRookie, "foo"    )
+  ]
+
+  where
+    rookie    = player True
+    nonRookie = player False
+    player r  = newPlayer 1 "foo" "centre" & pRookie .~ r

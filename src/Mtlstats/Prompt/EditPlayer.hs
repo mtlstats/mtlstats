@@ -31,13 +31,12 @@ module Mtlstats.Prompt.EditPlayer
   , editPlayerLtPMinPrompt
   ) where
 
-import Control.Monad.Extra (whenJustM)
-import Control.Monad.Trans.State (gets, modify)
-import Lens.Micro ((^.), (.~), (%~))
+import Control.Monad.Trans.State (modify)
+import Lens.Micro ((.~))
 
+import Mtlstats.Actions
 import Mtlstats.Prompt
 import Mtlstats.Types
-import Mtlstats.Util
 
 -- | Prompt to edit a player's number
 editPlayerNumPrompt :: Prompt
@@ -49,14 +48,14 @@ editPlayerNamePrompt :: Prompt
 editPlayerNamePrompt = namePrompt "Player name: " $ \name ->
   if null name
   then goto EPMenu
-  else editPlayer EPMenu $ pName .~ name
+  else doEdit EPMenu $ pName .~ name
 
 -- | Prompt to edit a player's position
 editPlayerPosPrompt :: Prompt
 editPlayerPosPrompt = ucStrPrompt "Player position: " $ \pos ->
   if null pos
   then goto EPMenu
-  else editPlayer EPMenu $ pPosition .~ pos
+  else doEdit EPMenu $ pPosition .~ pos
 
 -- | Prompt to edit a player's year-to-date goals
 editPlayerYtdGoalsPrompt
@@ -115,13 +114,12 @@ editNum
   -> Prompt
 editNum pStr mode f = numPromptWithFallback pStr
   (goto mode)
-  (editPlayer mode . f)
+  (doEdit mode . f)
 
-editPlayer :: EditPlayerMode -> (Player -> Player) -> Action ()
-editPlayer mode f =
-  whenJustM (gets (^.progMode.editPlayerStateL.epsSelectedPlayer)) $ \pid -> do
-    modify $ database.dbPlayers %~ modifyNth pid f
-    goto mode
+doEdit :: EditPlayerMode -> (Player -> Player) -> Action ()
+doEdit mode f = do
+  modify $ editSelectedPlayer f
+  goto mode
 
 goto :: EditPlayerMode -> Action ()
 goto = modify . (progMode.editPlayerStateL.epsMode .~)

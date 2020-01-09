@@ -106,6 +106,7 @@ module Mtlstats.Types (
   pNumber,
   pName,
   pPosition,
+  pRookie,
   pYtd,
   pLifetime,
   -- ** PlayerStats Lenses
@@ -115,6 +116,7 @@ module Mtlstats.Types (
   -- ** Goalie Lenses
   gNumber,
   gName,
+  gRookie,
   gYtd,
   gLifetime,
   -- ** GoalieStats Lenses
@@ -399,29 +401,6 @@ data Database = Database
   -- ^ Statistics for away games
   } deriving (Eq, Show)
 
-instance FromJSON Database where
-  parseJSON = withObject "Database" $ \v -> Database
-    <$> v .: "players"
-    <*> v .: "goalies"
-    <*> v .: "games"
-    <*> v .: "home_game_stats"
-    <*> v .: "away_game_stats"
-
-instance ToJSON Database where
-  toJSON (Database players goalies games hgs ags) = object
-    [ "players"         .= players
-    , "goalies"         .= goalies
-    , "games"           .= games
-    , "home_game_stats" .= hgs
-    , "away_game_stats" .= ags
-    ]
-  toEncoding (Database players goalies games hgs ags) = pairs $
-    "players"         .= players <>
-    "goalies"         .= goalies <>
-    "games"           .= games   <>
-    "home_game_stats" .= hgs     <>
-    "away_game_stats" .= ags
-
 -- | Represents a (non-goalie) player
 data Player = Player
   { _pNumber   :: Int
@@ -430,34 +409,13 @@ data Player = Player
   -- ^ The player's name
   , _pPosition :: String
   -- ^ The player's position
+  , _pRookie   :: Bool
+  -- ^ Indicates that the player is a rookie
   , _pYtd      :: PlayerStats
   -- ^ The Player's year-to-date stats
   , _pLifetime :: PlayerStats
   -- ^ The player's lifetime stats
   } deriving (Eq, Show)
-
-instance FromJSON Player where
-  parseJSON = withObject "Player" $ \v -> Player
-    <$> v .: "number"
-    <*> v .: "name"
-    <*> v .: "position"
-    <*> v .: "ytd"
-    <*> v .: "lifetime"
-
-instance ToJSON Player where
-  toJSON (Player num name pos ytd lt) = object
-    [ "number"   .= num
-    , "name"     .= name
-    , "position" .= pos
-    , "ytd"      .= ytd
-    , "lifetime" .= lt
-    ]
-  toEncoding (Player num name pos ytd lt) = pairs $
-    "number"   .= num  <>
-    "name"     .= name <>
-    "position" .= pos  <>
-    "ytd"      .= ytd  <>
-    "lifetime" .= lt
 
 -- | Represents a (non-goalie) player's stats
 data PlayerStats = PlayerStats
@@ -469,54 +427,19 @@ data PlayerStats = PlayerStats
   -- ^ The number of penalty minutes
   } deriving (Eq, Show)
 
-instance FromJSON PlayerStats where
-  parseJSON = withObject "PlayerStats" $ \v -> PlayerStats
-    <$> v .: "goals"
-    <*> v .: "assists"
-    <*> v .: "penalty_mins"
-
-instance ToJSON PlayerStats where
-  toJSON (PlayerStats g a pm) = object
-    [ "goals"        .= g
-    , "assists"      .= a
-    , "penalty_mins" .= pm
-    ]
-  toEncoding (PlayerStats g a pm) = pairs $
-    "goals"        .= g  <>
-    "assists"      .= a  <>
-    "penalty_mins" .= pm
-
 -- | Represents a goalie
 data Goalie = Goalie
   { _gNumber   :: Int
   -- ^ The goalie's number
   , _gName     :: String
   -- ^ The goalie's name
+  , _gRookie   :: Bool
+  -- ^ Indicates that the goalie is a rookie
   , _gYtd      :: GoalieStats
   -- ^ The goalie's year-to-date stats
   , _gLifetime :: GoalieStats
   -- ^ The goalie's lifetime stats
   } deriving (Eq, Show)
-
-instance FromJSON Goalie where
-  parseJSON = withObject "Goalie" $ \v -> Goalie
-    <$> v .: "number"
-    <*> v .: "name"
-    <*> v .: "ytd"
-    <*> v .: "lifetime"
-
-instance ToJSON Goalie where
-  toJSON (Goalie num name ytd lt) = object
-    [ "number"   .= num
-    , "name"     .= name
-    , "ytd"      .= ytd
-    , "lifetime" .= lt
-    ]
-  toEncoding (Goalie num name ytd lt) = pairs $
-    "number"   .= num  <>
-    "name"     .= name <>
-    "ytd"      .= ytd  <>
-    "lifetime" .= lt
 
 -- | Represents a goalie's stats
 data GoalieStats = GoalieStats
@@ -536,35 +459,6 @@ data GoalieStats = GoalieStats
   -- ^ The number of ties
   } deriving (Eq, Show)
 
-instance FromJSON GoalieStats where
-  parseJSON = withObject "GoalieStats" $ \v -> GoalieStats
-    <$> v .:? "games"         .!= 0
-    <*> v .:? "mins_played"   .!= 0
-    <*> v .:? "goals_allowed" .!= 0
-    <*> v .:? "shutouts"      .!= 0
-    <*> v .:? "wins"          .!= 0
-    <*> v .:? "losses"        .!= 0
-    <*> v .:? "ties"          .!= 0
-
-instance ToJSON GoalieStats where
-  toJSON (GoalieStats g m a s w l t) = object
-    [ "games"         .= g
-    , "mins_played"   .= m
-    , "goals_allowed" .= a
-    , "shutouts"      .= s
-    , "wins"          .= w
-    , "losses"        .= l
-    , "ties"          .= t
-    ]
-  toEncoding (GoalieStats g m a s w l t) = pairs $
-      "games"         .= g <>
-      "mins_played"   .= m <>
-      "goals_allowed" .= a <>
-      "shutouts"      .= s <>
-      "wins"          .= w <>
-      "losses"        .= l <>
-      "ties"          .= t
-
 -- | Game statistics
 data GameStats = GameStats
   { _gmsWins         :: Int
@@ -578,29 +472,6 @@ data GameStats = GameStats
   , _gmsGoalsAgainst :: Int
   -- ^ Goals against the team
   } deriving (Eq, Show)
-
-instance FromJSON GameStats where
-  parseJSON = withObject "GameStats" $ \v -> GameStats
-    <$> v .: "wins"
-    <*> v .: "losses"
-    <*> v .: "overtime"
-    <*> v .: "goals_for"
-    <*> v .: "goals_against"
-
-instance ToJSON GameStats where
-  toJSON (GameStats w l ot gf ga) = object
-    [ "wins"          .= w
-    , "losses"        .= l
-    , "overtime"      .= ot
-    , "goals_for"     .= gf
-    , "goals_against" .= ga
-    ]
-  toEncoding (GameStats w l ot gf ga) = pairs $
-    "wins"          .= w  <>
-    "losses"        .= l  <>
-    "overtime"      .= ot <>
-    "goals_for"     .= gf <>
-    "goals_against" .= ga
 
 -- | Defines a user prompt
 data Prompt = Prompt
@@ -654,6 +525,147 @@ makeLenses ''PlayerStats
 makeLenses ''Goalie
 makeLenses ''GoalieStats
 makeLenses ''GameStats
+
+instance FromJSON Database where
+  parseJSON = withObject "Database" $ \v -> Database
+    <$> v .:? "players"         .!= []
+    <*> v .:? "goalies"         .!= []
+    <*> v .:? "games"           .!= 0
+    <*> v .:? "home_game_stats" .!= newGameStats
+    <*> v .:? "away_game_stats" .!= newGameStats
+
+instance ToJSON Database where
+  toJSON (Database players goalies games hgs ags) = object
+    [ "players"         .= players
+    , "goalies"         .= goalies
+    , "games"           .= games
+    , "home_game_stats" .= hgs
+    , "away_game_stats" .= ags
+    ]
+  toEncoding (Database players goalies games hgs ags) = pairs $
+    "players"         .= players <>
+    "goalies"         .= goalies <>
+    "games"           .= games   <>
+    "home_game_stats" .= hgs     <>
+    "away_game_stats" .= ags
+
+instance FromJSON Player where
+  parseJSON = withObject "Player" $ \v -> Player
+    <$> v .:  "number"
+    <*> v .:  "name"
+    <*> v .:  "position"
+    <*> v .:? "rookie"   .!= False
+    <*> v .:? "ytd"      .!= newPlayerStats
+    <*> v .:? "lifetime" .!= newPlayerStats
+
+instance ToJSON Player where
+  toJSON (Player num name pos rk ytd lt) = object
+    [ "number"   .= num
+    , "name"     .= name
+    , "position" .= pos
+    , "rookie"   .= rk
+    , "ytd"      .= ytd
+    , "lifetime" .= lt
+    ]
+  toEncoding (Player num name pos rk ytd lt) = pairs $
+    "number"   .= num  <>
+    "name"     .= name <>
+    "position" .= pos  <>
+    "rookie"   .= rk   <>
+    "ytd"      .= ytd  <>
+    "lifetime" .= lt
+
+instance FromJSON PlayerStats where
+  parseJSON = withObject "PlayerStats" $ \v -> PlayerStats
+    <$> v .:? "goals"        .!= 0
+    <*> v .:? "assists"      .!= 0
+    <*> v .:? "penalty_mins" .!= 0
+
+instance ToJSON PlayerStats where
+  toJSON (PlayerStats g a pm) = object
+    [ "goals"        .= g
+    , "assists"      .= a
+    , "penalty_mins" .= pm
+    ]
+  toEncoding (PlayerStats g a pm) = pairs $
+    "goals"        .= g  <>
+    "assists"      .= a  <>
+    "penalty_mins" .= pm
+
+instance FromJSON Goalie where
+  parseJSON = withObject "Goalie" $ \v -> Goalie
+    <$> v .:  "number"
+    <*> v .:  "name"
+    <*> v .:? "rookie"   .!= False
+    <*> v .:? "ytd"      .!= newGoalieStats
+    <*> v .:? "lifetime" .!= newGoalieStats
+
+instance ToJSON Goalie where
+  toJSON (Goalie num name rk ytd lt) = object
+    [ "number"   .= num
+    , "name"     .= name
+    , "ytd"      .= ytd
+    , "rookie"   .= rk
+    , "lifetime" .= lt
+    ]
+  toEncoding (Goalie num name rk ytd lt) = pairs $
+    "number"   .= num  <>
+    "name"     .= name <>
+    "rookie"   .= rk   <>
+    "ytd"      .= ytd  <>
+    "lifetime" .= lt
+
+instance FromJSON GoalieStats where
+  parseJSON = withObject "GoalieStats" $ \v -> GoalieStats
+    <$> v .:? "games"         .!= 0
+    <*> v .:? "mins_played"   .!= 0
+    <*> v .:? "goals_allowed" .!= 0
+    <*> v .:? "shutouts"      .!= 0
+    <*> v .:? "wins"          .!= 0
+    <*> v .:? "losses"        .!= 0
+    <*> v .:? "ties"          .!= 0
+
+instance ToJSON GoalieStats where
+  toJSON (GoalieStats g m a s w l t) = object
+    [ "games"         .= g
+    , "mins_played"   .= m
+    , "goals_allowed" .= a
+    , "shutouts"      .= s
+    , "wins"          .= w
+    , "losses"        .= l
+    , "ties"          .= t
+    ]
+  toEncoding (GoalieStats g m a s w l t) = pairs $
+      "games"         .= g <>
+      "mins_played"   .= m <>
+      "goals_allowed" .= a <>
+      "shutouts"      .= s <>
+      "wins"          .= w <>
+      "losses"        .= l <>
+      "ties"          .= t
+
+instance FromJSON GameStats where
+  parseJSON = withObject "GameStats" $ \v -> GameStats
+    <$> v .: "wins"
+    <*> v .: "losses"
+    <*> v .: "overtime"
+    <*> v .: "goals_for"
+    <*> v .: "goals_against"
+
+instance ToJSON GameStats where
+  toJSON (GameStats w l ot gf ga) = object
+    [ "wins"          .= w
+    , "losses"        .= l
+    , "overtime"      .= ot
+    , "goals_for"     .= gf
+    , "goals_against" .= ga
+    ]
+  toEncoding (GameStats w l ot gf ga) = pairs $
+    "wins"          .= w  <>
+    "losses"        .= l  <>
+    "overtime"      .= ot <>
+    "goals_for"     .= gf <>
+    "goals_against" .= ga
 
 gameStateL :: Lens' ProgMode GameState
 gameStateL = lens
@@ -782,6 +794,7 @@ newPlayer num name pos = Player
   { _pNumber   = num
   , _pName     = name
   , _pPosition = pos
+  , _pRookie   = True
   , _pYtd      = newPlayerStats
   , _pLifetime = newPlayerStats
   }
@@ -804,6 +817,7 @@ newGoalie
 newGoalie num name = Goalie
   { _gNumber   = num
   , _gName     = name
+  , _gRookie   = True
   , _gYtd      = newGoalieStats
   , _gLifetime = newGoalieStats
   }

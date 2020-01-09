@@ -32,7 +32,9 @@ module Mtlstats.Actions
   , createGoalie
   , edit
   , editPlayer
+  , editSelectedPlayer
   , editGoalie
+  , editSelectedGoalie
   , addPlayer
   , addGoalie
   , resetCreatePlayerState
@@ -47,6 +49,7 @@ import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (%~))
 
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState
@@ -106,9 +109,35 @@ edit = progMode .~ EditMenu
 editPlayer :: ProgState -> ProgState
 editPlayer = progMode .~ EditPlayer newEditPlayerState
 
+-- | Edits the selected 'Player'
+editSelectedPlayer
+  :: (Player -> Player)
+  -- ^ The modification to be made to the 'Player'
+  -> ProgState
+  -> ProgState
+editSelectedPlayer f s = fromMaybe s $ do
+  n <- s^.progMode.editPlayerStateL.epsSelectedPlayer
+  let
+    players  = s^.database.dbPlayers
+    players' = modifyNth n f players
+  Just $ s & database.dbPlayers .~ players'
+
 -- | Starts the 'Goalie' editing process
 editGoalie :: ProgState -> ProgState
 editGoalie = progMode .~ EditGoalie newEditGoalieState
+
+-- | Edits the selected 'Goalie'
+editSelectedGoalie
+  :: (Goalie -> Goalie)
+  -- ^ The modification to be made to the 'Goalie'
+  -> ProgState
+  -> ProgState
+editSelectedGoalie f s = fromMaybe s $ do
+  n <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+  let
+    goalies  = s^.database.dbGoalies
+    goalies' = modifyNth n f goalies
+  Just $ s & database.dbGoalies .~ goalies'
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState

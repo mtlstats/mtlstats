@@ -26,7 +26,7 @@ module Mtlstats.Menu.EditPlayer
   ) where
 
 import Control.Monad.Trans.State (modify)
-import Lens.Micro ((.~))
+import Lens.Micro ((.~), (%~))
 
 import Mtlstats.Actions
 import Mtlstats.Types
@@ -35,18 +35,21 @@ import Mtlstats.Types.Menu
 -- | The 'Player' edit menu
 editPlayerMenu :: Menu ()
 editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
-  (\(ch, label, mode) -> MenuItem ch label $
-    modify $ case mode of
-      Nothing -> edit
-      Just m  -> progMode.editPlayerStateL.epsMode .~ m)
+  (\(ch, label, action) -> MenuItem ch label $ modify action)
+
   --  key, label,                 value
-  [ ( '1', "Edit number",         Just EPNumber   )
-  , ( '2', "Edit name",           Just EPName     )
-  , ( '3', "Edit position",       Just EPPosition )
-  , ( '4', "Edit YTD stats",      Just EPYtd      )
-  , ( '5', "Edit lifetime stats", Just EPLifetime )
-  , ( 'R', "Return to Edit Menu", Nothing         )
+  [ ( '1', "Edit number",         set EPNumber   )
+  , ( '2', "Edit name",           set EPName     )
+  , ( '3', "Edit position",       set EPPosition )
+  , ( '4', "Toggle rookie flag",  toggle         )
+  , ( '5', "Edit YTD stats",      set EPYtd      )
+  , ( '6', "Edit lifetime stats", set EPLifetime )
+  , ( 'R', "Return to Edit Menu", edit           )
   ]
+
+  where
+    set mode = progMode.editPlayerStateL.epsMode .~ mode
+    toggle   = editSelectedPlayer $ pRookie %~ not
 
 -- | The 'Player' YTD stats edit menu
 editPlayerYtdMenu :: Menu ()

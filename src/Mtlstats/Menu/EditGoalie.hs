@@ -26,7 +26,7 @@ module Mtlstats.Menu.EditGoalie
   ) where
 
 import Control.Monad.Trans.State (modify)
-import Lens.Micro ((.~))
+import Lens.Micro ((.~), (%~))
 
 import Mtlstats.Actions
 import Mtlstats.Types
@@ -35,17 +35,20 @@ import Mtlstats.Types.Menu
 -- | The 'Goalie' edit menu
 editGoalieMenu :: Menu ()
 editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
-  (\(ch, label, mode) -> MenuItem ch label $
-    modify $ case mode of
-      Nothing -> edit
-      Just m  -> progMode.editGoalieStateL.egsMode .~ m)
+  (\(ch, label, action) -> MenuItem ch label $ modify action)
+
   --  key, label,                 value
-  [ ( '1', "Edit number",         Just EGNumber   )
-  , ( '2', "Edit name",           Just EGName     )
-  , ( '3', "Edit YTD stats",      Just EGYtd      )
-  , ( '4', "Edit Lifetime stats", Just EGLifetime )
-  , ( 'R', "Return to Edit Menu", Nothing         )
+  [ ( '1', "Edit number",         set EGNumber   )
+  , ( '2', "Edit name",           set EGName     )
+  , ( '3', "Toggle rookie flag",  toggle         )
+  , ( '4', "Edit YTD stats",      set EGYtd      )
+  , ( '5', "Edit Lifetime stats", set EGLifetime )
+  , ( 'R', "Return to Edit Menu", edit           )
   ]
+
+  where
+    set mode = progMode.editGoalieStateL.egsMode .~ mode
+    toggle   = editSelectedGoalie (gRookie %~ not)
 
 -- | The 'Goalie' YTD edit menu
 editGoalieYtdMenu :: Menu ()

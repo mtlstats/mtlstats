@@ -22,18 +22,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Helpers.GoalieSpec (spec) where
 
 import Lens.Micro ((&), (.~), (%~))
-import Test.Hspec (Spec, describe, it, shouldBe)
+import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Helpers.Goalie
 import Mtlstats.Types
 
 spec :: Spec
-spec = describe "Goalie"
+spec = describe "Goalie" $ do
   goalieDetailsSpec
+  goalieNameSpec
 
 goalieDetailsSpec :: Spec
 goalieDetailsSpec = describe "goalieDetails" $ let
   input = newGoalie 1 "Joe"
+    & gRookie .~ True
     & gYtd
       %~ ( gsGames        .~ 2  )
       .  ( gsMinsPlayed   .~ 3  )
@@ -53,7 +55,7 @@ goalieDetailsSpec = describe "goalieDetails" $ let
 
   expected = unlines
     [ "Number: 1"
-    , "  Name: Joe"
+    , "  Name: Joe*"
     , ""
     , "              YTD Lifetime"
     , " Games played   2        9"
@@ -67,3 +69,17 @@ goalieDetailsSpec = describe "goalieDetails" $ let
 
   in it "should format the output correctly" $
     goalieDetails input `shouldBe` expected
+
+goalieNameSpec :: Spec
+goalieNameSpec = describe "goalieName" $ mapM_
+  (\(label, g, expected) -> context label $
+    it ("should be " ++ expected) $
+      goalieName g `shouldBe` expected)
+
+  --  label,        goalie,       expected
+  [ ( "rookie",     goalie True,  "foo*"   )
+  , ( "non-rookie", goalie False, "foo"    )
+  ]
+
+  where
+    goalie r = newGoalie 1 "foo" & gRookie .~ r

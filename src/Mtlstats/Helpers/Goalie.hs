@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Helpers.Goalie (goalieDetails) where
+module Mtlstats.Helpers.Goalie (goalieDetails, goalieName) where
 
 import Lens.Micro ((^.))
 
@@ -31,7 +31,7 @@ goalieDetails :: Goalie -> String
 goalieDetails g = let
   header = unlines $ labelTable
     [ ( "Number", show $ g^.gNumber )
-    , ( "Name",   g^.gName          )
+    , ( "Name",   goalieName g      )
     ]
 
   body = unlines $ numTable ["YTD", "Lifetime"] $ map
@@ -46,3 +46,13 @@ goalieDetails g = let
     ]
 
   in header ++ "\n" ++ body
+
+-- | Returns the goalie name, modified if they are a rookie
+goalieName :: Goalie -> String
+goalieName g = let
+
+  suffix = if g^.gRookie
+    then "*"
+    else ""
+
+  in g^.gName ++ suffix
