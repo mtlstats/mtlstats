@@ -254,8 +254,8 @@ editSelectedGoalieSpec = describe "editSelectedGoalie" $ mapM_
   --  label,           initial state,         expected
   [ ( "wrong mode",    baseState,             goalies  )
   , ( "not selected",  changeGoalie Nothing,  goalies  )
-  , ( "player 0",      changeGoalie $ Just 0, changed0 )
-  , ( "player 1",      changeGoalie $ Just 1, changed1 )
+  , ( "goalie 0",      changeGoalie $ Just 0, changed0 )
+  , ( "goalie 1",      changeGoalie $ Just 1, changed1 )
   , ( "out of bounds", changeGoalie $ Just 2, goalies  )
   ]
 
