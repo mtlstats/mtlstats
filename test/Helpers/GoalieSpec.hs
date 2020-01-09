@@ -35,6 +35,7 @@ spec = describe "Goalie" $ do
 goalieDetailsSpec :: Spec
 goalieDetailsSpec = describe "goalieDetails" $ let
   input = newGoalie 1 "Joe"
+    & gRookie .~ True
     & gYtd
       %~ ( gsGames        .~ 2  )
       .  ( gsMinsPlayed   .~ 3  )
@@ -54,7 +55,7 @@ goalieDetailsSpec = describe "goalieDetails" $ let
 
   expected = unlines
     [ "Number: 1"
-    , "  Name: Joe"
+    , "  Name: Joe*"
     , ""
     , "              YTD Lifetime"
     , " Games played   2        9"

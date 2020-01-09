@@ -31,7 +31,7 @@ goalieDetails :: Goalie -> String
 goalieDetails g = let
   header = unlines $ labelTable
     [ ( "Number", show $ g^.gNumber )
-    , ( "Name",   g^.gName          )
+    , ( "Name",   goalieName g      )
     ]
 
   body = unlines $ numTable ["YTD", "Lifetime"] $ map
