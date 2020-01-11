@@ -281,6 +281,7 @@ playerJSON = Object $ HM.fromList
   , ( "name",     toJSON ("Joe" :: String)    )
   , ( "position", toJSON ("centre" :: String) )
   , ( "rookie",   toJSON False                )
+  , ( "active",   toJSON True                 )
   , ( "ytd",      playerStatsJSON 1           )
   , ( "lifetime", playerStatsJSON 2           )
   ]
@@ -309,6 +310,7 @@ goalieJSON = Object $ HM.fromList
   [ ( "number",   toJSON (1 :: Int)         )
   , ( "name",     toJSON ("Joe" :: String ) )
   , ( "rookie",   toJSON False              )
+  , ( "active",   toJSON True               )
   , ( "ytd",      goalieStatsJSON 1         )
   , ( "lifetime", goalieStatsJSON 2         )
   ]
