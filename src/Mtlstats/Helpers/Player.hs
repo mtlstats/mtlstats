@@ -49,8 +49,12 @@ playerDetails p = unlines $ top ++ [""] ++ table
 playerName :: Player -> String
 playerName p = let
 
+  prefix = if p^.pActive
+    then ""
+    else "*"
+
   suffix = if p^.pRookie
     then "*"
     else ""
 
-  in p^.pName ++ suffix
+  in prefix ++ p^.pName ++ suffix

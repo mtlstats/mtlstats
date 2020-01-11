@@ -71,9 +71,13 @@ playerNameSpec = describe "playerName" $ mapM_
   --  label,        player,    expected
   [ ( "rookie",     rookie,    "foo*"   )
   , ( "non-rookie", nonRookie, "foo"    )
+  , ( "retired",    retired,   "*foo"  )
   ]
 
   where
-    rookie    = player True
-    nonRookie = player False
-    player r  = newPlayer 1 "foo" "centre" & pRookie .~ r
+    rookie    = player True True
+    nonRookie = player False True
+    retired   = player False False
+    player r a = newPlayer 1 "foo" "centre"
+      & pRookie .~ r
+      & pActive .~ a
