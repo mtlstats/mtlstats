@@ -848,6 +848,7 @@ makePlayer = Player
   <*> makeName
   <*> makeName
   <*> makeBool
+  <*> makeBool
   <*> makePlayerStats
   <*> makePlayerStats
 
@@ -856,6 +857,7 @@ makeGoalie :: IO Goalie
 makeGoalie = Goalie
   <$> makeNum
   <*> makeName
+  <*> makeBool
   <*> makeBool
   <*> makeGoalieStats
   <*> makeGoalieStats
