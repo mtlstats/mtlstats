@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module ActionsSpec (spec) where
 
 import Control.Monad (replicateM)
-import Lens.Micro ((^.), (&), (.~), (?~))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Test.Hspec
   ( Spec
   , context
@@ -46,6 +46,7 @@ spec = describe "Mtlstats.Actions" $ do
   startNewSeasonSpec
   startNewGameSpec
   resetYtdSpec
+  clearRookiesSpec
   resetStandingsSpec
   addCharSpec
   removeCharSpec
@@ -128,6 +129,45 @@ resetYtdSpec = describe "resetYtd" $
         lt ^. gsLosses        `shouldNotBe` 0
         lt ^. gsTies          `shouldNotBe` 0) $
       s ^. database . dbGoalies
+
+clearRookiesSpec :: Spec
+clearRookiesSpec = describe "clearRookies" $ do
+  let
+
+    players =
+      [ newPlayer 1 "Joe" "centre" & pRookie .~ True
+      , newPlayer 2 "Bob" "centre" & pRookie .~ False
+      ]
+
+    goalies =
+      [ newGoalie 3 "Bill" & gRookie .~ True
+      , newGoalie 4 "Doug" & gRookie .~ False
+      ]
+
+    ps = newProgState
+      & database
+        %~ (dbPlayers .~ players)
+        .  (dbGoalies .~ goalies)
+
+    ps' = clearRookies ps
+
+  context "Players" $ mapM_
+    (\p -> let
+      name  = p^.pName
+      rFlag = p^.pRookie
+      in context name $
+        it "should not be a rookie" $
+          rFlag `shouldBe` False)
+    (ps'^.database.dbPlayers)
+
+  context "Goalies" $ mapM_
+    (\g -> let
+      name  = g^.gName
+      rFlag = g^.gRookie
+      in context name $
+        it "should not be a rookie" $
+          rFlag `shouldBe` False)
+    (ps'^.database.dbGoalies)
 
 resetStandingsSpec :: Spec
 resetStandingsSpec = describe "resetStandings" $ do

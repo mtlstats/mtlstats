@@ -131,6 +131,7 @@ newSeasonMenu :: Menu ()
 newSeasonMenu = Menu "*** SEASON TYPE ***" ()
   [ MenuItem 'R' "Regular Season" $ modify
     $ resetYtd
+    . clearRookies
     . resetStandings
     . startNewGame
   , MenuItem 'P' "Playoffs" $ modify
