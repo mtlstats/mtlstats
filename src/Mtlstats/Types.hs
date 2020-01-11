@@ -107,6 +107,7 @@ module Mtlstats.Types (
   pName,
   pPosition,
   pRookie,
+  pActive,
   pYtd,
   pLifetime,
   -- ** PlayerStats Lenses
@@ -117,6 +118,7 @@ module Mtlstats.Types (
   gNumber,
   gName,
   gRookie,
+  gActive,
   gYtd,
   gLifetime,
   -- ** GoalieStats Lenses
@@ -411,6 +413,8 @@ data Player = Player
   -- ^ The player's position
   , _pRookie   :: Bool
   -- ^ Indicates that the player is a rookie
+  , _pActive   :: Bool
+  -- ^ Indicates that the player is active
   , _pYtd      :: PlayerStats
   -- ^ The Player's year-to-date stats
   , _pLifetime :: PlayerStats
@@ -435,6 +439,8 @@ data Goalie = Goalie
   -- ^ The goalie's name
   , _gRookie   :: Bool
   -- ^ Indicates that the goalie is a rookie
+  , _gActive   :: Bool
+  -- ^ Indicates that the goalie is active
   , _gYtd      :: GoalieStats
   -- ^ The goalie's year-to-date stats
   , _gLifetime :: GoalieStats
@@ -555,23 +561,26 @@ instance FromJSON Player where
     <*> v .:  "name"
     <*> v .:  "position"
     <*> v .:? "rookie"   .!= False
+    <*> v .:? "active"   .!= True
     <*> v .:? "ytd"      .!= newPlayerStats
     <*> v .:? "lifetime" .!= newPlayerStats
 
 instance ToJSON Player where
-  toJSON (Player num name pos rk ytd lt) = object
+  toJSON (Player num name pos rk act ytd lt) = object
     [ "number"   .= num
     , "name"     .= name
     , "position" .= pos
     , "rookie"   .= rk
+    , "active"   .= act
     , "ytd"      .= ytd
     , "lifetime" .= lt
     ]
-  toEncoding (Player num name pos rk ytd lt) = pairs $
+  toEncoding (Player num name pos rk act ytd lt) = pairs $
     "number"   .= num  <>
     "name"     .= name <>
     "position" .= pos  <>
     "rookie"   .= rk   <>
+    "active"   .= act  <>
     "ytd"      .= ytd  <>
     "lifetime" .= lt
 
@@ -597,21 +606,24 @@ instance FromJSON Goalie where
     <$> v .:  "number"
     <*> v .:  "name"
     <*> v .:? "rookie"   .!= False
+    <*> v .:? "active"   .!= True
     <*> v .:? "ytd"      .!= newGoalieStats
     <*> v .:? "lifetime" .!= newGoalieStats
 
 instance ToJSON Goalie where
-  toJSON (Goalie num name rk ytd lt) = object
+  toJSON (Goalie num name rk act ytd lt) = object
     [ "number"   .= num
     , "name"     .= name
     , "ytd"      .= ytd
     , "rookie"   .= rk
+    , "active"   .= act
     , "lifetime" .= lt
     ]
-  toEncoding (Goalie num name rk ytd lt) = pairs $
+  toEncoding (Goalie num name rk act ytd lt) = pairs $
     "number"   .= num  <>
     "name"     .= name <>
     "rookie"   .= rk   <>
+    "active"   .= act  <>
     "ytd"      .= ytd  <>
     "lifetime" .= lt
 
@@ -795,6 +807,7 @@ newPlayer num name pos = Player
   , _pName     = name
   , _pPosition = pos
   , _pRookie   = True
+  , _pActive   = True
   , _pYtd      = newPlayerStats
   , _pLifetime = newPlayerStats
   }
@@ -818,6 +831,7 @@ newGoalie num name = Goalie
   { _gNumber   = num
   , _gName     = name
   , _gRookie   = True
+  , _gActive   = True
   , _gYtd      = newGoalieStats
   , _gLifetime = newGoalieStats
   }
