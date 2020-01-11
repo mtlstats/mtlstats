@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Actions
   ( startNewSeason
   , resetYtd
+  , clearRookies
   , resetStandings
   , startNewGame
   , addChar
@@ -60,6 +61,12 @@ resetYtd :: ProgState -> ProgState
 resetYtd
   = (database . dbPlayers %~ map (pYtd .~ newPlayerStats))
   . (database . dbGoalies %~ map (gYtd .~ newGoalieStats))
+
+-- | Clears the rookie flag from all players/goalies
+clearRookies :: ProgState -> ProgState
+clearRookies = database
+  %~ (dbPlayers %~ map (pRookie .~ False))
+  .  (dbGoalies %~ map (gRookie .~ False))
 
 -- | Resets game standings
 resetStandings :: ProgState -> ProgState
