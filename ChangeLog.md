@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Added active flag to players/goalies
+
 ## 0.10.0
 - Don't show player number zero in reports
 - Fixed player/goalie name capitalisation on edit
