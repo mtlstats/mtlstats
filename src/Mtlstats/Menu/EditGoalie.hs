@@ -40,15 +40,17 @@ editGoalieMenu = Menu "*** EDIT GOALTENDER ***" () $ map
   --  key, label,                 value
   [ ( '1', "Edit number",         set EGNumber   )
   , ( '2', "Edit name",           set EGName     )
-  , ( '3', "Toggle rookie flag",  toggle         )
-  , ( '4', "Edit YTD stats",      set EGYtd      )
-  , ( '5', "Edit Lifetime stats", set EGLifetime )
+  , ( '3', "Toggle rookie flag",  toggleRookie   )
+  , ( '4', "Toggle active flag",  toggleActive   )
+  , ( '5', "Edit YTD stats",      set EGYtd      )
+  , ( '6', "Edit Lifetime stats", set EGLifetime )
   , ( 'R', "Return to Edit Menu", edit           )
   ]
 
   where
-    set mode = progMode.editGoalieStateL.egsMode .~ mode
-    toggle   = editSelectedGoalie (gRookie %~ not)
+    set mode     = progMode.editGoalieStateL.egsMode .~ mode
+    toggleRookie = editSelectedGoalie (gRookie %~ not)
+    toggleActive = editSelectedGoalie (gActive %~ not)
 
 -- | The 'Goalie' YTD edit menu
 editGoalieYtdMenu :: Menu ()

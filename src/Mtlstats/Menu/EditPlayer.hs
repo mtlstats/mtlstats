@@ -41,15 +41,17 @@ editPlayerMenu = Menu "*** EDIT PLAYER ***" () $ map
   [ ( '1', "Edit number",         set EPNumber   )
   , ( '2', "Edit name",           set EPName     )
   , ( '3', "Edit position",       set EPPosition )
-  , ( '4', "Toggle rookie flag",  toggle         )
-  , ( '5', "Edit YTD stats",      set EPYtd      )
-  , ( '6', "Edit lifetime stats", set EPLifetime )
+  , ( '4', "Toggle rookie flag",  toggleRookie   )
+  , ( '5', "Toggle active flag",  toggleActive   )
+  , ( '6', "Edit YTD stats",      set EPYtd      )
+  , ( '7', "Edit lifetime stats", set EPLifetime )
   , ( 'R', "Return to Edit Menu", edit           )
   ]
 
   where
-    set mode = progMode.editPlayerStateL.epsMode .~ mode
-    toggle   = editSelectedPlayer $ pRookie %~ not
+    set mode     = progMode.editPlayerStateL.epsMode .~ mode
+    toggleRookie = editSelectedPlayer $ pRookie %~ not
+    toggleActive = editSelectedPlayer $ pActive %~ not
 
 -- | The 'Player' YTD stats edit menu
 editPlayerYtdMenu :: Menu ()
