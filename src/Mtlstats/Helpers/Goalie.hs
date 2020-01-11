@@ -51,8 +51,12 @@ goalieDetails g = let
 goalieName :: Goalie -> String
 goalieName g = let
 
+  prefix = if g^.gActive
+    then ""
+    else "*"
+
   suffix = if g^.gRookie
     then "*"
     else ""
 
-  in g^.gName ++ suffix
+  in prefix ++ g^.gName ++ suffix

@@ -76,10 +76,16 @@ goalieNameSpec = describe "goalieName" $ mapM_
     it ("should be " ++ expected) $
       goalieName g `shouldBe` expected)
 
-  --  label,        goalie,       expected
-  [ ( "rookie",     goalie True,  "foo*"   )
-  , ( "non-rookie", goalie False, "foo"    )
+  --  label,        goalie,  expected
+  [ ( "rookie",     rookie,  "foo*"   )
+  , ( "non-rookie", active,  "foo"    )
+  , ( "retired",    retired, "*foo"   )
   ]
 
   where
-    goalie r = newGoalie 1 "foo" & gRookie .~ r
+    rookie     = goalie True True
+    active     = goalie False True
+    retired    = goalie False False
+    goalie r a = newGoalie 1 "foo"
+      & gRookie .~ r
+      & gActive .~ a
