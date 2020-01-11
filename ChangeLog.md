@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.10.0
 - Don't show player number zero in reports
 - Fixed player/goalie name capitalisation on edit
 - Return to correct edit menus after editing player stats
