@@ -35,19 +35,11 @@ module Mtlstats.Menu (
   editMenu
 ) where
 
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Aeson (encodeFile)
 import Data.Char (toUpper)
 import qualified Data.Map as M
 import Data.Maybe (mapMaybe)
 import Lens.Micro ((^.), (?~))
-import Lens.Micro.Extras (view)
-import System.EasyFile
-  ( createDirectoryIfMissing
-  , getAppUserDataDirectory
-  , (</>)
-  )
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -116,14 +108,8 @@ mainMenu = Menu "*** MAIN MENU ***" True
     modify startNewGame >> return True
   , MenuItem '3' "Edit" $
     modify edit >> return True
-  , MenuItem 'X' "Exit" $ do
-    db <- gets $ view database
-    liftIO $ do
-      dir <- getAppUserDataDirectory appName
-      let dbFile = dir </> dbFname
-      createDirectoryIfMissing True dir
-      encodeFile dbFile db
-    return False
+  , MenuItem 'X' "Exit" $
+    saveDatabase dbFname >> return False
   ]
 
 -- | The new season menu

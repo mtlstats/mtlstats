@@ -43,12 +43,21 @@ module Mtlstats.Actions
   , backHome
   , scrollUp
   , scrollDown
+  , saveDatabase
   ) where
 
-import Control.Monad.Trans.State (modify)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.State (gets, modify)
+import Data.Aeson (encodeFile)
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (%~))
+import System.EasyFile
+  ( createDirectoryIfMissing
+  , getAppUserDataDirectory
+  , (</>)
+  )
 
+import Mtlstats.Config
 import Mtlstats.Types
 import Mtlstats.Util
 
@@ -198,3 +207,13 @@ scrollUp = scrollOffset %~ max 0 . pred
 -- | Scrolls the display down
 scrollDown :: ProgState -> ProgState
 scrollDown = scrollOffset %~ succ
+
+-- | Saves the database
+saveDatabase :: String -> Action ()
+saveDatabase fn = do
+  db <- gets (^.database)
+  liftIO $ do
+    dir <- getAppUserDataDirectory appName
+    let dbFile = dir </> fn
+    createDirectoryIfMissing True dir
+    encodeFile dbFile db
