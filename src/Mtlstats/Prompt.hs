@@ -34,6 +34,7 @@ module Mtlstats.Prompt (
   numPromptWithFallback,
   selectPrompt,
   -- * Individual prompts
+  newSeasonPrompt,
   playerNumPrompt,
   playerNamePrompt,
   playerPosPrompt,
@@ -166,6 +167,11 @@ numPromptWithFallback pStr fallback act = Prompt
       Just n  -> act n
   , promptSpecialKey  = const $ return ()
   }
+
+-- | Prompts the user for a filename to save a backup of the database
+-- to
+newSeasonPrompt :: Prompt
+newSeasonPrompt = undefined
 
 -- | Builds a selection prompt
 selectPrompt :: SelectParams a -> Prompt

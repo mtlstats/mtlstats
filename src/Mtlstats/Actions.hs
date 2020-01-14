@@ -54,7 +54,9 @@ import Mtlstats.Util
 
 -- | Starts a new season
 startNewSeason :: ProgState -> ProgState
-startNewSeason = (progMode .~ NewSeason) . (database . dbGames .~ 0)
+startNewSeason
+  = (progMode .~ NewSeason False)
+  . (database.dbGames .~ 0)
 
 -- | Resets all players year-to-date stats
 resetYtd :: ProgState -> ProgState
