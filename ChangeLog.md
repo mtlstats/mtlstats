@@ -3,6 +3,7 @@
 ## current
 - Added active flag to players/goalies
 - Clear rookie flag on new (regular) season
+- Save a copy of the database on new season
 
 ## 0.10.0
 - Don't show player number zero in reports

@@ -232,7 +232,7 @@ data ProgState = ProgState
 -- | The program mode
 data ProgMode
   = MainMenu
-  | NewSeason
+  | NewSeason Bool
   | NewGame GameState
   | EditMenu
   | CreatePlayer CreatePlayerState
@@ -242,7 +242,7 @@ data ProgMode
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
-  show NewSeason        = "NewSeason"
+  show (NewSeason _)    = "NewSeason"
   show (NewGame _)      = "NewGame"
   show EditMenu         = "EditMenu"
   show (CreatePlayer _) = "CreatePlayer"

@@ -34,6 +34,7 @@ module Mtlstats.Prompt (
   numPromptWithFallback,
   selectPrompt,
   -- * Individual prompts
+  newSeasonPrompt,
   playerNumPrompt,
   playerNamePrompt,
   playerPosPrompt,
@@ -47,7 +48,7 @@ module Mtlstats.Prompt (
 import Control.Monad (when)
 import Control.Monad.Extra (whenJust)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Char (isDigit, toUpper)
+import Data.Char (isAlphaNum, isDigit, toUpper)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Lens.Micro.Extras (view)
 import Text.Read (readMaybe)
@@ -166,6 +167,22 @@ numPromptWithFallback pStr fallback act = Prompt
       Just n  -> act n
   , promptSpecialKey  = const $ return ()
   }
+
+-- | Prompts the user for a filename to save a backup of the database
+-- to
+newSeasonPrompt :: Prompt
+newSeasonPrompt = prompt
+  { promptProcessChar = \ch str -> if isAlphaNum ch
+    then str ++ [toUpper ch]
+    else str
+  }
+  where
+    prompt = strPrompt "Filename to save database: " $ \fn ->
+      if null fn
+      then modify backHome
+      else do
+        saveDatabase $ fn ++ ".json"
+        modify $ progMode .~ NewSeason True
 
 -- | Builds a selection prompt
 selectPrompt :: SelectParams a -> Prompt
