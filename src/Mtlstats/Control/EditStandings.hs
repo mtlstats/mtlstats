@@ -46,4 +46,10 @@ header = do
   return $ C.drawString $ unlines $ table ++ [""]
 
 valsFor :: GameStats -> [Int]
-valsFor = undefined
+valsFor gs =
+  [ gs^.gmsWins
+  , gs^.gmsLosses
+  , gs^.gmsOvertime
+  , gs^.gmsGoalsFor
+  , gs^.gmsGoalsAgainst
+  ]
