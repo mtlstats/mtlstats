@@ -180,6 +180,8 @@ editMenu = Menu "*** EDIT ***" ()
     modify editPlayer
   , MenuItem '4' "Edit Goalie" $
     modify editGoalie
+  , MenuItem '5' "Edit Standings" $
+    modify editStandings
   , MenuItem 'R' "Return to Main Menu" $
     modify backHome
   ]
