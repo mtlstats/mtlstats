@@ -19,17 +19,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Control.EditStandings (editStandingsC) where
+module Mtlstats.Menu.EditStandings (editStandingsMenu) where
 
-import qualified UI.NCurses as C
+import Mtlstats.Types.Menu
 
-import Mtlstats.Menu
-import Mtlstats.Menu.EditStandings
-import Mtlstats.Types
-
--- | Controller for the edit standings menu
-editStandingsC :: Controller
-editStandingsC = menuControllerWith header editStandingsMenu
-
-header :: ProgState -> C.Update ()
-header = undefined
+editStandingsMenu :: Menu ()
+editStandingsMenu = undefined
