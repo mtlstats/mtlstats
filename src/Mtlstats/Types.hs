@@ -239,6 +239,7 @@ data ProgMode
   | CreateGoalie CreateGoalieState
   | EditPlayer EditPlayerState
   | EditGoalie EditGoalieState
+  | EditStandings
 
 instance Show ProgMode where
   show MainMenu         = "MainMenu"
@@ -249,6 +250,7 @@ instance Show ProgMode where
   show (CreateGoalie _) = "CreateGoalie"
   show (EditPlayer _)   = "EditPlayer"
   show (EditGoalie _)   = "EditGoalie"
+  show EditStandings    = "EditStandings"
 
 -- | The game state
 data GameState = GameState

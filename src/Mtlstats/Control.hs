@@ -56,6 +56,7 @@ dispatch s = case s^.progMode of
     | otherwise             -> confirmCreateGoalieC
   EditPlayer eps -> editPlayerC eps
   EditGoalie egs -> editGoalieC egs
+  EditStandings  -> undefined
 
 mainMenuC :: Controller
 mainMenuC = Controller
