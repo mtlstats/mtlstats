@@ -160,7 +160,7 @@ editSelectedGoalie f s = fromMaybe s $ do
 
 -- | Enters edit standings mode
 editStandings :: ProgState -> ProgState
-editStandings = undefined
+editStandings = progMode .~ EditStandings
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
