@@ -31,6 +31,7 @@ import qualified UI.NCurses as C
 import Mtlstats.Actions
 import Mtlstats.Control.EditGoalie
 import Mtlstats.Control.EditPlayer
+import Mtlstats.Control.EditStandings
 import Mtlstats.Control.NewGame
 import Mtlstats.Handlers
 import Mtlstats.Menu
@@ -56,7 +57,7 @@ dispatch s = case s^.progMode of
     | otherwise             -> confirmCreateGoalieC
   EditPlayer eps -> editPlayerC eps
   EditGoalie egs -> editGoalieC egs
-  EditStandings  -> undefined
+  EditStandings  -> editStandingsC
 
 mainMenuC :: Controller
 mainMenuC = Controller
