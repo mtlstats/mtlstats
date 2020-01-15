@@ -21,8 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditStandings (editStandingsC) where
 
+import Lens.Micro ((^.))
 import qualified UI.NCurses as C
 
+import Mtlstats.Format
 import Mtlstats.Menu
 import Mtlstats.Menu.EditStandings
 import Mtlstats.Types
@@ -32,4 +34,16 @@ editStandingsC :: Controller
 editStandingsC = menuControllerWith header editStandingsMenu
 
 header :: ProgState -> C.Update ()
-header = undefined
+header = do
+  db <- (^.database)
+  let
+    home  = db^.dbHomeGameStats
+    away  = db^.dbAwayGameStats
+    table = numTable ["Wins", "Losses", "Overtime", "Goals for", "Goals against"]
+      [ ( "Home", valsFor home )
+      , ( "Road", valsFor away )
+      ]
+  return $ C.drawString $ unlines $ table ++ [""]
+
+valsFor :: GameStats -> [Int]
+valsFor = undefined
