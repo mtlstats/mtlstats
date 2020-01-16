@@ -42,7 +42,10 @@ editStandingsMenu = Menu "*** EDIT STANDINGS ***" ()
   ]
 
 editHomeStandingsMenu :: Menu ()
-editHomeStandingsMenu = undefined
+editHomeStandingsMenu = subMenu "HOME"
 
 editAwayStandingsMenu :: Menu ()
-editAwayStandingsMenu = undefined
+editAwayStandingsMenu = subMenu "ROAD"
+
+subMenu :: String -> Menu ()
+subMenu = undefined
