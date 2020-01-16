@@ -31,11 +31,11 @@ import Mtlstats.Types
 
 -- | Enters edit standings mode
 editStandings :: ProgState -> ProgState
-editStandings = progMode .~ EditStandings
+editStandings = progMode .~ EditStandings ESMMenu
 
 -- | Edits the home standings
 editHomeStandings :: ProgState -> ProgState
-editHomeStandings = undefined
+editHomeStandings = progMode .~ EditStandings ESMHome
 
 -- | Edits the road standings
 editRoadStandings :: ProgState -> ProgState

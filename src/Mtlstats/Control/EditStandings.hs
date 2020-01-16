@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Control.EditStandings (editStandingsC) where
 
 import Lens.Micro ((^.))
@@ -30,8 +32,13 @@ import Mtlstats.Menu.EditStandings
 import Mtlstats.Types
 
 -- | Controller for the edit standings menu
-editStandingsC :: Controller
-editStandingsC = menuControllerWith header editStandingsMenu
+editStandingsC :: EditStandingsMode -> Controller
+editStandingsC = \case
+  ESMMenu -> menuControllerWith header editStandingsMenu
+  ESMHome -> editHomeStandingsC
+
+editHomeStandingsC ::  Controller
+editHomeStandingsC = undefined
 
 header :: ProgState -> C.Update ()
 header = do

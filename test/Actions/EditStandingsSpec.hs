@@ -24,20 +24,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Actions.EditStandingsSpec (spec) where
 
 import Lens.Micro ((^.))
-import Test.Hspec (Spec, describe, it, shouldSatisfy)
+import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
 
 import Mtlstats.Actions.EditStandings
 import Mtlstats.Types
 
 spec :: Spec
-spec = describe "EditStandings"
-  editStandingsSpec
+spec = describe "EditStandings" $ mapM_
+  (\(label, f, expected) -> describe label $ do
+    let
+      ps  = newProgState
+      ps' = f ps
 
-editStandingsSpec :: Spec
-editStandingsSpec = describe "editStandings" $ let
-  ps  = newProgState
-  ps' = editStandings ps
-  in it "should set progMode to EditStandings" $
-    ps'^.progMode `shouldSatisfy` \case
-      EditStandings -> True
-      _             -> False
+    it "should set progMode to EditStandings" $
+      ps'^.progMode `shouldSatisfy` \case
+        (EditStandings _) -> True
+        _                 -> False
+
+    it ("should set editStandingsMode to " ++ show expected) $
+      ps'^.progMode.editStandingsModeL `shouldBe` expected)
+
+  --  label,               function,          expected mode
+  [ ( "editStandings",     editStandings,     ESMMenu       )
+  , ( "editHomeStandings", editHomeStandings, ESMHome       )
+  ]

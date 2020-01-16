@@ -35,6 +35,7 @@ module Mtlstats.Types (
   EditPlayerMode (..),
   EditGoalieState (..),
   EditGoalieMode (..),
+  EditStandingsMode (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -56,6 +57,7 @@ module Mtlstats.Types (
   createGoalieStateL,
   editPlayerStateL,
   editGoalieStateL,
+  editStandingsModeL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -239,18 +241,18 @@ data ProgMode
   | CreateGoalie CreateGoalieState
   | EditPlayer EditPlayerState
   | EditGoalie EditGoalieState
-  | EditStandings
+  | EditStandings EditStandingsMode
 
 instance Show ProgMode where
-  show MainMenu         = "MainMenu"
-  show (NewSeason _)    = "NewSeason"
-  show (NewGame _)      = "NewGame"
-  show EditMenu         = "EditMenu"
-  show (CreatePlayer _) = "CreatePlayer"
-  show (CreateGoalie _) = "CreateGoalie"
-  show (EditPlayer _)   = "EditPlayer"
-  show (EditGoalie _)   = "EditGoalie"
-  show EditStandings    = "EditStandings"
+  show MainMenu          = "MainMenu"
+  show (NewSeason _)     = "NewSeason"
+  show (NewGame _)       = "NewGame"
+  show EditMenu          = "EditMenu"
+  show (CreatePlayer _)  = "CreatePlayer"
+  show (CreateGoalie _)  = "CreateGoalie"
+  show (EditPlayer _)    = "EditPlayer"
+  show (EditGoalie _)    = "EditGoalie"
+  show (EditStandings _) = "EditStandings"
 
 -- | The game state
 data GameState = GameState
@@ -389,6 +391,12 @@ data EditGoalieMode
   | EGLtWins      Bool
   | EGLtLosses    Bool
   | EGLtTies
+  deriving (Eq, Show)
+
+-- | Represents the standings edit mode
+data EditStandingsMode
+  = ESMMenu
+  | ESMHome
   deriving (Eq, Show)
 
 -- | Represents the database
@@ -715,6 +723,13 @@ editGoalieStateL = lens
     EditGoalie egs -> egs
     _              -> newEditGoalieState)
   (\_ egs -> EditGoalie egs)
+
+editStandingsModeL :: Lens' ProgMode EditStandingsMode
+editStandingsModeL = lens
+  (\case
+    EditStandings esm -> esm
+    _                 -> ESMMenu)
+  (\_ esm -> EditStandings esm)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState

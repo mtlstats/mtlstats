@@ -58,6 +58,7 @@ spec = describe "Mtlstats.Types" $ do
   createGoalieStateLSpec
   editPlayerStateLSpec
   editGoalieStateLSpec
+  editStandingsModeLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -190,6 +191,18 @@ editGoalieStateLSpec = describe "editGoalieStateL" $
       & egsSelectedGoalie ?~ 1
     egs2 = newEditGoalieState
       & egsSelectedGoalie ?~ 2
+
+editStandingsModeLSpec :: Spec
+editStandingsModeLSpec = describe "editStandingsModeL" $
+  lensSpec editStandingsModeL
+  -- getters
+  [ ( "missing mode", MainMenu,              ESMMenu )
+  , ( "with mode",    EditStandings ESMHome, ESMHome )
+  ]
+  -- setters
+  [ ( "set mode",    MainMenu,              ESMHome )
+  , ( "change mode", EditStandings ESMMenu, ESMHome )
+  ]
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -957,3 +970,8 @@ instance Comparable CreateGoalieState where
     describe "cgsName" $
       it ("should be " ++ expected^.cgsName) $
         actual^.cgsName `shouldBe` expected^.cgsName
+
+instance Comparable EditStandingsMode where
+  compareTest actual expected =
+    it ("should be " ++ show expected) $
+      actual `shouldBe` expected
