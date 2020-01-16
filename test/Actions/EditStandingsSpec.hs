@@ -1,4 +1,4 @@
-{- |
+{-
 
 mtlstats
 Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe
@@ -19,24 +19,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Actions.EditStandings
-  ( editStandings
-  , editHomeStandings
-  , editRoadStandings
-  ) where
+{-# LANGUAGE LambdaCase #-}
 
-import Lens.Micro ((.~))
+module Actions.EditStandingsSpec (spec) where
 
+import Lens.Micro ((^.))
+import Test.Hspec (Spec, describe, it, shouldSatisfy)
+
+import Mtlstats.Actions.EditStandings
 import Mtlstats.Types
 
--- | Enters edit standings mode
-editStandings :: ProgState -> ProgState
-editStandings = progMode .~ EditStandings
+spec :: Spec
+spec = describe "EditStandings"
+  editStandingsSpec
 
--- | Edits the home standings
-editHomeStandings :: ProgState -> ProgState
-editHomeStandings = undefined
-
--- | Edits the road standings
-editRoadStandings :: ProgState -> ProgState
-editRoadStandings = undefined
+editStandingsSpec :: Spec
+editStandingsSpec = describe "editStandings" $ let
+  ps  = newProgState
+  ps' = editStandings ps
+  in it "should set progMode to EditStandings" $
+    ps'^.progMode `shouldSatisfy` \case
+      EditStandings -> True
+      _             -> False

@@ -39,6 +39,7 @@ import Mtlstats.Actions
 import Mtlstats.Types
 
 import qualified Actions.NewGameSpec as NewGame
+import qualified Actions.EditStandingsSpec as EditStandings
 import qualified TypesSpec as TS
 
 spec :: Spec
@@ -57,7 +58,6 @@ spec = describe "Mtlstats.Actions" $ do
   editSelectedPlayerSpec
   editGoalieSpec
   editSelectedGoalieSpec
-  editStandingsSpec
   addPlayerSpec
   addGoalieSpec
   resetCreatePlayerStateSpec
@@ -66,6 +66,7 @@ spec = describe "Mtlstats.Actions" $ do
   scrollUpSpec
   scrollDownSpec
   NewGame.spec
+  EditStandings.spec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
@@ -309,15 +310,6 @@ editSelectedGoalieSpec = describe "editSelectedGoalie" $ mapM_
     changed1       = [ goalie 0,  goalie' 1 ]
     goalie n       = newGoalie n ("Player " ++ show n)
     goalie' n      = newGoalie n "foo"
-
-editStandingsSpec :: Spec
-editStandingsSpec = describe "editStandings" $ let
-  ps  = newProgState
-  ps' = editStandings ps
-  in it "should set progMode to EditStandings" $
-    ps'^.progMode `shouldSatisfy` \case
-      EditStandings -> True
-      _             -> False
 
 addPlayerSpec :: Spec
 addPlayerSpec = describe "addPlayer" $ do

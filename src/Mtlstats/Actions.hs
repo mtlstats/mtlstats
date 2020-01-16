@@ -36,7 +36,6 @@ module Mtlstats.Actions
   , editSelectedPlayer
   , editGoalie
   , editSelectedGoalie
-  , editStandings
   , addPlayer
   , addGoalie
   , resetCreatePlayerState
@@ -157,10 +156,6 @@ editSelectedGoalie f s = fromMaybe s $ do
     goalies  = s^.database.dbGoalies
     goalies' = modifyNth n f goalies
   Just $ s & database.dbGoalies .~ goalies'
-
--- | Enters edit standings mode
-editStandings :: ProgState -> ProgState
-editStandings = progMode .~ EditStandings
 
 -- | Adds the entered player to the roster
 addPlayer :: ProgState -> ProgState
