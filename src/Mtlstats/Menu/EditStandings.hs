@@ -19,7 +19,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Menu.EditStandings (editStandingsMenu) where
+module Mtlstats.Menu.EditStandings
+  ( editStandingsMenu
+  , editHomeStandingsMenu
+  , editAwayStandingsMenu
+  ) where
 
 import Control.Monad.Trans.State (modify)
 
@@ -36,3 +40,9 @@ editStandingsMenu = Menu "*** EDIT STANDINGS ***" ()
   , MenuItem 'R' "Return to main menu" $
     modify backHome
   ]
+
+editHomeStandingsMenu :: Menu ()
+editHomeStandingsMenu = undefined
+
+editAwayStandingsMenu :: Menu ()
+editAwayStandingsMenu = undefined
