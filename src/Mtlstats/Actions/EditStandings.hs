@@ -19,20 +19,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Menu.EditStandings (editStandingsMenu) where
+module Mtlstats.Actions.EditStandings
+  ( editHomeStandings
+  , editRoadStandings
+  ) where
 
-import Control.Monad.Trans.State (modify)
+import Mtlstats.Types
 
-import Mtlstats.Actions
-import Mtlstats.Actions.EditStandings
-import Mtlstats.Types.Menu
+-- | Edits the home standings
+editHomeStandings :: ProgState -> ProgState
+editHomeStandings = undefined
 
-editStandingsMenu :: Menu ()
-editStandingsMenu = Menu "*** EDIT STANDINGS ***" ()
-  [ MenuItem '1' "Edit home standings" $
-    modify editHomeStandings
-  , MenuItem '2' "Edit road standings" $
-    modify editRoadStandings
-  , MenuItem 'R' "Return to main menu" $
-    modify backHome
-  ]
+-- | Edits the road standings
+editRoadStandings :: ProgState -> ProgState
+editRoadStandings = undefined
