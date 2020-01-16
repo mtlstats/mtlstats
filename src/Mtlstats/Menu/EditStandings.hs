@@ -48,4 +48,17 @@ editAwayStandingsMenu :: Menu ()
 editAwayStandingsMenu = subMenu "ROAD"
 
 subMenu :: String -> Menu ()
-subMenu = undefined
+subMenu str = Menu ("*** " ++ str ++ " STANDINGS ***") ()
+  [ MenuItem '1' "Edit wins" $
+    modify editWins
+  , MenuItem '2' "Edit losses" $
+    modify editLosses
+  , MenuItem '3' "Edit overtime games" $
+    modify editOvertime
+  , MenuItem '4' "Edit goals for" $
+    modify editGoalsFor
+  , MenuItem '5' "Edit goals against" $
+    modify editGoalsAgainst
+  , MenuItem 'R' "Return to edit standings menu" $
+    modify editStandings
+  ]

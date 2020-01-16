@@ -23,6 +23,11 @@ module Mtlstats.Actions.EditStandings
   ( editStandings
   , editHomeStandings
   , editAwayStandings
+  , editWins
+  , editLosses
+  , editOvertime
+  , editGoalsFor
+  , editGoalsAgainst
   ) where
 
 import Lens.Micro ((.~))
@@ -40,3 +45,23 @@ editHomeStandings = progMode .~ EditStandings ESMHome
 -- | Edits the road standings
 editAwayStandings :: ProgState -> ProgState
 editAwayStandings = progMode .~ EditStandings ESMAway
+
+-- | Changes to edit wins mode
+editWins :: ProgState -> ProgState
+editWins = undefined
+
+-- | Changes to edit losses mode
+editLosses :: ProgState -> ProgState
+editLosses = undefined
+
+-- | Changes to edit overtime mode
+editOvertime :: ProgState -> ProgState
+editOvertime = undefined
+
+-- | Changes to edit goals for mode
+editGoalsFor :: ProgState -> ProgState
+editGoalsFor = undefined
+
+-- | Changes to edit goals against mode
+editGoalsAgainst :: ProgState -> ProgState
+editGoalsAgainst = undefined
