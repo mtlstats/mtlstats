@@ -36,9 +36,13 @@ editStandingsC :: EditStandingsMode -> Controller
 editStandingsC = \case
   ESMMenu -> menuControllerWith header editStandingsMenu
   ESMHome -> editHomeStandingsC
+  ESMAway -> editAwayStandingsC
 
 editHomeStandingsC ::  Controller
 editHomeStandingsC = undefined
+
+editAwayStandingsC :: Controller
+editAwayStandingsC = undefined
 
 header :: ProgState -> C.Update ()
 header = do

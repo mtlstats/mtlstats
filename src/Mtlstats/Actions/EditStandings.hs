@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Actions.EditStandings
   ( editStandings
   , editHomeStandings
-  , editRoadStandings
+  , editAwayStandings
   ) where
 
 import Lens.Micro ((.~))
@@ -38,5 +38,5 @@ editHomeStandings :: ProgState -> ProgState
 editHomeStandings = progMode .~ EditStandings ESMHome
 
 -- | Edits the road standings
-editRoadStandings :: ProgState -> ProgState
-editRoadStandings = undefined
+editAwayStandings :: ProgState -> ProgState
+editAwayStandings = progMode .~ EditStandings ESMAway

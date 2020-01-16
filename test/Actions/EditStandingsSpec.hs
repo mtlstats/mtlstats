@@ -47,4 +47,5 @@ spec = describe "EditStandings" $ mapM_
   --  label,               function,          expected mode
   [ ( "editStandings",     editStandings,     ESMMenu       )
   , ( "editHomeStandings", editHomeStandings, ESMHome       )
+  , ( "editAwayStandings", editAwayStandings, ESMAway       )
   ]

@@ -397,6 +397,7 @@ data EditGoalieMode
 data EditStandingsMode
   = ESMMenu
   | ESMHome
+  | ESMAway
   deriving (Eq, Show)
 
 -- | Represents the database

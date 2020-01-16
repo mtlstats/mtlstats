@@ -32,7 +32,7 @@ editStandingsMenu = Menu "*** EDIT STANDINGS ***" ()
   [ MenuItem '1' "Edit home standings" $
     modify editHomeStandings
   , MenuItem '2' "Edit road standings" $
-    modify editRoadStandings
+    modify editAwayStandings
   , MenuItem 'R' "Return to main menu" $
     modify backHome
   ]
