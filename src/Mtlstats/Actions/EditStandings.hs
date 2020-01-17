@@ -40,28 +40,31 @@ editStandings = progMode .~ EditStandings ESMMenu
 
 -- | Edits the home standings
 editHomeStandings :: ProgState -> ProgState
-editHomeStandings = progMode .~ EditStandings ESMHome
+editHomeStandings = progMode .~ EditStandings (ESMHome ESMSubMenu)
 
 -- | Edits the road standings
 editAwayStandings :: ProgState -> ProgState
-editAwayStandings = progMode .~ EditStandings ESMAway
+editAwayStandings = progMode .~ EditStandings (ESMAway ESMSubMenu)
 
 -- | Changes to edit wins mode
 editWins :: ProgState -> ProgState
-editWins = undefined
+editWins = doEdit ESMEditWins
 
 -- | Changes to edit losses mode
 editLosses :: ProgState -> ProgState
-editLosses = undefined
+editLosses = doEdit ESMEditLosses
 
 -- | Changes to edit overtime mode
 editOvertime :: ProgState -> ProgState
-editOvertime = undefined
+editOvertime = doEdit ESMEditOvertime
 
 -- | Changes to edit goals for mode
 editGoalsFor :: ProgState -> ProgState
-editGoalsFor = undefined
+editGoalsFor = doEdit ESMEditGoalsFor
 
 -- | Changes to edit goals against mode
 editGoalsAgainst :: ProgState -> ProgState
-editGoalsAgainst = undefined
+editGoalsAgainst = doEdit ESMEditGoalsAgainst
+
+doEdit :: ESMSubMode -> ProgState -> ProgState
+doEdit = (progMode.editStandingsModeL.esmSubModeL .~)

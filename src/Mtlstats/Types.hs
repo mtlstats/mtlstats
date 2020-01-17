@@ -36,6 +36,7 @@ module Mtlstats.Types (
   EditGoalieState (..),
   EditGoalieMode (..),
   EditStandingsMode (..),
+  ESMSubMode (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -58,6 +59,8 @@ module Mtlstats.Types (
   editPlayerStateL,
   editGoalieStateL,
   editStandingsModeL,
+  -- ** EditStandingsMode Lenses
+  esmSubModeL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -396,8 +399,18 @@ data EditGoalieMode
 -- | Represents the standings edit mode
 data EditStandingsMode
   = ESMMenu
-  | ESMHome
-  | ESMAway
+  | ESMHome ESMSubMode
+  | ESMAway ESMSubMode
+  deriving (Eq, Show)
+
+-- | Represents the standings edit sub-mode
+data ESMSubMode
+  = ESMSubMenu
+  | ESMEditWins
+  | ESMEditLosses
+  | ESMEditOvertime
+  | ESMEditGoalsFor
+  | ESMEditGoalsAgainst
   deriving (Eq, Show)
 
 -- | Represents the database
@@ -731,6 +744,17 @@ editStandingsModeL = lens
     EditStandings esm -> esm
     _                 -> ESMMenu)
   (\_ esm -> EditStandings esm)
+
+esmSubModeL :: Lens' EditStandingsMode ESMSubMode
+esmSubModeL = lens
+  (\case
+    ESMMenu   -> ESMSubMenu
+    ESMHome m -> m
+    ESMAway m -> m)
+  (\mode subMode -> case mode of
+    ESMMenu   -> ESMMenu
+    ESMHome _ -> ESMHome subMode
+    ESMAway _ -> ESMAway subMode)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState

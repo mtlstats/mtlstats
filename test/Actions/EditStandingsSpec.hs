@@ -23,29 +23,61 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Actions.EditStandingsSpec (spec) where
 
-import Lens.Micro ((^.))
-import Test.Hspec (Spec, describe, it, shouldBe, shouldSatisfy)
+import Lens.Micro ((^.), (&), (.~))
+import Test.Hspec
+  ( Spec
+  , context
+  , describe
+  , it
+  , shouldBe
+  , shouldSatisfy
+  )
 
 import Mtlstats.Actions.EditStandings
 import Mtlstats.Types
 
 spec :: Spec
-spec = describe "EditStandings" $ mapM_
-  (\(label, f, expected) -> describe label $ do
-    let
-      ps  = newProgState
-      ps' = f ps
+spec = describe "EditStandings" $ do
+  mapM_
+    (\(label, f, expected) -> describe label $ do
+      let
+        ps  = newProgState
+        ps' = f ps
 
-    it "should set progMode to EditStandings" $
-      ps'^.progMode `shouldSatisfy` \case
-        (EditStandings _) -> True
-        _                 -> False
+      it "should set progMode to EditStandings" $
+        ps'^.progMode `shouldSatisfy` \case
+          (EditStandings _) -> True
+          _                 -> False
 
-    it ("should set editStandingsMode to " ++ show expected) $
-      ps'^.progMode.editStandingsModeL `shouldBe` expected)
+      it ("should set editStandingsMode to " ++ show expected) $
+        ps'^.progMode.editStandingsModeL `shouldBe` expected)
 
-  --  label,               function,          expected mode
-  [ ( "editStandings",     editStandings,     ESMMenu       )
-  , ( "editHomeStandings", editHomeStandings, ESMHome       )
-  , ( "editAwayStandings", editAwayStandings, ESMAway       )
-  ]
+    --  label,               function,          expected mode
+    [ ( "editStandings",     editStandings,     ESMMenu            )
+    , ( "editHomeStandings", editHomeStandings, ESMHome ESMSubMenu )
+    , ( "editAwayStandings", editAwayStandings, ESMAway ESMSubMenu )
+    ]
+
+  mapM_
+    (\(label, f, expected) -> describe label $ do
+      mapM_
+        (\prefix -> context ("mode: " ++ show (prefix ESMSubMenu)) $ let
+          ps  = newProgState & progMode.editStandingsModeL .~ prefix ESMSubMenu
+          ps' = f ps
+          in it ("should set the mode to " ++ show expected) $
+            ps'^.progMode.editStandingsModeL `shouldBe` prefix expected)
+        [ESMHome, ESMAway]
+
+      context "mode: ESMMenu" $ let
+        ps  = newProgState & progMode.editStandingsModeL .~ ESMMenu
+        ps' = f ps
+        in it "should not change the mode" $
+          ps'^.progMode.editStandingsModeL `shouldBe` ESMMenu)
+
+    --  label,              function,         expected
+    [ ( "editWins",         editWins,         ESMEditWins         )
+    , ( "editLosses",       editLosses,       ESMEditLosses       )
+    , ( "editOvertime",     editOvertime,     ESMEditOvertime     )
+    , ( "editGoalsFor",     editGoalsFor,     ESMEditGoalsFor     )
+    , ( "editGoalsAgainst", editGoalsAgainst, ESMEditGoalsAgainst )
+    ]

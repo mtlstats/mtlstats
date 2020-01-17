@@ -59,6 +59,7 @@ spec = describe "Mtlstats.Types" $ do
   editPlayerStateLSpec
   editGoalieStateLSpec
   editStandingsModeLSpec
+  esmSubModeLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -196,13 +197,42 @@ editStandingsModeLSpec :: Spec
 editStandingsModeLSpec = describe "editStandingsModeL" $
   lensSpec editStandingsModeL
   -- getters
-  [ ( "missing mode", MainMenu,              ESMMenu )
-  , ( "with mode",    EditStandings ESMHome, ESMHome )
+  [ ( "missing mode", MainMenu,           menu )
+  , ( "with mode",    EditStandings home, home )
   ]
   -- setters
-  [ ( "set mode",    MainMenu,              ESMHome )
-  , ( "change mode", EditStandings ESMMenu, ESMHome )
+  [ ( "set mode",    MainMenu,           home )
+  , ( "change mode", EditStandings home, away )
   ]
+  where
+    menu = ESMMenu
+    home = ESMHome ESMSubMenu
+    away = ESMAway ESMSubMenu
+
+esmSubModeLSpec :: Spec
+esmSubModeLSpec = describe "esmSubModeL" $ do
+
+  context "getters" $ mapM_
+    (\(label, mode, expected) -> context label $
+      it ("should be " ++ show expected) $
+        mode^.esmSubModeL `shouldBe` expected)
+
+    --  label,        mode,                expected
+    [ ( "no state",   ESMMenu,             ESMSubMenu  )
+    , ( "with state", ESMHome ESMEditWins, ESMEditWins )
+    ]
+
+  context "setters" $ mapM_
+    (\(label, mode, expected) -> context label $
+      it ("should be " ++ show expected) $ let
+        mode' = mode & esmSubModeL .~ ESMEditWins
+        in mode' `shouldBe` expected)
+
+    --  label,       mode,               expected
+    [ ( "no state",  ESMMenu,            ESMMenu             )
+    , ( "home mode", ESMHome ESMSubMenu, ESMHome ESMEditWins )
+    , ( "away mode", ESMAway ESMSubMenu, ESMAway ESMEditWins )
+    ]
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do

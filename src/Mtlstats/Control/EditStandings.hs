@@ -34,15 +34,19 @@ import Mtlstats.Types
 -- | Controller for the edit standings menu
 editStandingsC :: EditStandingsMode -> Controller
 editStandingsC = \case
-  ESMMenu -> menuControllerWith header editStandingsMenu
-  ESMHome -> editHomeStandingsC
-  ESMAway -> editAwayStandingsC
+  ESMMenu   -> menuControllerWith header editStandingsMenu
+  ESMHome m -> editHomeStandingsC m
+  ESMAway m -> editAwayStandingsC m
 
-editHomeStandingsC :: Controller
-editHomeStandingsC = menuControllerWith header editHomeStandingsMenu
+editHomeStandingsC :: ESMSubMode -> Controller
+editHomeStandingsC = \case
+  ESMSubMenu -> menuControllerWith header editHomeStandingsMenu
+  _          -> undefined
 
-editAwayStandingsC :: Controller
-editAwayStandingsC = menuControllerWith header editAwayStandingsMenu
+editAwayStandingsC :: ESMSubMode -> Controller
+editAwayStandingsC = \case
+  ESMSubMenu -> menuControllerWith header editAwayStandingsMenu
+  _          -> undefined
 
 header :: ProgState -> C.Update ()
 header = do
