@@ -58,6 +58,8 @@ spec = describe "Mtlstats.Types" $ do
   createGoalieStateLSpec
   editPlayerStateLSpec
   editGoalieStateLSpec
+  editStandingsModeLSpec
+  esmSubModeLSpec
   teamScoreSpec
   otherScoreSpec
   homeTeamSpec
@@ -190,6 +192,47 @@ editGoalieStateLSpec = describe "editGoalieStateL" $
       & egsSelectedGoalie ?~ 1
     egs2 = newEditGoalieState
       & egsSelectedGoalie ?~ 2
+
+editStandingsModeLSpec :: Spec
+editStandingsModeLSpec = describe "editStandingsModeL" $
+  lensSpec editStandingsModeL
+  -- getters
+  [ ( "missing mode", MainMenu,           menu )
+  , ( "with mode",    EditStandings home, home )
+  ]
+  -- setters
+  [ ( "set mode",    MainMenu,           home )
+  , ( "change mode", EditStandings home, away )
+  ]
+  where
+    menu = ESMMenu
+    home = ESMHome ESMSubMenu
+    away = ESMAway ESMSubMenu
+
+esmSubModeLSpec :: Spec
+esmSubModeLSpec = describe "esmSubModeL" $ do
+
+  context "getters" $ mapM_
+    (\(label, mode, expected) -> context label $
+      it ("should be " ++ show expected) $
+        mode^.esmSubModeL `shouldBe` expected)
+
+    --  label,        mode,                expected
+    [ ( "no state",   ESMMenu,             ESMSubMenu  )
+    , ( "with state", ESMHome ESMEditWins, ESMEditWins )
+    ]
+
+  context "setters" $ mapM_
+    (\(label, mode, expected) -> context label $
+      it ("should be " ++ show expected) $ let
+        mode' = mode & esmSubModeL .~ ESMEditWins
+        in mode' `shouldBe` expected)
+
+    --  label,       mode,               expected
+    [ ( "no state",  ESMMenu,            ESMMenu             )
+    , ( "home mode", ESMHome ESMSubMenu, ESMHome ESMEditWins )
+    , ( "away mode", ESMAway ESMSubMenu, ESMAway ESMEditWins )
+    ]
 
 teamScoreSpec :: Spec
 teamScoreSpec = describe "teamScore" $ do
@@ -957,3 +1000,8 @@ instance Comparable CreateGoalieState where
     describe "cgsName" $
       it ("should be " ++ expected^.cgsName) $
         actual^.cgsName `shouldBe` expected^.cgsName
+
+instance Comparable EditStandingsMode where
+  compareTest actual expected =
+    it ("should be " ++ show expected) $
+      actual `shouldBe` expected

@@ -31,6 +31,7 @@ import qualified UI.NCurses as C
 import Mtlstats.Actions
 import Mtlstats.Control.EditGoalie
 import Mtlstats.Control.EditPlayer
+import Mtlstats.Control.EditStandings
 import Mtlstats.Control.NewGame
 import Mtlstats.Handlers
 import Mtlstats.Menu
@@ -54,8 +55,9 @@ dispatch s = case s^.progMode of
     | null $ cgs^.cgsNumber -> getGoalieNumC
     | null $ cgs^.cgsName   -> getGoalieNameC
     | otherwise             -> confirmCreateGoalieC
-  EditPlayer eps -> editPlayerC eps
-  EditGoalie egs -> editGoalieC egs
+  EditPlayer eps      -> editPlayerC eps
+  EditGoalie egs      -> editGoalieC egs
+  (EditStandings esm) -> editStandingsC esm
 
 mainMenuC :: Controller
 mainMenuC = Controller

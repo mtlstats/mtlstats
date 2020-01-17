@@ -35,6 +35,8 @@ module Mtlstats.Types (
   EditPlayerMode (..),
   EditGoalieState (..),
   EditGoalieMode (..),
+  EditStandingsMode (..),
+  ESMSubMode (..),
   Database (..),
   Player (..),
   PlayerStats (..),
@@ -56,6 +58,9 @@ module Mtlstats.Types (
   createGoalieStateL,
   editPlayerStateL,
   editGoalieStateL,
+  editStandingsModeL,
+  -- ** EditStandingsMode Lenses
+  esmSubModeL,
   -- ** GameState Lenses
   gameYear,
   gameMonth,
@@ -239,16 +244,18 @@ data ProgMode
   | CreateGoalie CreateGoalieState
   | EditPlayer EditPlayerState
   | EditGoalie EditGoalieState
+  | EditStandings EditStandingsMode
 
 instance Show ProgMode where
-  show MainMenu         = "MainMenu"
-  show (NewSeason _)    = "NewSeason"
-  show (NewGame _)      = "NewGame"
-  show EditMenu         = "EditMenu"
-  show (CreatePlayer _) = "CreatePlayer"
-  show (CreateGoalie _) = "CreateGoalie"
-  show (EditPlayer _)   = "EditPlayer"
-  show (EditGoalie _)   = "EditGoalie"
+  show MainMenu          = "MainMenu"
+  show (NewSeason _)     = "NewSeason"
+  show (NewGame _)       = "NewGame"
+  show EditMenu          = "EditMenu"
+  show (CreatePlayer _)  = "CreatePlayer"
+  show (CreateGoalie _)  = "CreateGoalie"
+  show (EditPlayer _)    = "EditPlayer"
+  show (EditGoalie _)    = "EditGoalie"
+  show (EditStandings _) = "EditStandings"
 
 -- | The game state
 data GameState = GameState
@@ -387,6 +394,23 @@ data EditGoalieMode
   | EGLtWins      Bool
   | EGLtLosses    Bool
   | EGLtTies
+  deriving (Eq, Show)
+
+-- | Represents the standings edit mode
+data EditStandingsMode
+  = ESMMenu
+  | ESMHome ESMSubMode
+  | ESMAway ESMSubMode
+  deriving (Eq, Show)
+
+-- | Represents the standings edit sub-mode
+data ESMSubMode
+  = ESMSubMenu
+  | ESMEditWins
+  | ESMEditLosses
+  | ESMEditOvertime
+  | ESMEditGoalsFor
+  | ESMEditGoalsAgainst
   deriving (Eq, Show)
 
 -- | Represents the database
@@ -713,6 +737,24 @@ editGoalieStateL = lens
     EditGoalie egs -> egs
     _              -> newEditGoalieState)
   (\_ egs -> EditGoalie egs)
+
+editStandingsModeL :: Lens' ProgMode EditStandingsMode
+editStandingsModeL = lens
+  (\case
+    EditStandings esm -> esm
+    _                 -> ESMMenu)
+  (\_ esm -> EditStandings esm)
+
+esmSubModeL :: Lens' EditStandingsMode ESMSubMode
+esmSubModeL = lens
+  (\case
+    ESMMenu   -> ESMSubMenu
+    ESMHome m -> m
+    ESMAway m -> m)
+  (\mode subMode -> case mode of
+    ESMMenu   -> ESMMenu
+    ESMHome _ -> ESMHome subMode
+    ESMAway _ -> ESMAway subMode)
 
 -- | Constructor for a 'ProgState'
 newProgState :: ProgState

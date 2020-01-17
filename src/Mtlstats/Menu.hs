@@ -44,6 +44,7 @@ import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import qualified Mtlstats.Actions.NewGame.GoalieInput as GI
+import Mtlstats.Actions.EditStandings
 import Mtlstats.Config
 import Mtlstats.Types
 import Mtlstats.Types.Menu
@@ -180,6 +181,8 @@ editMenu = Menu "*** EDIT ***" ()
     modify editPlayer
   , MenuItem '4' "Edit Goalie" $
     modify editGoalie
+  , MenuItem '5' "Edit Standings" $
+    modify editStandings
   , MenuItem 'R' "Return to Main Menu" $
     modify backHome
   ]

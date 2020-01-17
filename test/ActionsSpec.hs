@@ -39,6 +39,7 @@ import Mtlstats.Actions
 import Mtlstats.Types
 
 import qualified Actions.NewGameSpec as NewGame
+import qualified Actions.EditStandingsSpec as EditStandings
 import qualified TypesSpec as TS
 
 spec :: Spec
@@ -65,6 +66,7 @@ spec = describe "Mtlstats.Actions" $ do
   scrollUpSpec
   scrollDownSpec
   NewGame.spec
+  EditStandings.spec
 
 startNewSeasonSpec :: Spec
 startNewSeasonSpec = describe "startNewSeason" $ do
