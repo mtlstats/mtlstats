@@ -32,34 +32,58 @@ module Mtlstats.Prompt.EditStandings
   , editAwayGoalsAgainstPrompt
   ) where
 
+import Control.Monad.Trans.State (modify)
+import Lens.Micro ((.~), (%~))
+
+import Mtlstats.Prompt
 import Mtlstats.Types
 
 editHomeWinsPrompt :: Prompt
-editHomeWinsPrompt = undefined
+editHomeWinsPrompt =
+  mkPrompt "Home wins: " (dbHomeGameStats.gmsWins .~)
 
 editHomeLossesPrompt :: Prompt
-editHomeLossesPrompt = undefined
+editHomeLossesPrompt =
+  mkPrompt "Home losses: " (dbHomeGameStats.gmsLosses .~)
 
 editHomeOvertimePrompt :: Prompt
-editHomeOvertimePrompt = undefined
+editHomeOvertimePrompt =
+  mkPrompt "Home overtime games: " (dbHomeGameStats.gmsOvertime .~)
 
 editHomeGoalsForPrompt :: Prompt
-editHomeGoalsForPrompt = undefined
+editHomeGoalsForPrompt =
+  mkPrompt "Home goals for: " (dbHomeGameStats.gmsGoalsFor .~)
 
 editHomeGoalsAgainstPrompt :: Prompt
-editHomeGoalsAgainstPrompt = undefined
+editHomeGoalsAgainstPrompt =
+  mkPrompt "Home goals against: " (dbHomeGameStats.gmsGoalsAgainst .~)
 
 editAwayWinsPrompt :: Prompt
-editAwayWinsPrompt = undefined
+editAwayWinsPrompt =
+  mkPrompt "Road wins: " (dbAwayGameStats.gmsWins .~)
 
 editAwayLossesPrompt :: Prompt
-editAwayLossesPrompt = undefined
+editAwayLossesPrompt =
+  mkPrompt "Road losses: " (dbAwayGameStats.gmsLosses .~)
 
 editAwayOvertimePrompt :: Prompt
-editAwayOvertimePrompt = undefined
+editAwayOvertimePrompt =
+  mkPrompt "Road overtime games: " (dbAwayGameStats.gmsOvertime .~)
 
 editAwayGoalsForPrompt :: Prompt
-editAwayGoalsForPrompt = undefined
+editAwayGoalsForPrompt =
+  mkPrompt "Road goals for: " (dbAwayGameStats.gmsGoalsFor .~)
 
 editAwayGoalsAgainstPrompt :: Prompt
-editAwayGoalsAgainstPrompt = undefined
+editAwayGoalsAgainstPrompt =
+  mkPrompt "Road goals against: " (dbAwayGameStats.gmsGoalsAgainst .~)
+
+mkPrompt :: String -> (Int -> Database -> Database) -> Prompt
+mkPrompt pStr f = numPromptWithFallback pStr
+  (modify subMenu)
+  (\n -> modify
+    $ (database %~ f n)
+    . subMenu)
+
+subMenu :: ProgState -> ProgState
+subMenu = progMode.editStandingsModeL.esmSubModeL .~ ESMSubMenu
