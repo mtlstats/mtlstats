@@ -54,9 +54,9 @@ header = do
   let
     home  = db^.dbHomeGameStats
     away  = db^.dbAwayGameStats
-    table = numTable ["Wins", "Losses", "Overtime", "Goals for", "Goals against"]
-      [ ( "Home", valsFor home )
-      , ( "Road", valsFor away )
+    table = numTable ["   W", "   L", "  OT", "  GF", "  GA"]
+      [ ( "HOME", valsFor home )
+      , ( "ROAD", valsFor away )
       ]
   return $ C.drawString $ unlines $ table ++ [""]
 
