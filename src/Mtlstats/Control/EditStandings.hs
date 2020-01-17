@@ -29,7 +29,10 @@ import qualified UI.NCurses as C
 import Mtlstats.Format
 import Mtlstats.Menu
 import Mtlstats.Menu.EditStandings
+import Mtlstats.Prompt
+import Mtlstats.Prompt.EditStandings
 import Mtlstats.Types
+import Mtlstats.Types.Menu
 
 -- | Controller for the edit standings menu
 editStandingsC :: EditStandingsMode -> Controller
@@ -40,13 +43,27 @@ editStandingsC = \case
 
 editHomeStandingsC :: ESMSubMode -> Controller
 editHomeStandingsC = \case
-  ESMSubMenu -> menuControllerWith header editHomeStandingsMenu
-  _          -> undefined
+  ESMSubMenu          -> menuC editHomeStandingsMenu
+  ESMEditWins         -> promptC editHomeWinsPrompt
+  ESMEditLosses       -> promptC editHomeLossesPrompt
+  ESMEditOvertime     -> promptC editHomeOvertimePrompt
+  ESMEditGoalsFor     -> promptC editHomeGoalsForPrompt
+  ESMEditGoalsAgainst -> promptC editHomeGoalsAgainstPrompt
 
 editAwayStandingsC :: ESMSubMode -> Controller
 editAwayStandingsC = \case
-  ESMSubMenu -> menuControllerWith header editAwayStandingsMenu
-  _          -> undefined
+  ESMSubMenu          -> menuC editAwayStandingsMenu
+  ESMEditWins         -> promptC editAwayWinsPrompt
+  ESMEditLosses       -> promptC editAwayLossesPrompt
+  ESMEditOvertime     -> promptC editAwayOvertimePrompt
+  ESMEditGoalsFor     -> promptC editAwayGoalsForPrompt
+  ESMEditGoalsAgainst -> promptC editAwayGoalsAgainstPrompt
+
+menuC :: Menu () -> Controller
+menuC = menuControllerWith header
+
+promptC :: Prompt -> Controller
+promptC = promptControllerWith header
 
 header :: ProgState -> C.Update ()
 header = do
