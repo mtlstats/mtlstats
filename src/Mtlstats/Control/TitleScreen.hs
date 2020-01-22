@@ -28,18 +28,21 @@ import Data.Char (chr)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Format
 import Mtlstats.Types
 
 titleScreenC :: Controller
 titleScreenC = Controller
   { drawController = const $ do
-    C.drawString $ unlines $ titleText ++
-      [ ""
-      , "Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe"
-      , "<rheal.lamothe@gmail.com>"
-      , ""
-      , "Press any key to continue..."
-      ]
+    (_, cols) <- C.windowSize
+    C.drawString $ unlines $ map (centre $ fromIntegral $ pred cols)
+      $  titleText
+      ++ [ ""
+         , "Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe"
+         , "<rheal.lamothe@gmail.com>"
+         , ""
+         , "Press any key to continue..."
+         ]
     return C.CursorInvisible
   , handleController = \case
     C.EventCharacter _  -> modify backHome >> return True
