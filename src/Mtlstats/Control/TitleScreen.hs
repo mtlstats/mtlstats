@@ -24,6 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Control.TitleScreen (titleScreenC) where
 
 import Control.Monad.Trans.State (modify)
+import Data.Char (chr)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -32,10 +33,91 @@ import Mtlstats.Types
 titleScreenC :: Controller
 titleScreenC = Controller
   { drawController = const $ do
-    C.drawString "Press any key to continue..."
+    C.drawString titleText
+    C.drawString $ unlines
+      [ ""
+      , "Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe"
+      , "<rheal.lamothe@gmail.com>"
+      , ""
+      , "Press any key to continue..."
+      ]
     return C.CursorInvisible
   , handleController = \case
     C.EventCharacter _  -> modify backHome >> return True
     C.EventSpecialKey _ -> modify backHome >> return True
     _                   -> return True
   }
+
+titleText :: String
+titleText = map blockify $ unlines $ foldl joinBlocks (repeat "")
+  [chM, chT, chL, chS, chT, chA, chT, chS]
+
+blockify :: Char -> Char
+blockify = \case
+  '#' -> chr 0x2588
+  '>' -> chr 0x2590
+  '<' -> chr 0x258c
+  ch  -> ch
+
+joinBlocks :: [String] -> [String] -> [String]
+joinBlocks = zipWith (++)
+
+chM :: [String]
+chM =
+  [ "##<   >##"
+  , ">##   ##<"
+  , ">##< >##<"
+  , ">### ###<"
+  , ">#######<"
+  , ">#<###>#<"
+  , ">#<>#<>#<"
+  , "##<   >##"
+  ]
+
+chT :: [String]
+chT =
+  [ ">########<"
+  , ">## ## ##<"
+  , ">#< ## >#<"
+  , "    ##    "
+  , "    ##    "
+  , "    ##    "
+  , "    ##    "
+  , "   >##<   "
+  ]
+
+chL :: [String]
+chL =
+  [ "###    "
+  , ">#<    "
+  , ">#<    "
+  , ">#<    "
+  , ">#<    "
+  , ">#<  ##"
+  , ">#< >##"
+  , "#######"
+  ]
+
+chS :: [String]
+chS =
+  [ " #####< "
+  , ">#<  ## "
+  , "##      "
+  , " #####< "
+  , "     >#<"
+  , "      ##"
+  , ">#<  >#<"
+  , " ###### "
+  ]
+
+chA :: [String]
+chA =
+  [ "  >##<  "
+  , "   ##   "
+  , "  >##<  "
+  , "  ####  "
+  , " >#<>#< "
+  , " ###### "
+  , ">#<  >#<"
+  , "###  ###"
+  ]
