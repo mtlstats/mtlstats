@@ -19,9 +19,23 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Control.TitleScreen (titleScreenC) where
 
+import Control.Monad.Trans.State (modify)
+import qualified UI.NCurses as C
+
+import Mtlstats.Actions
 import Mtlstats.Types
 
 titleScreenC :: Controller
-titleScreenC = undefined
+titleScreenC = Controller
+  { drawController = const $ do
+    C.drawString "Press any key to continue..."
+    return C.CursorInvisible
+  , handleController = \case
+    C.EventCharacter _  -> modify backHome >> return True
+    C.EventSpecialKey _ -> modify backHome >> return True
+    _                   -> return True
+  }
