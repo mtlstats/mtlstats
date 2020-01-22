@@ -33,8 +33,7 @@ import Mtlstats.Types
 titleScreenC :: Controller
 titleScreenC = Controller
   { drawController = const $ do
-    C.drawString titleText
-    C.drawString $ unlines
+    C.drawString $ unlines $ titleText ++
       [ ""
       , "Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe"
       , "<rheal.lamothe@gmail.com>"
@@ -48,9 +47,23 @@ titleScreenC = Controller
     _                   -> return True
   }
 
-titleText :: String
-titleText = map blockify $ unlines $ foldl joinBlocks (repeat "")
+titleText :: [String]
+titleText = box $ map (map blockify) $ foldl joinBlocks (repeat "")
   [chM, chT, chL, chS, chT, chA, chT, chS]
+
+box :: [String] -> [String]
+box strs
+  =  [[tl] ++ replicate width horiz ++ [tr]]
+  ++ map (\str -> [vert] ++ str ++ [vert]) strs
+  ++ [[bl] ++ replicate width horiz ++ [br]]
+  where
+    width = length $ head strs
+    tl    = chr 0x2554
+    tr    = chr 0x2557
+    bl    = chr 0x255a
+    br    = chr 0x255d
+    horiz = chr 0x2550
+    vert  = chr 0x2551
 
 blockify :: Char -> Char
 blockify = \case
