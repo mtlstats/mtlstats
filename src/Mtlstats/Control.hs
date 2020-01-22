@@ -29,6 +29,7 @@ import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Control.TitleScreen
 import Mtlstats.Control.EditGoalie
 import Mtlstats.Control.EditPlayer
 import Mtlstats.Control.EditStandings
@@ -42,6 +43,7 @@ import Mtlstats.Types
 -- run
 dispatch :: ProgState -> Controller
 dispatch s = case s^.progMode of
+  TitleScreen    -> titleScreenC
   MainMenu       -> mainMenuC
   NewSeason flag -> newSeasonC flag
   NewGame gs     -> newGameC gs
