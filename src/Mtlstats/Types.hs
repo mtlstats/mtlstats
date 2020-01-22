@@ -236,7 +236,8 @@ data ProgState = ProgState
 
 -- | The program mode
 data ProgMode
-  = MainMenu
+  = TitleScreen
+  | MainMenu
   | NewSeason Bool
   | NewGame GameState
   | EditMenu
@@ -247,6 +248,7 @@ data ProgMode
   | EditStandings EditStandingsMode
 
 instance Show ProgMode where
+  show TitleScreen       = "TitleScreen"
   show MainMenu          = "MainMenu"
   show (NewSeason _)     = "NewSeason"
   show (NewGame _)       = "NewGame"
@@ -760,7 +762,7 @@ esmSubModeL = lens
 newProgState :: ProgState
 newProgState = ProgState
   { _database     = newDatabase
-  , _progMode     = MainMenu
+  , _progMode     = TitleScreen
   , _inputBuffer  = ""
   , _scrollOffset = 0
   }
