@@ -36,7 +36,10 @@ titleScreenC = Controller
   { drawController = const $ do
     (_, cols) <- C.windowSize
     C.drawString $ unlines $ map (centre $ fromIntegral $ pred cols)
-      $  titleText
+      $  [ ""
+         , "MONTREAL CANADIENS STATISTICS"
+         ]
+      ++ titleText
       ++ [ ""
          , "Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe"
          , "<rheal.lamothe@gmail.com>"
