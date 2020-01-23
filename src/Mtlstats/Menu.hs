@@ -46,6 +46,7 @@ import Mtlstats.Actions
 import qualified Mtlstats.Actions.NewGame.GoalieInput as GI
 import Mtlstats.Actions.EditStandings
 import Mtlstats.Config
+import Mtlstats.Format
 import Mtlstats.Types
 import Mtlstats.Types.Menu
 import Mtlstats.Util
@@ -89,7 +90,11 @@ menuStateController menuFunc = Controller
 -- | The draw function for a 'Menu'
 drawMenu :: Menu a -> C.Update C.CursorMode
 drawMenu m = do
-  C.drawString $ show m
+  (_, cols) <- C.windowSize
+  let
+    width    = fromIntegral $ pred cols
+    menuText = map (centre width) $ lines $ show m
+  C.drawString $ unlines menuText
   return C.CursorInvisible
 
 -- | The event handler for a 'Menu'
