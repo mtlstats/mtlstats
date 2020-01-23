@@ -39,6 +39,7 @@ module Mtlstats.Types.Menu (
 import Lens.Micro ((^.))
 import Lens.Micro.TH (makeLenses)
 
+import Mtlstats.Format
 import Mtlstats.Types
 
 -- | Defines a menu
@@ -65,8 +66,15 @@ makeLenses ''Menu
 makeLenses ''MenuItem
 
 instance Show (Menu a) where
-  show m = m ^. menuTitle ++ "\n" ++ items
-    where items = unlines $ map show $ m ^. menuItems
+  show m = unlines
+    $  [ m^.menuTitle
+       , ""
+       ]
+    ++ body
+    where
+      body  = map (left width) items
+      width = maximum $ map length items
+      items = map show $ m^.menuItems
 
 instance Show (MenuItem a) where
-  show i = [i ^. miKey] ++ ") " ++ i ^. miDescription
+  show i = [i ^. miKey] ++ ": " ++ i ^. miDescription

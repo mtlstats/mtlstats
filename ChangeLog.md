@@ -6,6 +6,7 @@
 - Save a copy of the database on new season
 - Implemented game standings editing
 - Added title screen
+- Changed sytling of menus
 
 ## 0.10.0
 - Don't show player number zero in reports

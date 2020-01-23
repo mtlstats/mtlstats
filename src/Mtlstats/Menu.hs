@@ -46,6 +46,7 @@ import Mtlstats.Actions
 import qualified Mtlstats.Actions.NewGame.GoalieInput as GI
 import Mtlstats.Actions.EditStandings
 import Mtlstats.Config
+import Mtlstats.Format
 import Mtlstats.Types
 import Mtlstats.Types.Menu
 import Mtlstats.Util
@@ -89,7 +90,11 @@ menuStateController menuFunc = Controller
 -- | The draw function for a 'Menu'
 drawMenu :: Menu a -> C.Update C.CursorMode
 drawMenu m = do
-  C.drawString $ show m
+  (_, cols) <- C.windowSize
+  let
+    width    = fromIntegral $ pred cols
+    menuText = map (centre width) $ lines $ show m
+  C.drawString $ unlines menuText
   return C.CursorInvisible
 
 -- | The event handler for a 'Menu'
@@ -102,56 +107,56 @@ menuHandler m _ = return $ m^.menuDefault
 
 -- | The main menu
 mainMenu :: Menu Bool
-mainMenu = Menu "*** MAIN MENU ***" True
-  [ MenuItem '1' "New Season" $
+mainMenu = Menu "MASTER MENU" True
+  [ MenuItem 'A' "NEW SEASON" $
     modify startNewSeason >> return True
-  , MenuItem '2' "New Game" $
+  , MenuItem 'B' "NEW GAME" $
     modify startNewGame >> return True
-  , MenuItem '3' "Edit" $
+  , MenuItem 'C' "EDIT MENU" $
     modify edit >> return True
-  , MenuItem 'X' "Exit" $
+  , MenuItem 'E' "EXIT" $
     saveDatabase dbFname >> return False
   ]
 
 -- | The new season menu
 newSeasonMenu :: Menu ()
-newSeasonMenu = Menu "*** SEASON TYPE ***" ()
-  [ MenuItem 'R' "Regular Season" $ modify
+newSeasonMenu = Menu "SEASON TYPE" ()
+  [ MenuItem 'R' "REGULAR SEASON" $ modify
     $ resetYtd
     . clearRookies
     . resetStandings
     . startNewGame
-  , MenuItem 'P' "Playoffs" $ modify
+  , MenuItem 'P' "PLAYOFFS" $ modify
     $ resetStandings
     . startNewGame
   ]
 
 -- | Requests the month in which the game took place
 gameMonthMenu :: Menu ()
-gameMonthMenu = Menu "Month:" () $ map
+gameMonthMenu = Menu "MONTH:" () $ map
   (\(ch, name, val) ->
     MenuItem ch name $
     modify $ progMode.gameStateL.gameMonth ?~ val)
-  [ ( 'A', "January",   1  )
-  , ( 'B', "February",  2  )
-  , ( 'C', "March",     3  )
-  , ( 'D', "April",     4  )
-  , ( 'E', "May",       5  )
-  , ( 'F', "June",      6  )
-  , ( 'G', "July",      7  )
-  , ( 'H', "August",    8  )
-  , ( 'I', "September", 9  )
-  , ( 'J', "October",   10 )
-  , ( 'K', "November",  11 )
-  , ( 'L', "December",  12 )
+  [ ( 'A', "JANUARY",   1  )
+  , ( 'B', "FEBRUARY",  2  )
+  , ( 'C', "MARCH",     3  )
+  , ( 'D', "APRIL",     4  )
+  , ( 'E', "MAY",       5  )
+  , ( 'F', "JUNE",      6  )
+  , ( 'G', "JULY",      7  )
+  , ( 'H', "AUGUST",    8  )
+  , ( 'I', "SEPTEMBER", 9  )
+  , ( 'J', "OCTOBER",   10 )
+  , ( 'K', "NOVEMBER",  11 )
+  , ( 'L', "DECEMBER",  12 )
   ]
 
 -- | The game type menu (home/away)
 gameTypeMenu :: Menu ()
-gameTypeMenu = Menu "Game type:" ()
-  [ MenuItem '1' "Home Game" $
+gameTypeMenu = Menu "GAME TYPE:" ()
+  [ MenuItem 'H' "HOME GAME" $
     modify $ progMode.gameStateL.gameType ?~ HomeGame
-  , MenuItem '2' "Away Game" $
+  , MenuItem 'A' "AWAY GAME" $
     modify $ progMode.gameStateL.gameType ?~ AwayGame
   ]
 
@@ -172,17 +177,17 @@ gameGoalieMenu s = let
 
 -- | The edit menu
 editMenu :: Menu ()
-editMenu = Menu "*** EDIT ***" ()
-  [ MenuItem '1' "Create Player" $
+editMenu = Menu "EDIT MENU" ()
+  [ MenuItem 'A' "CREATE PLAYER" $
     modify createPlayer
-  , MenuItem '2' "Create Goalie" $
+  , MenuItem 'B' "CREATE GOALIE" $
     modify createGoalie
-  , MenuItem '3' "Edit Player" $
+  , MenuItem 'C' "EDIT PLAYER" $
     modify editPlayer
-  , MenuItem '4' "Edit Goalie" $
+  , MenuItem 'D' "EDIT GOALIE" $
     modify editGoalie
-  , MenuItem '5' "Edit Standings" $
+  , MenuItem 'E' "EDIT STANDINGS" $
     modify editStandings
-  , MenuItem 'R' "Return to Main Menu" $
+  , MenuItem 'R' "RETURN TO MAIN MENU" $
     modify backHome
   ]
