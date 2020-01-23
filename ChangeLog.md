@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.11.0
 - Added active flag to players/goalies
 - Clear rookie flag on new (regular) season
 - Save a copy of the database on new season
