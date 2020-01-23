@@ -37,11 +37,11 @@ showSpec :: Spec
 showSpec = describe "show" $
   it "should display correctly" $ let
     menu = Menu "Foo" ()
-      [ MenuItem '1' "Item 1" $ return ()
-      , MenuItem '2' "Item 2" $ return ()
+      [ MenuItem '1' "foo" $ return ()
+      , MenuItem '2' "bar baz" $ return ()
       ]
     expected =
       "Foo\n\n\
-      \1: Item 1\n\
-      \2: Item 2\n"
+      \1: foo    \n\
+      \2: bar baz\n"
     in show menu `shouldBe` expected
