@@ -41,7 +41,7 @@ showSpec = describe "show" $
       , MenuItem '2' "Item 2" $ return ()
       ]
     expected =
-      "Foo\n\
-      \1) Item 1\n\
-      \2) Item 2\n"
+      "Foo\n\n\
+      \1: Item 1\n\
+      \2: Item 2\n"
     in show menu `shouldBe` expected

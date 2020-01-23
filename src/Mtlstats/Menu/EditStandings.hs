@@ -32,12 +32,12 @@ import Mtlstats.Actions.EditStandings
 import Mtlstats.Types.Menu
 
 editStandingsMenu :: Menu ()
-editStandingsMenu = Menu "*** EDIT STANDINGS ***" ()
-  [ MenuItem '1' "Edit home standings" $
+editStandingsMenu = Menu "EDIT STANDINGS" ()
+  [ MenuItem 'A' "EDIT HOME STANDINGS" $
     modify editHomeStandings
-  , MenuItem '2' "Edit road standings" $
+  , MenuItem 'B' "EDIT ROAD STANDINGS" $
     modify editAwayStandings
-  , MenuItem 'R' "Return to main menu" $
+  , MenuItem 'R' "RETURN TO MAIN MENU" $
     modify backHome
   ]
 
@@ -48,17 +48,17 @@ editAwayStandingsMenu :: Menu ()
 editAwayStandingsMenu = subMenu "ROAD"
 
 subMenu :: String -> Menu ()
-subMenu str = Menu ("*** " ++ str ++ " STANDINGS ***") ()
-  [ MenuItem '1' "Edit wins" $
+subMenu str = Menu (str ++ " STANDINGS") ()
+  [ MenuItem 'W' "EDIT WINS" $
     modify editWins
-  , MenuItem '2' "Edit losses" $
+  , MenuItem 'L' "EDIT LOSSES" $
     modify editLosses
-  , MenuItem '3' "Edit overtime games" $
+  , MenuItem 'O' "EDIT OVERTIME GAMES" $
     modify editOvertime
-  , MenuItem '4' "Edit goals for" $
+  , MenuItem 'F' "EDIT GOALS FOR" $
     modify editGoalsFor
-  , MenuItem '5' "Edit goals against" $
+  , MenuItem 'A' "EDIT GOALS AGAINST" $
     modify editGoalsAgainst
-  , MenuItem 'R' "Return to edit standings menu" $
+  , MenuItem 'R' "RETURN TO EDIT STANDINGS MENU" $
     modify editStandings
   ]

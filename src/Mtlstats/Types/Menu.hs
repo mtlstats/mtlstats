@@ -65,8 +65,8 @@ makeLenses ''Menu
 makeLenses ''MenuItem
 
 instance Show (Menu a) where
-  show m = m ^. menuTitle ++ "\n" ++ items
+  show m = m ^. menuTitle ++ "\n\n" ++ items
     where items = unlines $ map show $ m ^. menuItems
 
 instance Show (MenuItem a) where
-  show i = [i ^. miKey] ++ ") " ++ i ^. miDescription
+  show i = [i ^. miKey] ++ ": " ++ i ^. miDescription
