@@ -98,6 +98,7 @@ module Mtlstats.Types (
   -- ** EditPlayerState Lenses
   epsSelectedPlayer,
   epsMode,
+  epsCallback,
   -- ** EditGoalieState Lenses
   egsSelectedGoalie,
   egsMode,
@@ -350,6 +351,8 @@ data EditPlayerState = EditPlayerState
   -- ^ The index number of the player being edited
   , _epsMode           :: EditPlayerMode
   -- ^ The editing mode
+  , _epsCallback       :: Action ()
+  -- ^ The action to perform when the edit is complete
   }
 
 -- | Player editing mode
@@ -818,6 +821,7 @@ newEditPlayerState :: EditPlayerState
 newEditPlayerState = EditPlayerState
   { _epsSelectedPlayer = Nothing
   , _epsMode           = EPMenu
+  , _epsCallback       = return ()
   }
 
 -- | Constructor for an 'EditGoalieState' value
