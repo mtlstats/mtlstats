@@ -25,15 +25,15 @@ import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromJust)
 import Lens.Micro ((^.))
-import Lens.Micro.Extras (view)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
-import Mtlstats.Control.TitleScreen
+import Mtlstats.Control.CreatePlayer
 import Mtlstats.Control.EditGoalie
 import Mtlstats.Control.EditPlayer
 import Mtlstats.Control.EditStandings
 import Mtlstats.Control.NewGame
+import Mtlstats.Control.TitleScreen
 import Mtlstats.Handlers
 import Mtlstats.Menu
 import Mtlstats.Prompt
@@ -43,16 +43,12 @@ import Mtlstats.Types
 -- run
 dispatch :: ProgState -> Controller
 dispatch s = case s^.progMode of
-  TitleScreen    -> titleScreenC
-  MainMenu       -> mainMenuC
-  NewSeason flag -> newSeasonC flag
-  NewGame gs     -> newGameC gs
-  EditMenu       -> editMenuC
-  CreatePlayer cps
-    | null $ cps^.cpsNumber   -> getPlayerNumC
-    | null $ cps^.cpsName     -> getPlayerNameC
-    | null $ cps^.cpsPosition -> getPlayerPosC
-    | otherwise               -> confirmCreatePlayerC
+  TitleScreen      -> titleScreenC
+  MainMenu         -> mainMenuC
+  NewSeason flag   -> newSeasonC flag
+  NewGame gs       -> newGameC gs
+  EditMenu         -> editMenuC
+  CreatePlayer cps -> createPlayerC cps
   CreateGoalie cgs
     | null $ cgs^.cgsNumber -> getGoalieNumC
     | null $ cgs^.cgsName   -> getGoalieNameC
@@ -73,50 +69,6 @@ newSeasonC True  = menuController newSeasonMenu
 
 editMenuC :: Controller
 editMenuC = menuController editMenu
-
-getPlayerNumC :: Controller
-getPlayerNumC = Controller
-  { drawController   = drawPrompt playerNumPrompt
-  , handleController = \e -> do
-    promptHandler playerNumPrompt e
-    return True
-  }
-
-getPlayerNameC :: Controller
-getPlayerNameC = Controller
-  { drawController   = drawPrompt playerNamePrompt
-  , handleController = \e -> do
-    promptHandler playerNamePrompt e
-    return True
-  }
-
-getPlayerPosC :: Controller
-getPlayerPosC = Controller
-  { drawController   = drawPrompt playerPosPrompt
-  , handleController = \e -> do
-    promptHandler playerPosPrompt e
-    return True
-  }
-
-confirmCreatePlayerC :: Controller
-confirmCreatePlayerC = Controller
-  { drawController = \s -> do
-    let cps = s^.progMode.createPlayerStateL
-    C.drawString $ "  Player number: " ++ show (fromJust $ cps^.cpsNumber) ++ "\n"
-    C.drawString $ "    Player name: " ++ cps^.cpsName ++ "\n"
-    C.drawString $ "Player position: " ++ cps^.cpsPosition ++ "\n\n"
-    C.drawString "Create player: are you sure?  (Y/N)"
-    return C.CursorInvisible
-  , handleController = \e -> do
-    case ynHandler e of
-      Just True -> do
-        modify addPlayer
-        join $ gets $ view $ progMode.createPlayerStateL.cpsSuccessCallback
-      Just False ->
-        join $ gets $ view $ progMode.createPlayerStateL.cpsFailureCallback
-      Nothing -> return ()
-    return True
-  }
 
 getGoalieNumC :: Controller
 getGoalieNumC = Controller
