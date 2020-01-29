@@ -37,58 +37,64 @@ import Mtlstats.Util
 editPlayerC :: EditPlayerState -> Controller
 editPlayerC eps
   | null $ eps^.epsSelectedPlayer = selectPlayerC
-  | otherwise = case eps^.epsMode of
-    EPMenu         -> menuC
-    EPNumber       -> numberC
-    EPName         -> nameC
-    EPPosition     -> positionC
-    EPYtd          -> ytdC
-    EPLifetime     -> lifetimeC
-    EPYtdGoals   b -> ytdGoalsC   b
-    EPYtdAssists b -> ytdAssistsC b
-    EPYtdPMin      -> ytdPMinC
-    EPLtGoals    b -> ltGoalsC    b
-    EPLtAssists  b -> ltAssistsC  b
-    EPLtPMin       -> ltPMinC
+  | otherwise =
+    ( case eps^.epsMode of
+      EPMenu         -> menuC
+      EPNumber       -> numberC
+      EPName         -> nameC
+      EPPosition     -> positionC
+      EPYtd          -> ytdC
+      EPLifetime     -> lifetimeC
+      EPYtdGoals   b -> ytdGoalsC   b
+      EPYtdAssists b -> ytdAssistsC b
+      EPYtdPMin      -> ytdPMinC
+      EPLtGoals    b -> ltGoalsC    b
+      EPLtAssists  b -> ltAssistsC  b
+      EPLtPMin       -> ltPMinC
+    ) $ eps^.epsCallback
 
 selectPlayerC :: Controller
 selectPlayerC = promptController playerToEditPrompt
 
-menuC :: Controller
-menuC = menuControllerWith header editPlayerMenu
+menuC :: Action () -> Controller
+menuC _ = menuControllerWith header editPlayerMenu
 
-numberC :: Controller
-numberC = promptController editPlayerNumPrompt
+numberC :: Action () -> Controller
+numberC = promptController . editPlayerNumPrompt
 
-nameC :: Controller
-nameC = promptController editPlayerNamePrompt
+nameC :: Action () -> Controller
+nameC = promptController . editPlayerNamePrompt
 
-positionC :: Controller
-positionC = promptController editPlayerPosPrompt
+positionC :: Action () -> Controller
+positionC = promptController . editPlayerPosPrompt
 
-ytdC :: Controller
-ytdC = menuControllerWith header editPlayerYtdMenu
+ytdC :: Action () -> Controller
+ytdC _ = menuControllerWith header editPlayerYtdMenu
 
-lifetimeC :: Controller
-lifetimeC = menuControllerWith header editPlayerLtMenu
+lifetimeC :: Action () -> Controller
+lifetimeC _ = menuControllerWith header editPlayerLtMenu
 
-ytdGoalsC :: Bool -> Controller
-ytdGoalsC = promptController . editPlayerYtdGoalsPrompt
+ytdGoalsC :: Bool -> Action () -> Controller
+ytdGoalsC batchMode callback = promptController $
+  editPlayerYtdGoalsPrompt batchMode callback
 
-ytdAssistsC :: Bool -> Controller
-ytdAssistsC = promptController . editPlayerYtdAssistsPrompt
+ytdAssistsC :: Bool -> Action () -> Controller
+ytdAssistsC batchMode callback = promptController $
+  editPlayerYtdAssistsPrompt batchMode callback
 
-ytdPMinC :: Controller
-ytdPMinC = promptController editPlayerYtdPMinPrompt
+ytdPMinC :: Action () -> Controller
+ytdPMinC = promptController . editPlayerYtdPMinPrompt
 
-ltGoalsC :: Bool -> Controller
-ltGoalsC = promptController . editPlayerLtGoalsPrompt
+ltGoalsC :: Bool -> Action () -> Controller
+ltGoalsC batchMode callback = promptController $
+  editPlayerLtGoalsPrompt batchMode callback
 
-ltAssistsC :: Bool -> Controller
-ltAssistsC = promptController . editPlayerLtAssistsPrompt
+ltAssistsC :: Bool -> Action () -> Controller
+ltAssistsC batchMode callback = promptController $
+  editPlayerLtAssistsPrompt batchMode callback
 
-ltPMinC :: Controller
-ltPMinC = promptController editPlayerLtPMinPrompt
+ltPMinC :: Action () -> Controller
+ltPMinC = promptController . editPlayerLtPMinPrompt
 
 header :: ProgState -> C.Update ()
 header s = C.drawString $ fromMaybe "" $ do
