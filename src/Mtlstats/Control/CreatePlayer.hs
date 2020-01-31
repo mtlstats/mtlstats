@@ -24,7 +24,7 @@ module Mtlstats.Control.CreatePlayer (createPlayerC) where
 import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromJust)
-import Lens.Micro ((^.))
+import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -76,8 +76,14 @@ confirmCreatePlayerC = Controller
   , handleController = \e -> do
     case ynHandler e of
       Just True -> do
-        modify addPlayer
-        join $ gets (^.progMode.createPlayerStateL.cpsSuccessCallback)
+        pid <- gets (^.database.dbPlayers.to length)
+        cb  <- gets (^.progMode.createPlayerStateL.cpsSuccessCallback)
+        modify
+          $ (progMode.editPlayerStateL
+            %~ (epsSelectedPlayer ?~ pid)
+            .  (epsMode .~ EPLtGoals True)
+            .  (epsCallback .~ cb))
+          . addPlayer
       Just False ->
         join $ gets (^.progMode.createPlayerStateL.cpsFailureCallback)
       Nothing -> return ()
