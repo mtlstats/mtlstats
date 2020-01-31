@@ -39,46 +39,68 @@ import Mtlstats.Prompt
 import Mtlstats.Types
 
 -- | Prompt to edit a player's number
-editPlayerNumPrompt :: Prompt
+editPlayerNumPrompt
+  :: Action ()
+  -- ^ The action to be performed upon completion
+  -> Prompt
 editPlayerNumPrompt = editNum "Player number: " EPMenu
   (pNumber .~)
 
 -- | Prompt to edit a player's name
-editPlayerNamePrompt :: Prompt
-editPlayerNamePrompt = namePrompt "Player name: " $ \name ->
+editPlayerNamePrompt
+  :: Action ()
+  -- ^ The action to be performed upon completion
+  -> Prompt
+editPlayerNamePrompt callback = namePrompt "Player name: " $ \name -> do
   if null name
-  then goto EPMenu
-  else doEdit EPMenu $ pName .~ name
+    then goto EPMenu
+    else doEdit EPMenu $ pName .~ name
+  callback
 
 -- | Prompt to edit a player's position
-editPlayerPosPrompt :: Prompt
-editPlayerPosPrompt = ucStrPrompt "Player position: " $ \pos ->
+editPlayerPosPrompt
+  :: Action ()
+  -- ^ The action to be performed upon completion
+  -> Prompt
+editPlayerPosPrompt callback = ucStrPrompt "Player position: " $ \pos -> do
   if null pos
-  then goto EPMenu
-  else doEdit EPMenu $ pPosition .~ pos
+    then goto EPMenu
+    else doEdit EPMenu $ pPosition .~ pos
+  callback
 
 -- | Prompt to edit a player's year-to-date goals
 editPlayerYtdGoalsPrompt
   :: Bool
   -- ^ Indicates wheter or not we're editing in batch mode
+  -> Action ()
+  -- ^ The action to be performed upon completion
   -> Prompt
-editPlayerYtdGoalsPrompt batchMode = editNum "Year-to-date goals: " mode
-  (pYtd.psGoals .~)
+editPlayerYtdGoalsPrompt batchMode callback = editNum "Year-to-date goals: " mode
+  (pYtd.psGoals .~) callback'
   where
-    mode = if batchMode then EPYtdAssists True else EPYtd
+    (mode, callback') = if batchMode
+      then (EPYtdAssists True, return ())
+      else (EPYtd, callback)
 
 -- | Prompt to edit a player's year-to-date assists
 editPlayerYtdAssistsPrompt
   :: Bool
   -- ^ Indicates wheter or not we're editing in batch mode
+  -> Action ()
+  -- ^ The action to be performed upon completion
   -> Prompt
-editPlayerYtdAssistsPrompt batchMode = editNum "Year-to-date assists: " mode
-  (pYtd.psAssists .~)
+editPlayerYtdAssistsPrompt batchMode callback = editNum "Year-to-date assists: " mode
+  (pYtd.psAssists .~) callback'
   where
-    mode = if batchMode then EPYtdPMin else EPYtd
+    (mode, callback') = if batchMode
+      then (EPYtdPMin, return ())
+      else (EPYtd, callback)
 
 -- | Prompt to edit a player's year-to-date penalty minutes
-editPlayerYtdPMinPrompt :: Prompt
+editPlayerYtdPMinPrompt
+  :: Action ()
+  -- ^ The action to be performed upon completion
+  -> Prompt
 editPlayerYtdPMinPrompt = editNum "Year-to-date penalty minutes: " EPYtd
   (pYtd.psPMin .~)
 
@@ -86,24 +108,35 @@ editPlayerYtdPMinPrompt = editNum "Year-to-date penalty minutes: " EPYtd
 editPlayerLtGoalsPrompt
   :: Bool
   -- ^ Indicates wheter or not we're editing in batch mode
+  -> Action ()
+  -- ^ The action to be performed upon completion
   -> Prompt
-editPlayerLtGoalsPrompt batchMode = editNum "Lifetime goals: " mode
-  (pLifetime.psGoals .~)
+editPlayerLtGoalsPrompt batchMode callback = editNum "Lifetime goals: " mode
+  (pLifetime.psGoals .~) callback'
   where
-    mode = if batchMode then EPLtAssists True else EPLifetime
+    (mode, callback') = if batchMode
+      then (EPLtAssists True, return ())
+      else (EPLifetime, callback)
 
 -- | Prompt to edit a player's lifetime assists
 editPlayerLtAssistsPrompt
   :: Bool
   -- ^ Indicates wheter or not we're editing in batch mode
+  -> Action ()
+  -- ^ The action to be performed upon completion
   -> Prompt
-editPlayerLtAssistsPrompt batchMode = editNum "Lifetime assists: " mode
-  (pLifetime.psAssists .~)
+editPlayerLtAssistsPrompt batchMode callback = editNum "Lifetime assists: " mode
+  (pLifetime.psAssists .~) callback'
   where
-    mode = if batchMode then EPLtPMin else EPLifetime
+    (mode, callback') = if batchMode
+      then (EPLtPMin, return ())
+      else (EPLifetime, callback)
 
 -- | Prompt to edit a player's lifetime penalty minutes
-editPlayerLtPMinPrompt :: Prompt
+editPlayerLtPMinPrompt
+  :: Action ()
+  -- ^ The action to be performed upon completion
+  -> Prompt
 editPlayerLtPMinPrompt = editNum "Lifetime penalty minutes: " EPLifetime
   (pLifetime.psPMin .~)
 
@@ -111,10 +144,13 @@ editNum
   :: String
   -> EditPlayerMode
   -> (Int -> Player -> Player)
+  -> Action ()
   -> Prompt
-editNum pStr mode f = numPromptWithFallback pStr
-  (goto mode)
-  (doEdit mode . f)
+editNum pStr mode f callback = numPromptWithFallback pStr
+  (goto mode >> callback)
+  (\num -> do
+    doEdit mode $ f num
+    callback)
 
 doEdit :: EditPlayerMode -> (Player -> Player) -> Action ()
 doEdit mode f = do
