@@ -102,6 +102,7 @@ module Mtlstats.Types (
   -- ** EditGoalieState Lenses
   egsSelectedGoalie,
   egsMode,
+  egsCallback,
   -- ** Database Lenses
   dbPlayers,
   dbGoalies,
@@ -376,6 +377,9 @@ data EditGoalieState = EditGoalieState
   { _egsSelectedGoalie :: Maybe Int
   -- ^ The index number of the 'Goalie' being edited
   , _egsMode           :: EditGoalieMode
+  -- ^ The editing mode
+  , _egsCallback       :: Action ()
+  -- ^ The action to perform when the edit is complete
   }
 
 -- | 'Goalie' editing mode
@@ -829,6 +833,7 @@ newEditGoalieState :: EditGoalieState
 newEditGoalieState = EditGoalieState
   { _egsSelectedGoalie = Nothing
   , _egsMode           = EGMenu
+  , _egsCallback       = return ()
   }
 
 -- | Constructor for a 'Database'
