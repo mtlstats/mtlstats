@@ -24,7 +24,7 @@ module Mtlstats.Control.CreateGoalie (createGoalieC) where
 import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromJust)
-import Lens.Micro ((^.))
+import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -69,8 +69,14 @@ confirmCreateGoalieC = Controller
   , handleController = \e -> do
     case ynHandler e of
       Just True -> do
-        modify addGoalie
-        join $ gets (^.progMode.createGoalieStateL.cgsSuccessCallback)
+        gid <- gets (^.database.dbGoalies.to length)
+        cb  <- gets (^.progMode.createGoalieStateL.cgsSuccessCallback)
+        modify
+          $ (progMode.editGoalieStateL
+            %~ (egsSelectedGoalie ?~ gid)
+            .  (egsMode .~ EGLtGames True)
+            .  (egsCallback .~ cb))
+          . addGoalie
       Just False ->
         join $ gets (^.progMode.createGoalieStateL.cgsFailureCallback)
       Nothing -> return ()
