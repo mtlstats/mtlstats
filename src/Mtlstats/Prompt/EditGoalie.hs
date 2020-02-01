@@ -52,85 +52,119 @@ goalieToEditPrompt = selectGoaliePrompt "Goalie to edit: " $
   modify . (progMode.editGoalieStateL.egsSelectedGoalie .~)
 
 -- | Prompt to edit a goalie's number
-editGoalieNumberPrompt :: Prompt
+editGoalieNumberPrompt
+  :: Action ()
+  -- ^ Action to perform on completion
+  -> Prompt
 editGoalieNumberPrompt = editNum "Goalie number: " EGMenu
   (gNumber .~)
 
 -- | Prompt to edit a goalie's name
-editGoalieNamePrompt :: Prompt
-editGoalieNamePrompt = namePrompt "Goalie name: " $ \name ->
+editGoalieNamePrompt
+  :: Action ()
+  -- ^ Action to perform on completion
+  -> Prompt
+editGoalieNamePrompt cb = namePrompt "Goalie name: " $ \name -> do
   if null name
-  then goto EGMenu
-  else doEdit EGMenu $ gName .~ name
+    then goto EGMenu
+    else doEdit EGMenu $ gName .~ name
+  cb
 
 -- | Prompt to edit a goalie's YTD games played
 editGoalieYtdGamesPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieYtdGamesPrompt batchMode =
+editGoalieYtdGamesPrompt batchMode cb =
   editNum "Year-to-date games played: " mode
-  (gYtd.gsGames .~)
+  (gYtd.gsGames .~) cb'
   where
-    mode = if batchMode then EGYtdMins True else EGYtd
+    (mode, cb') = if batchMode
+      then (EGYtdMins True, return ())
+      else (EGYtd, cb)
 
 -- | Prompt to edit a goalie's YTD minutes played
 editGoalieYtdMinsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieYtdMinsPrompt batchMode =
+editGoalieYtdMinsPrompt batchMode cb =
   editNum "Year-to-date minutes played: " mode
-  (gYtd.gsMinsPlayed .~)
+  (gYtd.gsMinsPlayed .~) cb'
   where
-    mode = if batchMode then EGYtdGoals True else EGYtd
+    (mode, cb') = if batchMode
+      then (EGYtdGoals True, return ())
+      else (EGYtd, cb)
 
 -- | Prompt to edit a goalie's YTD goales allowed
 editGoalieYtdGoalsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieYtdGoalsPrompt batchMode =
+editGoalieYtdGoalsPrompt batchMode cb =
   editNum "Year-to-date goals allowed: " mode
-  (gYtd.gsGoalsAllowed .~)
+  (gYtd.gsGoalsAllowed .~) cb'
   where
-    mode = if batchMode then EGYtdShutouts True else EGYtd
+    (mode, cb') = if batchMode
+      then (EGYtdShutouts True, return ())
+      else (EGYtd, cb)
 
 -- | Prompt to edit a goalie's YTD shutouts
 editGoalieYtdShutoutsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieYtdShutoutsPrompt batchMode =
+editGoalieYtdShutoutsPrompt batchMode cb =
   editNum "Year-to-date shutouts: " mode
-  (gYtd.gsShutouts .~)
+  (gYtd.gsShutouts .~) cb'
   where
-    mode = if batchMode then EGYtdWins True else EGYtd
+    (mode, cb') = if batchMode
+      then (EGYtdWins True, return ())
+      else (EGYtd, cb)
 
 -- | Prompt to edit a goalie's YTD wins
 editGoalieYtdWinsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieYtdWinsPrompt batchMode =
+editGoalieYtdWinsPrompt batchMode cb =
   editNum "Year-to-date wins: " mode
-  (gYtd.gsWins .~)
+  (gYtd.gsWins .~) cb'
   where
-    mode = if batchMode then EGYtdLosses True else EGYtd
+    (mode, cb') = if batchMode
+      then (EGYtdLosses True, return ())
+      else (EGYtd, cb)
 
 -- | Prompt to edit a goalie's YTD losses
 editGoalieYtdLossesPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieYtdLossesPrompt batchMode =
+editGoalieYtdLossesPrompt batchMode cb =
   editNum "Year-to-date losses: " mode
-  (gYtd.gsLosses .~)
+  (gYtd.gsLosses .~) cb'
   where
-    mode = if batchMode then EGYtdTies else EGYtd
+    (mode, cb') = if batchMode
+      then (EGYtdTies, return ())
+      else (EGYtd, cb)
 
 -- | Prompt to edit a goalie's YTD ties
-editGoalieYtdTiesPrompt :: Prompt
+editGoalieYtdTiesPrompt
+  :: Action ()
+  -- ^ Action to perform on completion
+  -> Prompt
 editGoalieYtdTiesPrompt = editNum "Year-to-date ties: " EGYtd
   (gYtd.gsTies .~)
 
@@ -138,70 +172,97 @@ editGoalieYtdTiesPrompt = editNum "Year-to-date ties: " EGYtd
 editGoalieLtGamesPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieLtGamesPrompt batchMode =
+editGoalieLtGamesPrompt batchMode cb =
   editNum "Lifetime games played: " mode
-  (gLifetime.gsGames .~)
+  (gLifetime.gsGames .~) cb'
   where
-    mode = if batchMode then EGLtMins True else EGLifetime
+    (mode, cb') = if batchMode
+      then (EGLtMins True, return ())
+      else (EGLifetime, cb)
 
 -- | Prompt to edit a goalie's lifetime minutes played
 editGoalieLtMinsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieLtMinsPrompt batchMode =
+editGoalieLtMinsPrompt batchMode cb =
   editNum "Lifetime minutes played: " mode
-  (gLifetime.gsMinsPlayed .~)
+  (gLifetime.gsMinsPlayed .~) cb'
   where
-    mode = if batchMode then EGLtGoals True else EGLifetime
+    (mode, cb') = if batchMode
+      then (EGLtGoals True, return ())
+      else (EGLifetime, cb)
 
 -- | Prompt to edit a goalie's lifetime goals allowed
 editGoalieLtGoalsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieLtGoalsPrompt batchMode =
+editGoalieLtGoalsPrompt batchMode cb =
   editNum "Lifetime goals allowed: " mode
-  (gLifetime.gsGoalsAllowed .~)
+  (gLifetime.gsGoalsAllowed .~) cb'
   where
-    mode = if batchMode then EGLtShutouts True else EGLifetime
+    (mode, cb') = if batchMode
+      then (EGLtShutouts True, return ())
+      else (EGLifetime, cb)
 
 -- | Prompt to edit a goalie's lifetime shutouts
 editGoalieLtShutoutsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieLtShutoutsPrompt batchMode =
+editGoalieLtShutoutsPrompt batchMode cb =
   editNum "Lifetime shutouts: " mode
-  (gLifetime.gsShutouts .~)
+  (gLifetime.gsShutouts .~) cb'
   where
-    mode = if batchMode then EGLtWins True else EGLifetime
+    (mode, cb') = if batchMode
+      then (EGLtWins True, return ())
+      else (EGLifetime, cb)
 
 -- | Prompt to edit a goalie's lifetime wins
 editGoalieLtWinsPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieLtWinsPrompt batchMode =
+editGoalieLtWinsPrompt batchMode cb =
   editNum "Lifetime wins: " mode
-  (gLifetime.gsWins .~)
+  (gLifetime.gsWins .~) cb'
   where
-    mode = if batchMode then EGLtLosses True else EGLifetime
+    (mode, cb') = if batchMode
+      then (EGLtLosses True, return ())
+      else (EGLifetime, cb)
 
 -- | Prompt to edit a goalie's lifetime losses
 editGoalieLtLossesPrompt
   :: Bool
   -- ^ Indicates whether or not we're in batch mode
+  -> Action ()
+  -- ^ Action to perform on completion
   -> Prompt
-editGoalieLtLossesPrompt batchMode =
+editGoalieLtLossesPrompt batchMode cb =
   editNum "Lifetime losses: " mode
-  (gLifetime.gsLosses .~)
+  (gLifetime.gsLosses .~) cb'
   where
-    mode = if batchMode then EGLtTies else EGLifetime
+    (mode, cb') = if batchMode
+      then (EGLtTies, return ())
+      else (EGLifetime, cb)
 
 -- | Prompt to edit a goalie's lifetime ties
-editGoalieLtTiesPrompt :: Prompt
+editGoalieLtTiesPrompt
+  :: Action ()
+  -- ^ Action to perform on completion
+  -> Prompt
 editGoalieLtTiesPrompt = editNum "Lifetime ties: " EGLifetime
   (gLifetime.gsTies .~)
 
@@ -209,10 +270,13 @@ editNum
   :: String
   -> EditGoalieMode
   -> (Int -> Goalie -> Goalie)
+  -> Action ()
   -> Prompt
-editNum pStr mode f = numPromptWithFallback pStr
-  (goto mode)
-  (doEdit mode . f)
+editNum pStr mode f cb = numPromptWithFallback pStr
+  (goto mode >> cb)
+  (\num -> do
+    doEdit mode $ f num
+    cb)
 
 doEdit :: EditGoalieMode -> (Goalie -> Goalie) -> Action ()
 doEdit mode f = do
