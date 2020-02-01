@@ -1,7 +1,7 @@
 # Changelog for mtlstats
 
 ## current
-- Edit lifetime stats on new player creation
+- Edit lifetime stats on new player/goalie creation
 
 ## 0.11.0
 - Added active flag to players/goalies
