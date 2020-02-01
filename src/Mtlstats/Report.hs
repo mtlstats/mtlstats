@@ -261,8 +261,10 @@ goalieReport width showTotals lineNumbers goalieData = let
     then "GOALTENDING TOTALS"
     else ""
 
+  goalieData' = sortGoalies goalieData
+
   tData = foldl addGoalieStats newGoalieStats
-    $ map snd goalieData
+    $ map snd goalieData'
 
   header =
     [ CellText "NO."
@@ -287,7 +289,7 @@ goalieReport width showTotals lineNumbers goalieData = let
       [ CellText $ show (goalie^.gNumber) ++ " "
       , CellText $ goalieName goalie
       ] ++ rowCells stats)
-    goalieData
+    goalieData'
 
   separator
     =  replicate 2 (CellText "")
@@ -309,6 +311,8 @@ goalieReport width showTotals lineNumbers goalieData = let
 
 gameGoalieReport :: Int -> [(Goalie, GoalieStats)] -> [String]
 gameGoalieReport width goalieData = let
+  goalieData' = sortGoalies goalieData
+
   header =
     [ CellText "NO."
     , CellText "GOALTENDER"
@@ -325,8 +329,12 @@ gameGoalieReport width goalieData = let
       , CellText $ show $ stats^.gsGoalsAllowed
       , CellText $ showFloating $ gsAverage stats
       ])
-    goalieData
+    goalieData'
 
   in map (centre width)
     $ complexTable ([right, left] ++ repeat right)
     $ header : body
+
+sortGoalies :: [(Goalie, GoalieStats)] -> [(Goalie, GoalieStats)]
+sortGoalies = sortOn $ Down . \(g, gs) ->
+  (gs^.gsMinsPlayed, g^.gLifetime.gsMinsPlayed)
