@@ -39,89 +39,103 @@ import Mtlstats.Util
 editGoalieC :: EditGoalieState -> Controller
 editGoalieC egs
   | null $ egs^.egsSelectedGoalie = selectC
-  | otherwise = editC $ egs^.egsMode
+  | otherwise = editC (egs^.egsCallback) (egs^.egsMode)
 
 selectC :: Controller
 selectC = promptController goalieToEditPrompt
 
-editC :: EditGoalieMode -> Controller
-editC = \case
-  EGMenu          -> menuC
-  EGNumber        -> numberC
-  EGName          -> nameC
-  EGYtd           -> ytdMenuC
-  EGLifetime      -> lifetimeMenuC
-  EGYtdGames b    -> ytdGamesC b
-  EGYtdMins b     -> ytdMinsC b
-  EGYtdGoals b    -> ytdGoalsC b
-  EGYtdShutouts b -> ytdShutoutsC b
-  EGYtdWins b     -> ytdWinsC b
-  EGYtdLosses b   -> ytdLossesC b
-  EGYtdTies       -> ytdTiesC
-  EGLtGames b     -> ltGamesC b
-  EGLtMins b      -> ltMinsC b
-  EGLtGoals b     -> ltGoalsC b
-  EGLtShutouts b  -> ltShutoutsC b
-  EGLtWins b      -> ltWinsC b
-  EGLtLosses b    -> ltLossesC b
-  EGLtTies        -> ltTiesC
+editC :: Action () -> EditGoalieMode -> Controller
+editC cb =
+  ( \case
+    EGMenu          -> menuC
+    EGNumber        -> numberC
+    EGName          -> nameC
+    EGYtd           -> ytdMenuC
+    EGLifetime      -> lifetimeMenuC
+    EGYtdGames b    -> ytdGamesC b
+    EGYtdMins b     -> ytdMinsC b
+    EGYtdGoals b    -> ytdGoalsC b
+    EGYtdShutouts b -> ytdShutoutsC b
+    EGYtdWins b     -> ytdWinsC b
+    EGYtdLosses b   -> ytdLossesC b
+    EGYtdTies       -> ytdTiesC
+    EGLtGames b     -> ltGamesC b
+    EGLtMins b      -> ltMinsC b
+    EGLtGoals b     -> ltGoalsC b
+    EGLtShutouts b  -> ltShutoutsC b
+    EGLtWins b      -> ltWinsC b
+    EGLtLosses b    -> ltLossesC b
+    EGLtTies        -> ltTiesC
+  ) <*> return cb
 
-menuC :: Controller
-menuC = menuControllerWith header editGoalieMenu
+menuC :: Action () -> Controller
+menuC _ = menuControllerWith header editGoalieMenu
 
-numberC :: Controller
-numberC = promptController editGoalieNumberPrompt
+numberC :: Action () -> Controller
+numberC = promptController . editGoalieNumberPrompt
 
-nameC :: Controller
-nameC = promptController editGoalieNamePrompt
+nameC :: Action () -> Controller
+nameC = promptController . editGoalieNamePrompt
 
-ytdMenuC :: Controller
-ytdMenuC = menuControllerWith header editGoalieYtdMenu
+ytdMenuC :: Action () -> Controller
+ytdMenuC _ = menuControllerWith header editGoalieYtdMenu
 
-lifetimeMenuC :: Controller
-lifetimeMenuC = menuControllerWith header editGoalieLtMenu
+lifetimeMenuC :: Action () -> Controller
+lifetimeMenuC _ = menuControllerWith header editGoalieLtMenu
 
-ytdGamesC :: Bool -> Controller
-ytdGamesC = promptController . editGoalieYtdGamesPrompt
+ytdGamesC :: Bool -> Action () -> Controller
+ytdGamesC = curry $ promptController .
+  uncurry editGoalieYtdGamesPrompt
 
-ytdMinsC :: Bool -> Controller
-ytdMinsC = promptController . editGoalieYtdMinsPrompt
+ytdMinsC :: Bool -> Action () -> Controller
+ytdMinsC = curry $ promptController .
+  uncurry editGoalieYtdMinsPrompt
 
-ytdGoalsC :: Bool -> Controller
-ytdGoalsC = promptController . editGoalieYtdGoalsPrompt
+ytdGoalsC :: Bool -> Action () -> Controller
+ytdGoalsC = curry $ promptController .
+  uncurry editGoalieYtdGoalsPrompt
 
-ytdShutoutsC :: Bool -> Controller
-ytdShutoutsC = promptController . editGoalieYtdShutoutsPrompt
+ytdShutoutsC :: Bool -> Action () -> Controller
+ytdShutoutsC = curry $ promptController .
+  uncurry editGoalieYtdShutoutsPrompt
 
-ytdWinsC :: Bool -> Controller
-ytdWinsC = promptController . editGoalieYtdWinsPrompt
+ytdWinsC :: Bool -> Action () -> Controller
+ytdWinsC = curry $ promptController .
+  uncurry editGoalieYtdWinsPrompt
 
-ytdLossesC :: Bool -> Controller
-ytdLossesC = promptController . editGoalieYtdLossesPrompt
+ytdLossesC :: Bool -> Action () -> Controller
+ytdLossesC = curry $ promptController .
+  uncurry editGoalieYtdLossesPrompt
 
-ytdTiesC :: Controller
-ytdTiesC = promptController editGoalieYtdTiesPrompt
+ytdTiesC :: Action () -> Controller
+ytdTiesC = promptController . editGoalieYtdTiesPrompt
 
-ltGamesC :: Bool -> Controller
-ltGamesC = promptController . editGoalieLtGamesPrompt
+ltGamesC :: Bool -> Action () -> Controller
+ltGamesC = curry $ promptController .
+  uncurry editGoalieLtGamesPrompt
 
-ltMinsC :: Bool -> Controller
-ltMinsC = promptController . editGoalieLtMinsPrompt
+ltMinsC :: Bool -> Action () -> Controller
+ltMinsC = curry $ promptController .
+  uncurry editGoalieLtMinsPrompt
 
-ltGoalsC :: Bool -> Controller
-ltGoalsC = promptController . editGoalieLtGoalsPrompt
+ltGoalsC :: Bool -> Action() -> Controller
+ltGoalsC = curry $ promptController .
+  uncurry editGoalieLtGoalsPrompt
 
-ltShutoutsC :: Bool -> Controller
-ltShutoutsC = promptController . editGoalieLtShutoutsPrompt
+ltShutoutsC :: Bool -> Action () -> Controller
+ltShutoutsC = curry $ promptController .
+  uncurry editGoalieLtShutoutsPrompt
 
-ltWinsC :: Bool -> Controller
-ltWinsC = promptController . editGoalieLtWinsPrompt
+ltWinsC :: Bool -> Action () -> Controller
+ltWinsC = curry $ promptController .
+  uncurry editGoalieLtWinsPrompt
 
-ltLossesC :: Bool -> Controller
-ltLossesC = promptController . editGoalieLtLossesPrompt
+ltLossesC :: Bool -> Action () -> Controller
+ltLossesC = curry $ promptController .
+  uncurry editGoalieLtLossesPrompt
 
-ltTiesC :: Controller
-ltTiesC = promptController editGoalieLtTiesPrompt
+ltTiesC :: Action () -> Controller
+ltTiesC = promptController . editGoalieLtTiesPrompt
 
 header :: ProgState -> C.Update ()
 header s = C.drawString $ fromMaybe "" $ do
