@@ -3,6 +3,7 @@
 ## current
 - Edit lifetime stats on new player/goalie creation
 - Sort goalies by minutes played
+- Subsort players by lifetime points
 
 ## 0.11.0
 - Added active flag to players/goalies

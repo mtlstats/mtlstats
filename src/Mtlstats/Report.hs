@@ -117,7 +117,7 @@ gameStatsReport width s = let
   gs = s^.progMode.gameStateL
   db = s^.database
 
-  playerStats = mapMaybe
+  playerStats = sortPlayers $ mapMaybe
     (\(pid, stats) -> do
       p <- nth pid $ db^.dbPlayers
       Just (p, stats))
@@ -139,7 +139,7 @@ yearToDateStatsReport :: Int -> ProgState -> [String]
 yearToDateStatsReport width s = let
   db = s^.database
 
-  playerStats = sortOn (Down . psPoints . snd)
+  playerStats = sortPlayers
     $ map (\p -> (p, p^.pYtd))
     $ filter playerIsActive
     $ db^.dbPlayers
@@ -156,7 +156,7 @@ lifetimeStatsReport :: Int -> ProgState -> [String]
 lifetimeStatsReport width s = let
   db = s^.database
 
-  playerStats = sortOn (Down . psPoints . snd)
+  playerStats = sortPlayers
     $ map (\p -> (p, p^.pLifetime))
     $ db^.dbPlayers
 
@@ -334,6 +334,10 @@ gameGoalieReport width goalieData = let
   in map (centre width)
     $ complexTable ([right, left] ++ repeat right)
     $ header : body
+
+sortPlayers :: [(Player, PlayerStats)] -> [(Player, PlayerStats)]
+sortPlayers = sortOn $ Down . \(p, ps) ->
+  (psPoints ps, psPoints $ p^.pLifetime)
 
 sortGoalies :: [(Goalie, GoalieStats)] -> [(Goalie, GoalieStats)]
 sortGoalies = sortOn $ Down . \(g, gs) ->
