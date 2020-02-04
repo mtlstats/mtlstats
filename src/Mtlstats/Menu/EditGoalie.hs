@@ -38,12 +38,12 @@ editGoalieMenu = Menu "EDIT GOALTENDER" () $ map
   (\(ch, label, action) -> MenuItem ch label $ modify action)
 
   --  key, label,                 value
-  [ ( 'A', "EDIT NUMBER",         set EGNumber   )
-  , ( 'B', "EDIT NAME",           set EGName     )
-  , ( 'C', "TOGGLE ROOKIE FLAG",  toggleRookie   )
-  , ( 'D', "TOGGLE ACTIVE FLAG",  toggleActive   )
-  , ( 'E', "EDIT YTD STATS",      set EGYtd      )
-  , ( 'F', "EDIT LIFETIME STATS", set EGLifetime )
+  [ ( 'A', "NUMBER",              set EGNumber   )
+  , ( 'B', "NAME",                set EGName     )
+  , ( 'C', "ROOKIE FLAG",         toggleRookie   )
+  , ( 'D', "ACTIVE FLAG",         toggleActive   )
+  , ( 'E', "YTD STATS",           set EGYtd      )
+  , ( 'F', "LIFETIME STATS",      set EGLifetime )
   , ( 'R', "RETURN TO EDIT MENU", edit           )
   ]
 
@@ -56,14 +56,14 @@ editGoalieMenu = Menu "EDIT GOALTENDER" () $ map
 editGoalieYtdMenu :: Menu ()
 editGoalieYtdMenu = editMenu "EDIT GOALTENDER YEAR-TO-DATE"
   --  key, label,                 value
-  [ ( 'A', "EDIT ALL YTD STATS",  EGYtdGames    True  )
-  , ( 'B', "EDIT YTD GAMES",      EGYtdGames    False )
-  , ( 'C', "EDIT YTD MINUTES",    EGYtdMins     False )
-  , ( 'D', "EDIT YTD GOALS",      EGYtdGoals    False )
-  , ( 'E', "EDIT YTD SHUTOUTS",   EGYtdShutouts False )
-  , ( 'F', "EDIT YTD WINS",       EGYtdWins     False )
-  , ( 'G', "EDIT YTD LOSSES",     EGYtdLosses   False )
-  , ( 'H', "EDIT YTD TIES",       EGYtdTies           )
+  [ ( 'A', "ALL YTD STATS",       EGYtdGames    True  )
+  , ( 'B', "YTD GAMES",           EGYtdGames    False )
+  , ( 'C', "YTD MINUTES",         EGYtdMins     False )
+  , ( 'D', "YTD GOALS",           EGYtdGoals    False )
+  , ( 'E', "YTD SHUTOUTS",        EGYtdShutouts False )
+  , ( 'F', "YTD WINS",            EGYtdWins     False )
+  , ( 'G', "YTD LOSSES",          EGYtdLosses   False )
+  , ( 'H', "YTD TIES",            EGYtdTies           )
   , ( 'R', "RETURN TO EDIT MENU", EGMenu              )
   ]
 
@@ -71,16 +71,16 @@ editGoalieYtdMenu = editMenu "EDIT GOALTENDER YEAR-TO-DATE"
 editGoalieLtMenu :: Menu ()
 editGoalieLtMenu = editMenu
   "EDIT GOALTENDER LIFETIME"
-  --  key, label,                   value
-  [ ( 'A', "EDIT ALL LIFETIME STATS", EGLtGames    True  )
-  , ( 'B', "EDIT LIFETIME GAMES",     EGLtGames    False )
-  , ( 'C', "EDIT LIFETIME MINUTES",   EGLtMins     False )
-  , ( 'D', "EDIT LIFETIME GOALS",     EGLtGoals    False )
-  , ( 'E', "EDIT LIFETIME SHUTOUTS",  EGLtShutouts False )
-  , ( 'F', "EDIT LIFETIME WINS",      EGLtWins     False )
-  , ( 'G', "EDIT LIFETIME LOSSES",    EGLtLosses   False )
-  , ( 'H', "EDIT LIFETIME TIES",      EGLtTies           )
-  , ( 'R', "RETURN TO EDIT MENU",     EGMenu             )
+  --  key, label,                 value
+  [ ( 'A', "ALL LIFETIME STATS",  EGLtGames    True  )
+  , ( 'B', "LIFETIME GAMES",      EGLtGames    False )
+  , ( 'C', "LIFETIME MINUTES",    EGLtMins     False )
+  , ( 'D', "LIFETIME GOALS",      EGLtGoals    False )
+  , ( 'E', "LIFETIME SHUTOUTS",   EGLtShutouts False )
+  , ( 'F', "LIFETIME WINS",       EGLtWins     False )
+  , ( 'G', "LIFETIME LOSSES",     EGLtLosses   False )
+  , ( 'H', "LIFETIME TIES",       EGLtTies           )
+  , ( 'R', "RETURN TO EDIT MENU", EGMenu             )
   ]
 
 editMenu :: String -> [(Char, String, EditGoalieMode)] -> Menu ()

@@ -38,13 +38,13 @@ editPlayerMenu = Menu "EDIT PLAYER" () $ map
   (\(ch, label, action) -> MenuItem ch label $ modify action)
 
   --  key, label,                 value
-  [ ( 'A', "EDIT NUMBER",         set EPNumber   )
-  , ( 'B', "EDIT NAME",           set EPName     )
-  , ( 'C', "EDIT POSITION",       set EPPosition )
-  , ( 'D', "TOGGLE ROOKIE FLAG",  toggleRookie   )
-  , ( 'E', "TOGGLE ACTIVE FLAG",  toggleActive   )
-  , ( 'F', "EDIT YTD STATS",      set EPYtd      )
-  , ( 'G', "EDIT LIFETIME STATS", set EPLifetime )
+  [ ( 'A', "NUMBER",              set EPNumber   )
+  , ( 'B', "NAME",                set EPName     )
+  , ( 'C', "POSITION",            set EPPosition )
+  , ( 'D', "ROOKIE FLAG",         toggleRookie   )
+  , ( 'E', "ACTIVE FLAG",         toggleActive   )
+  , ( 'F', "YTD STATS",           set EPYtd      )
+  , ( 'G', "LIFETIME STATS",      set EPLifetime )
   , ( 'R', "RETURN TO EDIT MENU", edit           )
   ]
 
@@ -58,10 +58,10 @@ editPlayerYtdMenu :: Menu ()
 editPlayerYtdMenu = editMenu
   "EDIT PLAYER YEAR-TO-DATE"
   --  key, label,                        value
-  [ ( 'A', "EDIT ALL YTD STATS",         EPYtdGoals   True  )
-  , ( 'B', "EDIT YTD GOALS",             EPYtdGoals   False )
-  , ( 'C', "EDIT YTD ASSISTS",           EPYtdAssists False )
-  , ( 'D', "EDIT YTD PENALTY MINS",      EPYtdPMin          )
+  [ ( 'A', "ALL YTD STATS",              EPYtdGoals   True  )
+  , ( 'B', "YTD GOALS",                  EPYtdGoals   False )
+  , ( 'C', "YTD ASSISTS",                EPYtdAssists False )
+  , ( 'D', "YTD PENALTY MINS",           EPYtdPMin          )
   , ( 'R', "RETURN TO PLAYER EDIT MENU", EPMenu             )
   ]
 
@@ -70,10 +70,10 @@ editPlayerLtMenu :: Menu ()
 editPlayerLtMenu = editMenu
   "EDIT PLAYER LIFETIME"
   --  key, label,                        value
-  [ ( 'A', "EDIT ALL LIFETIME STATS",    EPLtGoals   True  )
-  , ( 'B', "EDIT LIFETIME GOALS",        EPLtGoals   False )
-  , ( 'C', "EDIT LIFETIME ASSITS",       EPLtAssists False )
-  , ( 'D', "EDIT LIFETIME PENALTY MINS", EPLtPMin          )
+  [ ( 'A', "ALL LIFETIME STATS",         EPLtGoals   True  )
+  , ( 'B', "LIFETIME GOALS",             EPLtGoals   False )
+  , ( 'C', "LIFETIME ASSITS",            EPLtAssists False )
+  , ( 'D', "LIFETIME PENALTY MINS",      EPLtPMin          )
   , ( 'R', "RETURN TO EDIT PLAYER MENU", EPMenu            )
   ]
 
