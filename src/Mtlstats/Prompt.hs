@@ -172,17 +172,20 @@ numPromptWithFallback pStr fallback act = Prompt
 -- to
 newSeasonPrompt :: Prompt
 newSeasonPrompt = prompt
-  { promptProcessChar = \ch str -> if isAlphaNum ch
+  { promptProcessChar = \ch str -> if validChar ch
     then str ++ [toUpper ch]
     else str
   }
   where
+
     prompt = strPrompt "Filename to save database: " $ \fn ->
       if null fn
       then modify backHome
       else do
         saveDatabase $ fn ++ ".json"
         modify $ progMode .~ NewSeason True
+
+    validChar = (||) <$> isAlphaNum <*> (=='-')
 
 -- | Builds a selection prompt
 selectPrompt :: SelectParams a -> Prompt
