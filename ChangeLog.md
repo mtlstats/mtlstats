@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.12.0
 - Edit lifetime stats on new player/goalie creation
 - Sort goalies by minutes played
 - Subsort players by lifetime points
