@@ -30,6 +30,7 @@ import Mtlstats.Types
 spec :: Spec
 spec = describe "Position" $ do
   posSearchSpec
+  posSearchExactSpec
   getPositionsSpec
 
 posSearchSpec :: Spec
@@ -46,6 +47,21 @@ posSearchSpec = describe "posSearch" $ mapM_
       , ( 1, "baz" )
       ]
     )
+  ]
+
+posSearchExactSpec :: Spec
+posSearchExactSpec = describe "posSearchExact" $ mapM_
+  (\(input, expected) -> context ("input: " ++ show input) $
+    it ("should be " ++ show expected) $
+      posSearchExact input db `shouldBe` expected)
+
+  --  input,  expected
+  [ ( "foo",  Just 2   )
+  , ( "FOO",  Nothing  )
+  , ( "bar",  Just 0   )
+  , ( "baz",  Just 1   )
+  , ( "a",    Nothing  )
+  , ( "quux", Nothing  )
   ]
 
 getPositionsSpec :: Spec

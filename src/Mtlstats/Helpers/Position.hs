@@ -54,7 +54,12 @@ posSearchExact
   -- ^ The database
   -> Maybe Int
   -- ^ The index of the result (or 'Nothing' if not found)
-posSearchExact = undefined
+posSearchExact sStr db = case filter sFunc $ zip [0..] ps of
+  []      -> Nothing
+  (n,_):_ -> Just n
+  where
+    sFunc (_, pos) = sStr == pos
+    ps = getPositions db
 
 -- | Builds a callback function for when a 'Player' position is
 -- selected
