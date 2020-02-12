@@ -23,7 +23,11 @@ module Mtlstats.Helpers.Position
   ( posSearch
   , posSearchExact
   , posCallback
+  , getPositions
   ) where
+
+import qualified Data.Set as S
+import Lens.Micro ((^.))
 
 import Mtlstats.Types
 
@@ -57,3 +61,9 @@ posCallback
   -> Action ()
   -- ^ The action to perform
 posCallback = undefined
+
+-- | Extracts a list of positions from a 'Database'
+getPositions :: Database -> [String]
+getPositions = do
+  raw <- map (^.pPosition) . (^.dbPlayers)
+  return $ S.toList $ S.fromList raw

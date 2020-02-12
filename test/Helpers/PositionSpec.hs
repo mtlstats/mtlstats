@@ -19,16 +19,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module HelpersSpec (spec) where
+module Helpers.PositionSpec (spec) where
 
-import Test.Hspec (Spec, describe)
+import Lens.Micro ((&), (.~))
+import Test.Hspec (Spec, describe, it, shouldBe)
 
-import qualified Helpers.GoalieSpec as Goalie
-import qualified Helpers.PlayerSpec as Player
-import qualified Helpers.PositionSpec as Position
+import Mtlstats.Helpers.Position
+import Mtlstats.Types
 
 spec :: Spec
-spec = describe "Helper" $ do
-  Player.spec
-  Goalie.spec
-  Position.spec
+spec = describe "Position"
+  getPositionsSpec
+
+getPositionsSpec :: Spec
+getPositionsSpec = describe "getPositions" $ let
+  db = newDatabase & dbPlayers .~
+    [ newPlayer 2 "Joe"  "foo"
+    , newPlayer 3 "Bob"  "bar"
+    , newPlayer 5 "Bill" "foo"
+    , newPlayer 8 "Ed"   "baz"
+    ]
+  expected = ["bar", "baz", "foo"]
+  in it ("should be " ++ show expected) $
+    getPositions db `shouldBe` expected
