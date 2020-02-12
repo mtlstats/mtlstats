@@ -22,23 +22,42 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Helpers.PositionSpec (spec) where
 
 import Lens.Micro ((&), (.~))
-import Test.Hspec (Spec, describe, it, shouldBe)
+import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Helpers.Position
 import Mtlstats.Types
 
 spec :: Spec
-spec = describe "Position"
+spec = describe "Position" $ do
+  posSearchSpec
   getPositionsSpec
+
+posSearchSpec :: Spec
+posSearchSpec = describe "posSearch" $ mapM_
+  (\(sStr, expected) -> context ("search string: " ++ show sStr) $
+    it ("should be " ++ show expected) $
+      posSearch sStr db `shouldBe` expected)
+  [ ( "fOo"
+    , [ ( 2, "foo" )
+      ]
+    )
+  , ( "A"
+    , [ ( 0, "bar" )
+      , ( 1, "baz" )
+      ]
+    )
+  ]
 
 getPositionsSpec :: Spec
 getPositionsSpec = describe "getPositions" $ let
-  db = newDatabase & dbPlayers .~
-    [ newPlayer 2 "Joe"  "foo"
-    , newPlayer 3 "Bob"  "bar"
-    , newPlayer 5 "Bill" "foo"
-    , newPlayer 8 "Ed"   "baz"
-    ]
   expected = ["bar", "baz", "foo"]
   in it ("should be " ++ show expected) $
     getPositions db `shouldBe` expected
+
+db :: Database
+db = newDatabase & dbPlayers .~
+  [ newPlayer 2 "Joe"  "foo"
+  , newPlayer 3 "Bob"  "bar"
+  , newPlayer 5 "Bill" "foo"
+  , newPlayer 8 "Ed"   "baz"
+  ]

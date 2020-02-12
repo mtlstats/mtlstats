@@ -26,6 +26,8 @@ module Mtlstats.Helpers.Position
   , getPositions
   ) where
 
+import Data.Char (toUpper)
+import Data.List (isInfixOf)
 import qualified Data.Set as S
 import Lens.Micro ((^.))
 
@@ -39,7 +41,10 @@ posSearch
   -- ^ The database
   -> [(Int, String)]
   -- ^ A list of result indices and their values
-posSearch = undefined
+posSearch sStr db = filter sFunc $ zip [0..] ps
+  where
+    sFunc (_, pos) = map toUpper sStr `isInfixOf` map toUpper pos
+    ps = getPositions db
 
 -- | Searches the 'Database' for an exact position
 posSearchExact
