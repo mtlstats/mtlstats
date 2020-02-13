@@ -23,11 +23,11 @@ module Mtlstats.Control.CreatePlayer (createPlayerC) where
 
 import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Format
 import Mtlstats.Handlers
 import Mtlstats.Prompt
 import Mtlstats.Types
@@ -64,10 +64,16 @@ confirmCreatePlayerC :: Controller
 confirmCreatePlayerC = Controller
   { drawController = \s -> do
     let cps = s^.progMode.createPlayerStateL
-    C.drawString $ "  Player number: " ++ show (fromJust $ cps^.cpsNumber) ++ "\n"
-    C.drawString $ "    Player name: " ++ cps^.cpsName ++ "\n"
-    C.drawString $ "Player position: " ++ cps^.cpsPosition ++ "\n\n"
-    C.drawString "Create player: are you sure?  (Y/N)"
+    C.drawString $ unlines
+      $  labelTable
+         [ ( "Player number",   maybe "?" show $ cps^.cpsNumber     )
+         , ( "Player name",     cps^.cpsName                        )
+         , ( "Player position", cps^.cpsPosition                    )
+         , ( "Rookie",          maybe "?" show $ cps^.cpsRookieFlag )
+         ]
+      ++ [ ""
+         , "Create player: are you sure?  (Y/N)"
+         ]
     return C.CursorInvisible
   , handleController = \e -> do
     case ynHandler e of
