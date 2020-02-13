@@ -88,11 +88,13 @@ module Mtlstats.Types (
   cpsNumber,
   cpsName,
   cpsPosition,
+  cpsRookieFlag,
   cpsSuccessCallback,
   cpsFailureCallback,
   -- ** CreateGoalieState Lenses
   cgsNumber,
   cgsName,
+  cgsRookieFlag,
   cgsSuccessCallback,
   cgsFailureCallback,
   -- ** EditPlayerState Lenses
@@ -328,6 +330,8 @@ data CreatePlayerState = CreatePlayerState
   -- ^ The player's name
   , _cpsPosition        :: String
   -- ^ The player's position
+  , _cpsRookieFlag      :: Maybe Bool
+  -- ^ Indicates whether or not the player is a rookie
   , _cpsSuccessCallback :: Action ()
   -- ^ The function to call on success
   , _cpsFailureCallback :: Action ()
@@ -336,10 +340,12 @@ data CreatePlayerState = CreatePlayerState
 
 -- | Goalie creation status
 data CreateGoalieState = CreateGoalieState
-  { _cgsNumber    :: Maybe Int
+  { _cgsNumber          :: Maybe Int
   -- ^ The goalie's number
-  , _cgsName      :: String
+  , _cgsName            :: String
   -- ^ The goalie's name
+  , _cgsRookieFlag      :: Maybe Bool
+  -- ^ Indicates whether or not the goalie is a rookie
   , _cgsSuccessCallback :: Action ()
   -- ^ The function to call on success
   , _cgsFailureCallback :: Action ()
@@ -807,6 +813,7 @@ newCreatePlayerState = CreatePlayerState
   { _cpsNumber          = Nothing
   , _cpsName            = ""
   , _cpsPosition        = ""
+  , _cpsRookieFlag      = Nothing
   , _cpsSuccessCallback = return ()
   , _cpsFailureCallback = return ()
   }
@@ -816,6 +823,7 @@ newCreateGoalieState :: CreateGoalieState
 newCreateGoalieState = CreateGoalieState
   { _cgsNumber          = Nothing
   , _cgsName            = ""
+  , _cgsRookieFlag      = Nothing
   , _cgsSuccessCallback = return ()
   , _cgsFailureCallback = return ()
   }
