@@ -312,28 +312,39 @@ editSelectedGoalieSpec = describe "editSelectedGoalie" $ mapM_
     goalie' n      = newGoalie n "foo"
 
 addPlayerSpec :: Spec
-addPlayerSpec = describe "addPlayer" $ do
-  let
-    p1 = newPlayer 1 "Joe" "centre"
-    p2 = newPlayer 2 "Bob" "defense"
-    db = newDatabase
-      & dbPlayers .~ [p1]
-    s pm = newProgState
-      & progMode .~ pm
-      & database .~ db
+addPlayerSpec = describe "addPlayer" $ mapM_
+  (\(label, expectation, pm, players) -> context label $
+    it expectation $ let
+      ps = newProgState
+        & progMode           .~ pm
+        & database.dbPlayers .~ [joe]
+      ps' = addPlayer ps
+      in ps'^.database.dbPlayers `shouldBe` players)
 
-  context "data available" $
-    it "should create the player" $ let
-      s' = addPlayer $ s $ CreatePlayer $ newCreatePlayerState
-        & cpsNumber   ?~ 2
-        & cpsName     .~ "Bob"
-        & cpsPosition .~ "defense"
-      in s'^.database.dbPlayers `shouldBe` [p1, p2]
+  --  label,                 expectation, progMode, players
+  [ ( "wrong mode",          failure,     MainMenu, [joe]         )
+  , ( "missing number",      failure,     noNum,    [joe]         )
+  , ( "missing rookie flag", failure,     noRookie, [joe]         )
+  , ( "rookie",              success,     mkRookie, [joe, rookie] )
+  , ( "normal player",       success,     mkNormal, [joe, normal] )
+  ]
 
-  context "data unavailable" $
-    it "should not create the player" $ let
-      s' = addPlayer $ s MainMenu
-      in s'^.database.dbPlayers `shouldBe` [p1]
+  where
+    failure   = "should not create the player"
+    success   = "should create the player"
+    noNum     = mkpm Nothing (Just False)
+    noRookie  = mkpm (Just 3) Nothing
+    mkRookie  = mkpm (Just 3) (Just True)
+    mkNormal  = mkpm (Just 3) (Just False)
+    joe       = newPlayer 2 "Joe" "centre"
+    rookie    = bob True
+    normal    = bob False
+    bob rf    = newPlayer 3 "Bob" "defense" & pRookie .~ rf
+    mkpm n rf = CreatePlayer $ newCreatePlayerState
+      & cpsNumber     .~ n
+      & cpsName       .~ "Bob"
+      & cpsPosition   .~ "defense"
+      & cpsRookieFlag .~ rf
 
 addGoalieSpec :: Spec
 addGoalieSpec = describe "addGoalie" $ do
