@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Mtlstats.Helpers.Position
   ( posSearch
   , posSearchExact
@@ -26,12 +28,15 @@ module Mtlstats.Helpers.Position
   , getPositions
   ) where
 
+import Control.Monad.Trans.State (gets)
 import Data.Char (toUpper)
 import Data.List (isInfixOf)
+import Data.Maybe (fromMaybe)
 import qualified Data.Set as S
-import Lens.Micro ((^.))
+import Lens.Micro ((^.), to)
 
 import Mtlstats.Types
+import Mtlstats.Util
 
 -- | Searches the 'Database' for all the positions used
 posSearch
@@ -70,7 +75,12 @@ posCallback
   -- ^ The index number of the position selected or 'Nothing' if blank
   -> Action ()
   -- ^ The action to perform
-posCallback = undefined
+posCallback callback = \case
+  Nothing -> callback ""
+  Just n  -> do
+    ps <- gets (^.database.to getPositions)
+    let pos = fromMaybe "" $ nth n ps
+    callback pos
 
 -- | Extracts a list of positions from a 'Database'
 getPositions :: Database -> [String]
