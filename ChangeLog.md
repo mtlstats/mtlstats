@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Added autocomplete to player position prompt
+
 ## 0.12.0
 - Edit lifetime stats on new player/goalie creation
 - Sort goalies by minutes played

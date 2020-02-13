@@ -42,6 +42,7 @@ module Mtlstats.Prompt (
   goalieNamePrompt,
   selectPlayerPrompt,
   selectGoaliePrompt,
+  selectPositionPrompt,
   playerToEditPrompt
 ) where
 
@@ -56,6 +57,7 @@ import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import Mtlstats.Config
+import Mtlstats.Helpers.Position
 import Mtlstats.Types
 import Mtlstats.Util
 
@@ -236,7 +238,7 @@ playerNamePrompt = namePrompt "Player name: " $
 
 -- | Prompts for a new player's position
 playerPosPrompt :: Prompt
-playerPosPrompt = ucStrPrompt "Player position: " $
+playerPosPrompt = selectPositionPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
 
 -- | Prompts tor the goalie's number
@@ -305,6 +307,24 @@ selectGoaliePrompt pStr callback = selectPrompt SelectParams
           callback $ Just index
         & cgsFailureCallback .~ modify (progMode .~ mode)
     modify $ progMode .~ CreateGoalie cgs
+  }
+
+-- | Selects (or creates) a player position
+selectPositionPrompt
+  :: String
+  -- ^ The 'Prompt' string
+  -> (String -> Action ())
+  -- ^ The action to perform when a value is entered
+  -> Prompt
+selectPositionPrompt pStr callback = selectPrompt SelectParams
+  { spPrompt = pStr
+  , spSearchHeader = "Positions:"
+  , spSearch = posSearch
+  , spSearchExact = posSearchExact
+  , spElemDesc = id
+  , spProcessChar = \ch -> (++ [toUpper ch])
+  , spCallback = posCallback callback
+  , spNotFound = callback
   }
 
 playerToEditPrompt :: Prompt

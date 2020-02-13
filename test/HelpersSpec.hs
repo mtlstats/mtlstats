@@ -25,8 +25,10 @@ import Test.Hspec (Spec, describe)
 
 import qualified Helpers.GoalieSpec as Goalie
 import qualified Helpers.PlayerSpec as Player
+import qualified Helpers.PositionSpec as Position
 
 spec :: Spec
 spec = describe "Helper" $ do
   Player.spec
   Goalie.spec
+  Position.spec
