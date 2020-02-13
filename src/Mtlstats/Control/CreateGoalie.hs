@@ -40,20 +40,10 @@ createGoalieC cgs
   | otherwise             = confirmCreateGoalieC
 
 getGoalieNumC :: Controller
-getGoalieNumC = Controller
-  { drawController = drawPrompt goalieNumPrompt
-  , handleController = \e -> do
-    promptHandler goalieNumPrompt e
-    return True
-  }
+getGoalieNumC = promptController goalieNumPrompt
 
 getGoalieNameC :: Controller
-getGoalieNameC = Controller
-  { drawController = drawPrompt goalieNamePrompt
-  , handleController = \e -> do
-    promptHandler goalieNamePrompt e
-    return True
-  }
+getGoalieNameC = promptController goalieNamePrompt
 
 confirmCreateGoalieC :: Controller
 confirmCreateGoalieC = Controller
