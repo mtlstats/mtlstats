@@ -35,32 +35,28 @@ import Mtlstats.Types
 -- | Handles player creation
 createPlayerC :: CreatePlayerState -> Controller
 createPlayerC cps
-  | null $ cps^.cpsNumber   = getPlayerNumC
-  | null $ cps^.cpsName     = getPlayerNameC
-  | null $ cps^.cpsPosition = getPlayerPosC
-  | otherwise               = confirmCreatePlayerC
+  | null $ cps^.cpsNumber     = getPlayerNumC
+  | null $ cps^.cpsName       = getPlayerNameC
+  | null $ cps^.cpsPosition   = getPlayerPosC
+  | null $ cps^.cpsRookieFlag = getRookieFlagC
+  | otherwise                 = confirmCreatePlayerC
 
 getPlayerNumC :: Controller
-getPlayerNumC = Controller
-  { drawController   = drawPrompt playerNumPrompt
-  , handleController = \e -> do
-    promptHandler playerNumPrompt e
-    return True
-  }
+getPlayerNumC = promptController playerNumPrompt
 
 getPlayerNameC :: Controller
-getPlayerNameC = Controller
-  { drawController   = drawPrompt playerNamePrompt
-  , handleController = \e -> do
-    promptHandler playerNamePrompt e
-    return True
-  }
+getPlayerNameC = promptController playerNamePrompt
 
 getPlayerPosC :: Controller
-getPlayerPosC = Controller
-  { drawController   = drawPrompt playerPosPrompt
+getPlayerPosC = promptController playerPosPrompt
+
+getRookieFlagC :: Controller
+getRookieFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is this player a rookie? (Y/N)"
+    return C.CursorInvisible
   , handleController = \e -> do
-    promptHandler playerPosPrompt e
+    modify $ progMode.createPlayerStateL.cpsRookieFlag .~ ynHandler e
     return True
   }
 
