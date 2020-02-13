@@ -62,7 +62,7 @@ editPlayerPosPrompt
   :: Action ()
   -- ^ The action to be performed upon completion
   -> Prompt
-editPlayerPosPrompt callback = ucStrPrompt "Player position: " $ \pos -> do
+editPlayerPosPrompt callback = selectPositionPrompt "Player position: " $ \pos -> do
   if null pos
     then goto EPMenu
     else doEdit EPMenu $ pPosition .~ pos

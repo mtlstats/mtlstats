@@ -238,7 +238,7 @@ playerNamePrompt = namePrompt "Player name: " $
 
 -- | Prompts for a new player's position
 playerPosPrompt :: Prompt
-playerPosPrompt = ucStrPrompt "Player position: " $
+playerPosPrompt = selectPositionPrompt "Player position: " $
   modify . (progMode.createPlayerStateL.cpsPosition .~)
 
 -- | Prompts tor the goalie's number
