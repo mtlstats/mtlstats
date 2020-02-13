@@ -35,15 +35,26 @@ import Mtlstats.Types
 -- | Handles goalie creation
 createGoalieC :: CreateGoalieState -> Controller
 createGoalieC cgs
-  | null $ cgs^.cgsNumber = getGoalieNumC
-  | null $ cgs^.cgsName   = getGoalieNameC
-  | otherwise             = confirmCreateGoalieC
+  | null $ cgs^.cgsNumber     = getGoalieNumC
+  | null $ cgs^.cgsName       = getGoalieNameC
+  | null $ cgs^.cgsRookieFlag = getRookieFlagC
+  | otherwise                 = confirmCreateGoalieC
 
 getGoalieNumC :: Controller
 getGoalieNumC = promptController goalieNumPrompt
 
 getGoalieNameC :: Controller
 getGoalieNameC = promptController goalieNamePrompt
+
+getRookieFlagC :: Controller
+getRookieFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is this goalie a rookie? (Y/N)"
+    return C.CursorInvisible
+  , handleController = \e -> do
+    modify $ progMode.createGoalieStateL.cgsRookieFlag .~ ynHandler e
+    return True
+  }
 
 confirmCreateGoalieC :: Controller
 confirmCreateGoalieC = Controller
