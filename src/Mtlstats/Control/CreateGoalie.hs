@@ -23,11 +23,11 @@ module Mtlstats.Control.CreateGoalie (createGoalieC) where
 
 import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Format
 import Mtlstats.Handlers
 import Mtlstats.Prompt
 import Mtlstats.Types
@@ -61,11 +61,14 @@ confirmCreateGoalieC = Controller
   { drawController = \s -> do
     let cgs = s^.progMode.createGoalieStateL
     C.drawString $ unlines
-      [ "Goalie number: " ++ show (fromJust $ cgs^.cgsNumber)
-      , "  Goalie name: " ++ cgs^.cgsName
-      , ""
-      , "Create goalie: are you sure?  (Y/N)"
-      ]
+      $  labelTable
+         [ ( "Goalie number", maybe "?" show $ cgs^.cgsNumber     )
+         , ( "Goalie name",   cgs^.cgsName                        )
+         , ( "Rookie",        maybe "?" show $ cgs^.cgsRookieFlag )
+         ]
+      ++ [ ""
+         , "Create goalie: are you sure?  (Y/N)"
+         ]
     return C.CursorInvisible
   , handleController = \e -> do
     case ynHandler e of
