@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.CreatePlayer (createPlayerC) where
 
-import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
 import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
@@ -76,18 +75,22 @@ confirmCreatePlayerC = Controller
          ]
     return C.CursorInvisible
   , handleController = \e -> do
+    cps <- gets (^.progMode.createPlayerStateL)
+    let
+      success = cps^.cpsSuccessCallback
+      failure = cps^.cpsFailureCallback
     case ynHandler e of
       Just True -> do
         pid <- gets (^.database.dbPlayers.to length)
-        cb  <- gets (^.progMode.createPlayerStateL.cpsSuccessCallback)
-        modify
-          $ (progMode.editPlayerStateL
+        let rookie = cps^.cpsRookieFlag == Just True
+        modify addPlayer
+        if rookie
+          then success
+          else modify (progMode.editPlayerStateL
             %~ (epsSelectedPlayer ?~ pid)
             .  (epsMode .~ EPLtGoals True)
-            .  (epsCallback .~ cb))
-          . addPlayer
-      Just False ->
-        join $ gets (^.progMode.createPlayerStateL.cpsFailureCallback)
+            .  (epsCallback .~ success))
+      Just False -> failure
       Nothing -> return ()
     return True
   }
