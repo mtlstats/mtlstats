@@ -61,7 +61,14 @@ getRookieFlagC = Controller
   }
 
 getActiveFlagC :: Controller
-getActiveFlagC = undefined
+getActiveFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is the player active? (Y/N)"
+    return C.CursorInvisible
+  , handleController = \e -> do
+    modify $ progMode.createPlayerStateL.cpsActiveFlag .~ ynHandler e
+    return True
+  }
 
 confirmCreatePlayerC :: Controller
 confirmCreatePlayerC = Controller

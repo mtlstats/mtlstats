@@ -57,7 +57,14 @@ getRookieFlagC = Controller
   }
 
 getActiveFlagC :: Controller
-getActiveFlagC = undefined
+getActiveFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is this goalie active? (Y/N)"
+    return C.CursorInvisible
+  , handleController = \e -> do
+    modify $ progMode.createGoalieStateL.cgsActiveFlag .~ ynHandler e
+    return True
+  }
 
 confirmCreateGoalieC :: Controller
 confirmCreateGoalieC = Controller
