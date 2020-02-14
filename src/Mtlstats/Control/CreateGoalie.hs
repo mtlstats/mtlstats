@@ -21,13 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.CreateGoalie (createGoalieC) where
 
-import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
+import Mtlstats.Format
 import Mtlstats.Handlers
 import Mtlstats.Prompt
 import Mtlstats.Types
@@ -35,23 +34,24 @@ import Mtlstats.Types
 -- | Handles goalie creation
 createGoalieC :: CreateGoalieState -> Controller
 createGoalieC cgs
-  | null $ cgs^.cgsNumber = getGoalieNumC
-  | null $ cgs^.cgsName   = getGoalieNameC
-  | otherwise             = confirmCreateGoalieC
+  | null $ cgs^.cgsNumber     = getGoalieNumC
+  | null $ cgs^.cgsName       = getGoalieNameC
+  | null $ cgs^.cgsRookieFlag = getRookieFlagC
+  | otherwise                 = confirmCreateGoalieC
 
 getGoalieNumC :: Controller
-getGoalieNumC = Controller
-  { drawController = drawPrompt goalieNumPrompt
-  , handleController = \e -> do
-    promptHandler goalieNumPrompt e
-    return True
-  }
+getGoalieNumC = promptController goalieNumPrompt
 
 getGoalieNameC :: Controller
-getGoalieNameC = Controller
-  { drawController = drawPrompt goalieNamePrompt
+getGoalieNameC = promptController goalieNamePrompt
+
+getRookieFlagC :: Controller
+getRookieFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is this goalie a rookie? (Y/N)"
+    return C.CursorInvisible
   , handleController = \e -> do
-    promptHandler goalieNamePrompt e
+    modify $ progMode.createGoalieStateL.cgsRookieFlag .~ ynHandler e
     return True
   }
 
@@ -60,25 +60,32 @@ confirmCreateGoalieC = Controller
   { drawController = \s -> do
     let cgs = s^.progMode.createGoalieStateL
     C.drawString $ unlines
-      [ "Goalie number: " ++ show (fromJust $ cgs^.cgsNumber)
-      , "  Goalie name: " ++ cgs^.cgsName
-      , ""
-      , "Create goalie: are you sure?  (Y/N)"
-      ]
+      $  labelTable
+         [ ( "Goalie number", maybe "?" show $ cgs^.cgsNumber     )
+         , ( "Goalie name",   cgs^.cgsName                        )
+         , ( "Rookie",        maybe "?" show $ cgs^.cgsRookieFlag )
+         ]
+      ++ [ ""
+         , "Create goalie: are you sure?  (Y/N)"
+         ]
     return C.CursorInvisible
   , handleController = \e -> do
+    cgs <- gets (^.progMode.createGoalieStateL)
+    let
+      success = cgs^.cgsSuccessCallback
+      failure = cgs^.cgsFailureCallback
     case ynHandler e of
       Just True -> do
         gid <- gets (^.database.dbGoalies.to length)
-        cb  <- gets (^.progMode.createGoalieStateL.cgsSuccessCallback)
-        modify
-          $ (progMode.editGoalieStateL
+        let rookie = cgs^.cgsRookieFlag == Just True
+        modify addGoalie
+        if rookie
+          then success
+          else modify $ progMode.editGoalieStateL
             %~ (egsSelectedGoalie ?~ gid)
-            .  (egsMode .~ EGLtGames True)
-            .  (egsCallback .~ cb))
-          . addGoalie
-      Just False ->
-        join $ gets (^.progMode.createGoalieStateL.cgsFailureCallback)
-      Nothing -> return ()
+            .  (egsMode           .~ EGLtGames True)
+            .  (egsCallback       .~ success)
+      Just False -> failure
+      Nothing    -> return ()
     return True
   }

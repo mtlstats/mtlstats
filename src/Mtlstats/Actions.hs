@@ -161,11 +161,13 @@ editSelectedGoalie f s = fromMaybe s $ do
 addPlayer :: ProgState -> ProgState
 addPlayer s = fromMaybe s $ do
   let cps = s^.progMode.createPlayerStateL
-  num <- cps^.cpsNumber
+  num   <- cps^.cpsNumber
+  rFlag <- cps^.cpsRookieFlag
   let
     name   = cps^.cpsName
     pos    = cps^.cpsPosition
     player = newPlayer num name pos
+      & pRookie .~ rFlag
   Just $ s & database.dbPlayers
     %~ (++[player])
 
@@ -173,10 +175,12 @@ addPlayer s = fromMaybe s $ do
 addGoalie :: ProgState -> ProgState
 addGoalie s = fromMaybe s $ do
   let cgs = s^.progMode.createGoalieStateL
-  num <- cgs^.cgsNumber
+  num   <- cgs^.cgsNumber
+  rFlag <- cgs^.cgsRookieFlag
   let
     name   = cgs^.cgsName
     goalie = newGoalie num name
+      & gRookie .~ rFlag
   Just $ s & database.dbGoalies
     %~ (++[goalie])
 
