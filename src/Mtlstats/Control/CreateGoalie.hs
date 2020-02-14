@@ -37,6 +37,7 @@ createGoalieC cgs
   | null $ cgs^.cgsNumber     = getGoalieNumC
   | null $ cgs^.cgsName       = getGoalieNameC
   | null $ cgs^.cgsRookieFlag = getRookieFlagC
+  | null $ cgs^.cgsActiveFlag = getActiveFlagC
   | otherwise                 = confirmCreateGoalieC
 
 getGoalieNumC :: Controller
@@ -54,6 +55,9 @@ getRookieFlagC = Controller
     modify $ progMode.createGoalieStateL.cgsRookieFlag .~ ynHandler e
     return True
   }
+
+getActiveFlagC :: Controller
+getActiveFlagC = undefined
 
 confirmCreateGoalieC :: Controller
 confirmCreateGoalieC = Controller

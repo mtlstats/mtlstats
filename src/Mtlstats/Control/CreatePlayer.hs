@@ -38,6 +38,7 @@ createPlayerC cps
   | null $ cps^.cpsName       = getPlayerNameC
   | null $ cps^.cpsPosition   = getPlayerPosC
   | null $ cps^.cpsRookieFlag = getRookieFlagC
+  | null $ cps^.cpsActiveFlag = getActiveFlagC
   | otherwise                 = confirmCreatePlayerC
 
 getPlayerNumC :: Controller
@@ -58,6 +59,9 @@ getRookieFlagC = Controller
     modify $ progMode.createPlayerStateL.cpsRookieFlag .~ ynHandler e
     return True
   }
+
+getActiveFlagC :: Controller
+getActiveFlagC = undefined
 
 confirmCreatePlayerC :: Controller
 confirmCreatePlayerC = Controller
