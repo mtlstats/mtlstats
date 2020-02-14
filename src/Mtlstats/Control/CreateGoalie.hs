@@ -37,6 +37,7 @@ createGoalieC cgs
   | null $ cgs^.cgsNumber     = getGoalieNumC
   | null $ cgs^.cgsName       = getGoalieNameC
   | null $ cgs^.cgsRookieFlag = getRookieFlagC
+  | null $ cgs^.cgsActiveFlag = getActiveFlagC
   | otherwise                 = confirmCreateGoalieC
 
 getGoalieNumC :: Controller
@@ -51,7 +52,21 @@ getRookieFlagC = Controller
     C.drawString "Is this goalie a rookie? (Y/N)"
     return C.CursorInvisible
   , handleController = \e -> do
-    modify $ progMode.createGoalieStateL.cgsRookieFlag .~ ynHandler e
+    modify $ case ynHandler e of
+      Just True -> progMode.createGoalieStateL
+        %~ (cgsRookieFlag ?~ True)
+        .  (cgsActiveFlag ?~ True)
+      rf -> progMode.createGoalieStateL.cgsRookieFlag .~ rf
+    return True
+  }
+
+getActiveFlagC :: Controller
+getActiveFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is this goalie active? (Y/N)"
+    return C.CursorInvisible
+  , handleController = \e -> do
+    modify $ progMode.createGoalieStateL.cgsActiveFlag .~ ynHandler e
     return True
   }
 
@@ -64,6 +79,7 @@ confirmCreateGoalieC = Controller
          [ ( "Goalie number", maybe "?" show $ cgs^.cgsNumber     )
          , ( "Goalie name",   cgs^.cgsName                        )
          , ( "Rookie",        maybe "?" show $ cgs^.cgsRookieFlag )
+         , ( "Active",        maybe "?" show $ cgs^.cgsActiveFlag )
          ]
       ++ [ ""
          , "Create goalie: are you sure?  (Y/N)"

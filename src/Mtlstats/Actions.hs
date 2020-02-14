@@ -163,11 +163,13 @@ addPlayer s = fromMaybe s $ do
   let cps = s^.progMode.createPlayerStateL
   num   <- cps^.cpsNumber
   rFlag <- cps^.cpsRookieFlag
+  aFlag <- cps^.cpsActiveFlag
   let
     name   = cps^.cpsName
     pos    = cps^.cpsPosition
     player = newPlayer num name pos
       & pRookie .~ rFlag
+      & pActive .~ aFlag
   Just $ s & database.dbPlayers
     %~ (++[player])
 
@@ -177,10 +179,12 @@ addGoalie s = fromMaybe s $ do
   let cgs = s^.progMode.createGoalieStateL
   num   <- cgs^.cgsNumber
   rFlag <- cgs^.cgsRookieFlag
+  aFlag <- cgs^.cgsActiveFlag
   let
     name   = cgs^.cgsName
     goalie = newGoalie num name
       & gRookie .~ rFlag
+      & gActive .~ aFlag
   Just $ s & database.dbGoalies
     %~ (++[goalie])
 

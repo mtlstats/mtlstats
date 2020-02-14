@@ -321,30 +321,40 @@ addPlayerSpec = describe "addPlayer" $ mapM_
       ps' = addPlayer ps
       in ps'^.database.dbPlayers `shouldBe` players)
 
-  --  label,                 expectation, progMode, players
-  [ ( "wrong mode",          failure,     MainMenu, [joe]         )
-  , ( "missing number",      failure,     noNum,    [joe]         )
-  , ( "missing rookie flag", failure,     noRookie, [joe]         )
-  , ( "rookie",              success,     mkRookie, [joe, rookie] )
-  , ( "normal player",       success,     mkNormal, [joe, normal] )
+  --  label,                 expectation, progMode,  players
+  [ ( "wrong mode",          failure,     MainMenu,  [joe]          )
+  , ( "missing number",      failure,     noNum,     [joe]          )
+  , ( "missing rookie flag", failure,     noRookie,  [joe]          )
+  , ( "missing active flag", failure,     noActive,  [joe]          )
+  , ( "rookie",              success,     mkRookie,  [joe, rookie]  )
+  , ( "retired",             success,     mkRetired, [joe, retired] )
+  , ( "normal player",       success,     mkNormal,  [joe, normal]  )
   ]
 
   where
     failure   = "should not create the player"
     success   = "should create the player"
-    noNum     = mkpm Nothing (Just False)
-    noRookie  = mkpm (Just 3) Nothing
-    mkRookie  = mkpm (Just 3) (Just True)
-    mkNormal  = mkpm (Just 3) (Just False)
+    noNum     = mkpm Nothing  (Just False) (Just True)
+    noRookie  = mkpm (Just 3) Nothing      (Just True)
+    noActive  = mkpm (Just 3) (Just False) Nothing
+    mkRookie  = mkpm (Just 3) (Just True)  (Just True)
+    mkRetired = mkpm (Just 3) (Just False) (Just False)
+    mkNormal  = mkpm (Just 3) (Just False) (Just True)
     joe       = newPlayer 2 "Joe" "centre"
-    rookie    = bob True
-    normal    = bob False
-    bob rf    = newPlayer 3 "Bob" "defense" & pRookie .~ rf
-    mkpm n rf = CreatePlayer $ newCreatePlayerState
+    rookie    = player True  True
+    retired   = player False False
+    normal    = player False True
+
+    player r a = newPlayer 3 "Bob" "defense"
+      & pRookie .~ r
+      & pActive .~ a
+
+    mkpm n r a = CreatePlayer $ newCreatePlayerState
       & cpsNumber     .~ n
       & cpsName       .~ "Bob"
       & cpsPosition   .~ "defense"
-      & cpsRookieFlag .~ rf
+      & cpsRookieFlag .~ r
+      & cpsActiveFlag .~ a
 
 addGoalieSpec :: Spec
 addGoalieSpec = describe "addGoalie" $ mapM_
@@ -356,29 +366,39 @@ addGoalieSpec = describe "addGoalie" $ mapM_
       ps' = addGoalie ps
       in ps'^.database.dbGoalies `shouldBe` goalies)
 
-  --  label,            expectation, progMode, expected goalies
-  [ ( "wrong mode",     failure,     MainMenu, [joe]            )
-  , ( "no number",      failure,     noNum,    [joe]            )
-  , ( "no rookie flag", failure,     noRookie, [joe]            )
-  , ( "rookie",         success,     mkRookie, [joe, rookie]    )
-  , ( "normal goalie",  success,     mkNormal, [joe, normal]    )
+  --  label,            expectation, progMode,  expected goalies
+  [ ( "wrong mode",     failure,     MainMenu,  [joe]            )
+  , ( "no number",      failure,     noNum,     [joe]            )
+  , ( "no rookie flag", failure,     noRookie,  [joe]            )
+  , ( "no active flag", failure,     noActive,  [joe]            )
+  , ( "rookie",         success,     mkRookie,  [joe, rookie]    )
+  , ( "retired",        success,     mkRetired, [joe, retired]   )
+  , ( "normal goalie",  success,     mkNormal,  [joe, normal]    )
   ]
 
   where
-    failure  = "should not create the goalie"
-    success  = "should create the goalie"
-    noNum    = cgs Nothing (Just False)
-    noRookie = cgs (Just 3) Nothing
-    mkRookie = cgs (Just 3) (Just True)
-    mkNormal = cgs (Just 3) (Just False)
-    joe      = newGoalie 2 "Joe"
-    rookie   = bob True
-    normal   = bob False
-    bob r    = newGoalie 3 "Bob" & gRookie .~ r
-    cgs n rf = CreateGoalie $ newCreateGoalieState
+    failure   = "should not create the goalie"
+    success   = "should create the goalie"
+    noNum     = cgs Nothing  (Just False) (Just True)
+    noRookie  = cgs (Just 3) Nothing      (Just True)
+    noActive  = cgs (Just 3) (Just False) Nothing
+    mkRookie  = cgs (Just 3) (Just True)  (Just True)
+    mkRetired = cgs (Just 3) (Just False) (Just False)
+    mkNormal  = cgs (Just 3) (Just False) (Just True)
+    joe       = newGoalie 2 "Joe"
+    rookie    = goalie True  True
+    retired   = goalie False False
+    normal    = goalie False True
+
+    goalie r a = newGoalie 3 "Bob"
+      & gRookie .~ r
+      & gActive .~ a
+
+    cgs n r a = CreateGoalie $ newCreateGoalieState
       & cgsNumber     .~ n
       & cgsName       .~ "Bob"
-      & cgsRookieFlag .~ rf
+      & cgsRookieFlag .~ r
+      & cgsActiveFlag .~ a
 
 resetCreatePlayerStateSpec :: Spec
 resetCreatePlayerStateSpec = describe "resetCreatePlayerState" $ let

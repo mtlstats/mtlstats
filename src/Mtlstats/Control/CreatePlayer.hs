@@ -38,6 +38,7 @@ createPlayerC cps
   | null $ cps^.cpsName       = getPlayerNameC
   | null $ cps^.cpsPosition   = getPlayerPosC
   | null $ cps^.cpsRookieFlag = getRookieFlagC
+  | null $ cps^.cpsActiveFlag = getActiveFlagC
   | otherwise                 = confirmCreatePlayerC
 
 getPlayerNumC :: Controller
@@ -55,7 +56,21 @@ getRookieFlagC = Controller
     C.drawString "Is this player a rookie? (Y/N)"
     return C.CursorInvisible
   , handleController = \e -> do
-    modify $ progMode.createPlayerStateL.cpsRookieFlag .~ ynHandler e
+    modify $ case ynHandler e of
+      Just True -> progMode.createPlayerStateL
+        %~ (cpsRookieFlag ?~ True)
+        .  (cpsActiveFlag ?~ True)
+      rf -> progMode.createPlayerStateL.cpsRookieFlag .~ rf
+    return True
+  }
+
+getActiveFlagC :: Controller
+getActiveFlagC = Controller
+  { drawController = const $ do
+    C.drawString "Is the player active? (Y/N)"
+    return C.CursorInvisible
+  , handleController = \e -> do
+    modify $ progMode.createPlayerStateL.cpsActiveFlag .~ ynHandler e
     return True
   }
 
@@ -69,6 +84,7 @@ confirmCreatePlayerC = Controller
          , ( "Player name",     cps^.cpsName                        )
          , ( "Player position", cps^.cpsPosition                    )
          , ( "Rookie",          maybe "?" show $ cps^.cpsRookieFlag )
+         , ( "Active",          maybe "?" show $ cps^.cpsActiveFlag )
          ]
       ++ [ ""
          , "Create player: are you sure?  (Y/N)"
