@@ -163,11 +163,13 @@ addPlayer s = fromMaybe s $ do
   let cps = s^.progMode.createPlayerStateL
   num   <- cps^.cpsNumber
   rFlag <- cps^.cpsRookieFlag
+  aFlag <- cps^.cpsActiveFlag
   let
     name   = cps^.cpsName
     pos    = cps^.cpsPosition
     player = newPlayer num name pos
       & pRookie .~ rFlag
+      & pActive .~ aFlag
   Just $ s & database.dbPlayers
     %~ (++[player])
 
