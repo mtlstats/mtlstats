@@ -89,12 +89,14 @@ module Mtlstats.Types (
   cpsName,
   cpsPosition,
   cpsRookieFlag,
+  cpsActiveFlag,
   cpsSuccessCallback,
   cpsFailureCallback,
   -- ** CreateGoalieState Lenses
   cgsNumber,
   cgsName,
   cgsRookieFlag,
+  cgsActiveFlag,
   cgsSuccessCallback,
   cgsFailureCallback,
   -- ** EditPlayerState Lenses
@@ -332,6 +334,8 @@ data CreatePlayerState = CreatePlayerState
   -- ^ The player's position
   , _cpsRookieFlag      :: Maybe Bool
   -- ^ Indicates whether or not the player is a rookie
+  , _cpsActiveFlag      :: Maybe Bool
+  -- ^ Indicates whether or not the plauer is active
   , _cpsSuccessCallback :: Action ()
   -- ^ The function to call on success
   , _cpsFailureCallback :: Action ()
@@ -346,6 +350,8 @@ data CreateGoalieState = CreateGoalieState
   -- ^ The goalie's name
   , _cgsRookieFlag      :: Maybe Bool
   -- ^ Indicates whether or not the goalie is a rookie
+  , _cgsActiveFlag      :: Maybe Bool
+  -- ^ Indicates whether or not the goalie is active
   , _cgsSuccessCallback :: Action ()
   -- ^ The function to call on success
   , _cgsFailureCallback :: Action ()
@@ -814,6 +820,7 @@ newCreatePlayerState = CreatePlayerState
   , _cpsName            = ""
   , _cpsPosition        = ""
   , _cpsRookieFlag      = Nothing
+  , _cpsActiveFlag      = Nothing
   , _cpsSuccessCallback = return ()
   , _cpsFailureCallback = return ()
   }
@@ -824,6 +831,7 @@ newCreateGoalieState = CreateGoalieState
   { _cgsNumber          = Nothing
   , _cgsName            = ""
   , _cgsRookieFlag      = Nothing
+  , _cgsActiveFlag      = Nothing
   , _cgsSuccessCallback = return ()
   , _cgsFailureCallback = return ()
   }
