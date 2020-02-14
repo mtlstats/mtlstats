@@ -347,27 +347,38 @@ addPlayerSpec = describe "addPlayer" $ mapM_
       & cpsRookieFlag .~ rf
 
 addGoalieSpec :: Spec
-addGoalieSpec = describe "addGoalie" $ do
-  let
-    g1 = newGoalie 2 "Joe"
-    g2 = newGoalie 3 "Bob"
-    db = newDatabase
-      & dbGoalies .~ [g1]
-    s pm = newProgState
-      & database .~ db
-      & progMode .~ pm
+addGoalieSpec = describe "addGoalie" $ mapM_
+  (\(label, expectation, pm, goalies) -> context label $
+    it expectation $ let
+      ps = newProgState
+        & progMode           .~ pm
+        & database.dbGoalies .~ [joe]
+      ps' = addGoalie ps
+      in ps'^.database.dbGoalies `shouldBe` goalies)
 
-  context "data available" $
-    it "should create the goalie" $ let
-      s' = addGoalie $ s $ CreateGoalie $ newCreateGoalieState
-        & cgsNumber ?~ 3
-        & cgsName   .~ "Bob"
-      in s'^.database.dbGoalies `shouldBe` [g1, g2]
+  --  label,            expectation, progMode, expected goalies
+  [ ( "wrong mode",     failure,     MainMenu, [joe]            )
+  , ( "no number",      failure,     noNum,    [joe]            )
+  , ( "no rookie flag", failure,     noRookie, [joe]            )
+  , ( "rookie",         success,     mkRookie, [joe, rookie]    )
+  , ( "normal goalie",  success,     mkNormal, [joe, normal]    )
+  ]
 
-  context "data unavailable" $
-    it "should not create the goalie" $ let
-      s' = addGoalie $ s MainMenu
-      in s'^.database.dbGoalies `shouldBe` [g1]
+  where
+    failure  = "should not create the goalie"
+    success  = "should create the goalie"
+    noNum    = cgs Nothing (Just False)
+    noRookie = cgs (Just 3) Nothing
+    mkRookie = cgs (Just 3) (Just True)
+    mkNormal = cgs (Just 3) (Just False)
+    joe      = newGoalie 2 "Joe"
+    rookie   = bob True
+    normal   = bob False
+    bob r    = newGoalie 3 "Bob" & gRookie .~ r
+    cgs n rf = CreateGoalie $ newCreateGoalieState
+      & cgsNumber     .~ n
+      & cgsName       .~ "Bob"
+      & cgsRookieFlag .~ rf
 
 resetCreatePlayerStateSpec :: Spec
 resetCreatePlayerStateSpec = describe "resetCreatePlayerState" $ let
