@@ -52,7 +52,11 @@ getRookieFlagC = Controller
     C.drawString "Is this goalie a rookie? (Y/N)"
     return C.CursorInvisible
   , handleController = \e -> do
-    modify $ progMode.createGoalieStateL.cgsRookieFlag .~ ynHandler e
+    modify $ case ynHandler e of
+      Just True -> progMode.createGoalieStateL
+        %~ (cgsRookieFlag ?~ True)
+        .  (cgsActiveFlag ?~ True)
+      rf -> progMode.createGoalieStateL.cgsRookieFlag .~ rf
     return True
   }
 
