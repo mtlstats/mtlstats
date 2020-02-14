@@ -75,6 +75,7 @@ confirmCreateGoalieC = Controller
          [ ( "Goalie number", maybe "?" show $ cgs^.cgsNumber     )
          , ( "Goalie name",   cgs^.cgsName                        )
          , ( "Rookie",        maybe "?" show $ cgs^.cgsRookieFlag )
+         , ( "Active",        maybe "?" show $ cgs^.cgsActiveFlag )
          ]
       ++ [ ""
          , "Create goalie: are you sure?  (Y/N)"

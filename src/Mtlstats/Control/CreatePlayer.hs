@@ -80,6 +80,7 @@ confirmCreatePlayerC = Controller
          , ( "Player name",     cps^.cpsName                        )
          , ( "Player position", cps^.cpsPosition                    )
          , ( "Rookie",          maybe "?" show $ cps^.cpsRookieFlag )
+         , ( "Active",          maybe "?" show $ cps^.cpsActiveFlag )
          ]
       ++ [ ""
          , "Create player: are you sure?  (Y/N)"
