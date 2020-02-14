@@ -83,8 +83,8 @@ confirmCreateGoalieC = Controller
           then success
           else modify $ progMode.editGoalieStateL
             %~ (egsSelectedGoalie ?~ gid)
-            .  (egsMode     .~ EGLtGames True)
-            .  (egsCallback .~ success)
+            .  (egsMode           .~ EGLtGames True)
+            .  (egsCallback       .~ success)
       Just False -> failure
       Nothing    -> return ()
     return True

@@ -86,10 +86,10 @@ confirmCreatePlayerC = Controller
         modify addPlayer
         if rookie
           then success
-          else modify (progMode.editPlayerStateL
+          else modify $ progMode.editPlayerStateL
             %~ (epsSelectedPlayer ?~ pid)
-            .  (epsMode .~ EPLtGoals True)
-            .  (epsCallback .~ success))
+            .  (epsMode           .~ EPLtGoals True)
+            .  (epsCallback       .~ success)
       Just False -> failure
       Nothing -> return ()
     return True
