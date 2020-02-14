@@ -3,6 +3,7 @@
 ## current
 - Added autocomplete to player position prompt
 - Don't prompt for lifetime stats on rookie player/goalie creation
+- Ask whether a player/goalie is active on creation
 
 ## 0.12.0
 - Edit lifetime stats on new player/goalie creation
