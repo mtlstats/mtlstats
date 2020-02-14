@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.CreateGoalie (createGoalieC) where
 
-import Control.Monad (join)
 import Control.Monad.Trans.State (gets, modify)
 import Lens.Micro ((^.), (.~), (?~), (%~), to)
 import qualified UI.NCurses as C
@@ -71,18 +70,22 @@ confirmCreateGoalieC = Controller
          ]
     return C.CursorInvisible
   , handleController = \e -> do
+    cgs <- gets (^.progMode.createGoalieStateL)
+    let
+      success = cgs^.cgsSuccessCallback
+      failure = cgs^.cgsFailureCallback
     case ynHandler e of
       Just True -> do
         gid <- gets (^.database.dbGoalies.to length)
-        cb  <- gets (^.progMode.createGoalieStateL.cgsSuccessCallback)
-        modify
-          $ (progMode.editGoalieStateL
+        let rookie = cgs^.cgsRookieFlag == Just True
+        modify addGoalie
+        if rookie
+          then success
+          else modify $ progMode.editGoalieStateL
             %~ (egsSelectedGoalie ?~ gid)
-            .  (egsMode .~ EGLtGames True)
-            .  (egsCallback .~ cb))
-          . addGoalie
-      Just False ->
-        join $ gets (^.progMode.createGoalieStateL.cgsFailureCallback)
-      Nothing -> return ()
+            .  (egsMode     .~ EGLtGames True)
+            .  (egsCallback .~ success)
+      Just False -> failure
+      Nothing    -> return ()
     return True
   }
