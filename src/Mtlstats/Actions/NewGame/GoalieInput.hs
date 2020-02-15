@@ -36,8 +36,12 @@ import Mtlstats.Util
 
 -- | Attempts to finish game goalie entry
 finishGoalieEntry :: ProgState -> ProgState
-finishGoalieEntry s = s & progMode.gameStateL.gameGoaliesRecorded
-  .~ not (null $ s^.progMode.gameStateL.gameGoalieStats)
+finishGoalieEntry s = case M.toList $ s^.progMode.gameStateL.gameGoalieStats of
+  []         -> s
+  [(gid, _)] -> setGameGoalie gid s'
+  _          -> s'
+  where
+    s' = s & progMode.gameStateL.gameGoaliesRecorded .~ True
 
 -- | Records the goalie's game stats
 recordGoalieStats :: ProgState -> ProgState

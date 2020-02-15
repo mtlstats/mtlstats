@@ -23,7 +23,7 @@ module Actions.NewGame.GoalieInputSpec (spec) where
 
 import qualified Data.Map as M
 import Data.Maybe (fromJust)
-import Lens.Micro ((^.), (&), (.~), (?~))
+import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Actions.NewGame.GoalieInput
@@ -39,21 +39,44 @@ spec = describe "Mtlstats.Actions.GoalieInput" $ do
   setGameGoalieSpec
 
 finishGoalieEntrySpec :: Spec
-finishGoalieEntrySpec = describe "finishGoalieEntry" $ do
-  let
-    progState stats = newProgState
-      & progMode.gameStateL.gameGoalieStats .~ stats
-      & finishGoalieEntry
+finishGoalieEntrySpec = describe "finishGoalieEntry" $ mapM_
+  (\(label, stats, grFlag, gaFlag) -> context label $ do
+    let
+      ps = newProgState
+        & progMode.gameStateL
+          %~ (gameGoalieStats .~ stats)
+          .  (gameType        ?~ HomeGame)
+          .  (homeScore       ?~ 1)
+          .  (awayScore       ?~ 0)
+          .  (overtimeFlag    ?~ False)
+        & database.dbGoalies .~ goalies
 
-  context "no goalie data" $
-    it "should not set goaliesRecorded" $ let
-      s = progState M.empty
-      in s^.progMode.gameStateL.gameGoaliesRecorded `shouldBe` False
+      ps' = finishGoalieEntry ps
+      gs  = ps'^.progMode.gameStateL
 
-  context "goalie data" $
-    it "should set goaliesRecorded" $ let
-      s = progState $ M.fromList [(1, newGoalieStats)]
-      in s^.progMode.gameStateL.gameGoaliesRecorded `shouldBe` True
+    describe "gameGoaliesRecorded" $
+      it ("should be " ++ show grFlag) $
+        gs^.gameGoaliesRecorded `shouldBe` grFlag
+
+    describe "gameGoalieAssigned" $
+      it ("should be " ++ show gaFlag) $
+        gs^.gameGoalieAssigned `shouldBe` gaFlag)
+
+  --  label,         initial stats, goalies recorded, goalie assigned
+  [ ( "no goalies",  noGoalies,     False,            False           )
+  , ( "one goalie",  oneGoalie,     True,             True            )
+  , ( "two goalies", twoGoalies,    True,             False           )
+  ]
+
+  where
+    goalies    = [joe, bob]
+    joe        = newGoalie 2 "Joe"
+    bob        = newGoalie 3 "Bob"
+    noGoalies  = M.empty
+    oneGoalie  = M.fromList [joeStats]
+    twoGoalies = M.fromList [joeStats, bobStats]
+    joeStats   = (0, newGoalieStats)
+    bobStats   = (1, newGoalieStats)
 
 recordGoalieStatsSpec :: Spec
 recordGoalieStatsSpec = describe "recordGoalieStats" $ let
