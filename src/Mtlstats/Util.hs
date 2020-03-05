@@ -52,8 +52,9 @@ modifyNth
   -> [a]
   -- ^ The list
   -> [a]
-modifyNth n f = map (\(i, x) -> if i == n then f x else x)
-  . zip [0..]
+modifyNth n f = zipWith
+  (\i x -> if i == n then f x else x)
+  [0..]
 
 -- | Modify a value indexed by a given key in a map using a default
 -- initial value if not present

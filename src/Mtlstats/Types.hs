@@ -208,9 +208,8 @@ import Data.Aeson
   , (.=)
   )
 import Data.Char (toUpper)
-import Data.List (isInfixOf)
+import Data.List (find, isInfixOf)
 import qualified Data.Map as M
-import Data.Maybe (listToMaybe)
 import Lens.Micro (Lens', lens, (&), (^.), (.~))
 import Lens.Micro.TH (makeLenses)
 import qualified UI.NCurses as C
@@ -1019,7 +1018,7 @@ playerSearchExact
   -> Maybe (Int, Player)
   -- ^ The player's index and value
 playerSearchExact sStr =
-  listToMaybe . filter match . zip [0..]
+  find match . zip [0..]
   where match (_, p) = p^.pName == sStr
 
 -- | Modifies a player with a given name
