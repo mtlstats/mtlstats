@@ -44,3 +44,11 @@ maxAssists = 2
 -- | The length of a typical game (in minutes)
 gameLength :: Int
 gameLength = 60
+
+-- | Report output filename
+reportFilename :: FilePath
+reportFilename = "report.txt"
+
+-- | Number of columns in report file
+reportCols :: Int
+reportCols = 79
