@@ -124,12 +124,13 @@ awardGoal n ps = ps
     (\m -> let
       stats = M.findWithDefault newPlayerStats n m
       in M.insert n (stats & psGoals %~ succ) m)
-  & database.dbPlayers %~ map
-    (\(i, p) -> if i == n
+  & database.dbPlayers %~ zipWith
+    (\i p -> if i == n
       then p
         & pYtd.psGoals      %~ succ
         & pLifetime.psGoals %~ succ
-      else p) . zip [0..]
+      else p)
+    [0..]
 
 -- | Awards an assist to a player
 awardAssist
@@ -142,12 +143,13 @@ awardAssist n ps = ps
     (\m -> let
       stats = M.findWithDefault newPlayerStats n m
       in M.insert n (stats & psAssists %~ succ) m)
-  & database.dbPlayers %~ map
-    (\(i, p) -> if i == n
+  & database.dbPlayers %~ zipWith
+    (\i p -> if i == n
       then p
         & pYtd.psAssists      %~ succ
         & pLifetime.psAssists %~ succ
-      else p) . zip [0..]
+      else p)
+    [0..]
 
 -- | Resets the entered data for the current goal
 resetGoalData :: ProgState -> ProgState

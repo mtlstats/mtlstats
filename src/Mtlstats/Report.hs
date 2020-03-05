@@ -241,8 +241,7 @@ filteredPlayerReport width label criteria showTotals lineNumbers ps = let
     else repeat ""
 
   table = overlayLast olayText
-    $ map (\(ln, line) -> overlay ln $ centre width line)
-    $ zip lnOverlay
+    $ zipWith (\ln line -> overlay ln $ centre width line) lnOverlay
     $ complexTable ([right, left] ++ repeat right)
     $ tHeader : body ++ if showTotals
       then [separator, totals]
@@ -301,8 +300,7 @@ goalieReport width showTotals lineNumbers goalieData = let
     then "" : [right 2 $ show x | x <- [(1 :: Int)..]]
     else repeat ""
 
-  in map (\(ln, line) -> overlay ln $ centre width line)
-    $ zip lnOverlay
+  in zipWith (\ln line -> overlay ln $ centre width line) lnOverlay
     $ overlayLast olayText
     $ complexTable ([right, left] ++ repeat right)
     $ header : body ++ if showTotals

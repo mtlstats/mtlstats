@@ -33,7 +33,7 @@ import Mtlstats.Util
 import qualified TypesSpec as TS
 
 spec :: Spec
-spec = describe "Mtlstats.Actions.GoalieInput" $ do
+spec = describe "GoalieInput" $ do
   finishGoalieEntrySpec
   recordGoalieStatsSpec
   setGameGoalieSpec
@@ -208,107 +208,175 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ let
     ]
 
 setGameGoalieSpec :: Spec
-setGameGoalieSpec = describe "setGameGoalie" $ let
+setGameGoalieSpec = describe "setGameGoalie" $ mapM_
 
-  goalieStats w l t = newGoalieStats
-    & gsWins   .~ w
-    & gsLosses .~ l
-    & gsTies   .~ t
+  (\(label, goalieId, ps, expectedJoe, expectedBob, expectedGStats) ->
+    context label $ do
 
-  bob = newGoalie 2 "Bob"
-    & gYtd      .~ goalieStats 10 11 12
-    & gLifetime .~ goalieStats 20 21 22
+      let
+        ps'          = setGameGoalie goalieId ps
+        [joe', bob'] = ps'^.database.dbGoalies
+        gStats'      = ps'^.progMode.gameStateL.gameGoalieStats
 
-  joe = newGoalie 3 "Joe"
-    & gYtd      .~ goalieStats 30 31 32
-    & gLifetime .~ goalieStats 40 41 42
+      context "Joe" $ joe' `TS.compareTest` expectedJoe
+      context "Bob" $ bob' `TS.compareTest` expectedBob
+      context "game stats" $ gStats' `TS.compareTest` expectedGStats)
 
-  gameState h a ot = newGameState
-    & gameType        ?~ HomeGame
-    & homeScore       ?~ h
-    & awayScore       ?~ a
-    & overtimeFlag    ?~ ot
+  [ ( "Joe wins - no shutout"
+    , 0
+    , psWin
+    , joeWin
+    , bob
+    , gsJoeWin
+    )
 
-  winningGame = gameState 1 0 False
-  losingGame  = gameState 0 1 False
-  tiedGame    = gameState 0 1 True
+  , ( "Bob wins - no shutout"
+    , 1
+    , psWin
+    , joe
+    , bobWin
+    , gsBobWin
+    )
 
-  in mapM_
-    (\(setLabel, gs, setGid, bobData, joeData) -> context setLabel $ let
+  , ( "Joe wins - shutout"
+    , 0
+    , psWinSO
+    , joeWinSO
+    , bob
+    , gsJoeWinSO
+    )
 
-      progState = newProgState
-        & database.dbGoalies  .~ [bob, joe]
-        & progMode.gameStateL .~ gs
-        & setGameGoalie setGid
+  , ( "Bob wins - shutout"
+    , 1
+    , psWinSO
+    , joe
+    , bobWinSO
+    , gsBobWinSO
+    )
 
-      in mapM_
-        (\( chkLabel
-          , chkGid
-          , ( gWins
-            , gLosses
-            , gTies
-            , ytdWins
-            , ytdLosses
-            , ytdTies
-            , ltWins
-            , ltLosses
-            , ltTies
-            )
-          ) -> context chkLabel $ do
-            let
-              goalie = (progState^.database.dbGoalies) !! chkGid
-              gameStats = progState^.progMode.gameStateL.gameGoalieStats
-              game      = M.findWithDefault newGoalieStats chkGid gameStats
-              ytd       = goalie^.gYtd
-              lifetime  = goalie^.gLifetime
+  , ( "Joe loses"
+    , 0
+    , psLose
+    , joeLose
+    , bob
+    , gsJoeLose
+    )
 
-            mapM_
-              (\(label', expected, actual) -> context label' $
-                expected `TS.compareTest` actual)
-              [ ( "game stats",     game,     goalieStats gWins   gLosses   gTies   )
-              , ( "YTD stats",      ytd,      goalieStats ytdWins ytdLosses ytdTies )
-              , ( "lifetime stats", lifetime, goalieStats ltWins  ltLosses  ltTies  )
-              ]
+  , ( "Bob loses"
+    , 1
+    , psLose
+    , joe
+    , bobLose
+    , gsBobLose
+    )
 
-            it "should set the gameGoalieAssigned flag" $
-              progState^.progMode.gameStateL.gameGoalieAssigned `shouldBe` True)
-        [ ( "checking Bob", 0, bobData )
-        , ( "checking Joe", 1, joeData )
-        ])
-    [ ( "Bob wins"
-      , winningGame
-      , 0
-      , ( 1, 0, 0, 11, 11, 12, 21, 21, 22 )
-      , ( 0, 0, 0, 30, 31, 32, 40, 41, 42 )
-      )
-    , ( "Bob loses"
-      , losingGame
-      , 0
-      , ( 0, 1, 0, 10, 12, 12, 20, 22, 22 )
-      , ( 0, 0, 0, 30, 31, 32, 40, 41, 42 )
-      )
-    , ( "Bob ties"
-      , tiedGame
-      , 0
-      , ( 0, 0, 1, 10, 11, 13, 20, 21, 23 )
-      , ( 0, 0, 0, 30, 31, 32, 40, 41, 42 )
-      )
-    , ( "Joe wins"
-      , winningGame
-      , 1
-      , ( 0, 0, 0, 10, 11, 12, 20, 21, 22 )
-      , ( 1, 0, 0, 31, 31, 32, 41, 41, 42 )
-      )
-    , ( "Joe loses"
-      , losingGame
-      , 1
-      , ( 0, 0, 0, 10, 11, 12, 20, 21, 22 )
-      , ( 0, 1, 0, 30, 32, 32, 40, 42, 42 )
-      )
-    , ( "Joe ties"
-      , tiedGame
-      , 1
-      , ( 0, 0, 0, 10, 11, 12, 20, 21, 22 )
-      , ( 0, 0, 1, 30, 31, 33, 40, 41, 43 )
-      )
-    ]
+  , ( "Joe overtime"
+    , 0
+    , psOT
+    , joeOT
+    , bob
+    , gsJoeOT
+    )
+
+  , ( "Bob overtime"
+    , 1
+    , psOT
+    , joe
+    , bobOT
+    , gsBobOT
+    )
+  ]
+
+  where
+
+    joe
+      = newGoalie 2 "Joe"
+      & gYtd
+        %~ (gsShutouts .~ 11)
+        .  (gsWins     .~ 12)
+        .  (gsLosses   .~ 13)
+        .  (gsTies     .~ 14)
+      & gLifetime
+        %~ (gsShutouts .~ 21)
+        .  (gsWins     .~ 22)
+        .  (gsLosses   .~ 23)
+        .  (gsTies     .~ 24)
+
+    bob
+      = newGoalie 3 "Bob"
+      & gYtd
+        %~ (gsShutouts .~ 31)
+        .  (gsWins     .~ 32)
+        .  (gsLosses   .~ 33)
+        .  (gsTies     .~ 34)
+      & gLifetime
+        %~ (gsShutouts .~ 41)
+        .  (gsWins     .~ 42)
+        .  (gsLosses   .~ 43)
+        .  (gsTies     .~ 44)
+
+    joeWin   = win joe
+    bobWin   = win bob
+    joeWinSO = winSO joe
+    bobWinSO = winSO bob
+    joeLose  = lose joe
+    bobLose  = lose bob
+    joeOT    = tie joe
+    bobOT    = tie bob
+
+    psWin = mkProgState
+      $ (homeScore ?~ 2)
+      . (awayScore ?~ 1)
+
+    psWinSO = mkProgState
+      $ (homeScore ?~ 1)
+      . (awayScore ?~ 0)
+
+    psLose = mkProgState
+      $ (homeScore ?~ 0)
+      . (awayScore ?~ 1)
+
+    psOT = mkProgState
+      $ (homeScore    ?~ 0)
+      . (awayScore    ?~ 1)
+      . (overtimeFlag ?~ True)
+
+    mkProgState f
+      = newProgState
+      & database.dbGoalies  .~ [joe, bob]
+      & progMode.gameStateL
+        %~ f
+        .  (gameType     ?~ HomeGame)
+        .  (overtimeFlag ?~ False)
+
+    gsJoeWin   = mkGameStats 0 incWin
+    gsBobWin   = mkGameStats 1 incWin
+    gsJoeWinSO = mkGameStats 0 $ incWin . incSO
+    gsBobWinSO = mkGameStats 1 $ incWin . incSO
+    gsJoeLose  = mkGameStats 0 incLoss
+    gsBobLose  = mkGameStats 1 incLoss
+    gsJoeOT    = mkGameStats 0 incOT
+    gsBobOT    = mkGameStats 1 incOT
+
+    mkGameStats n f = M.fromList [(n, f newGoalieStats)]
+
+    win
+      = (gYtd      %~ incWin)
+      . (gLifetime %~ incWin)
+
+    winSO
+      = (gYtd      %~ (incWin . incSO))
+      . (gLifetime %~ (incWin . incSO))
+
+    lose
+      = (gYtd      %~ incLoss)
+      . (gLifetime %~ incLoss)
+
+    tie
+      = (gYtd      %~ incOT)
+      . (gLifetime %~ incOT)
+
+    incWin  = gsWins     %~ succ
+    incSO   = gsShutouts %~ succ
+    incLoss = gsLosses   %~ succ
+    incOT   = gsTies     %~ succ

@@ -170,10 +170,11 @@ gameGoalieMenu s = let
       goalie <- nth n $ s^.database.dbGoalies
       Just (n, goalie))
     gids
-  in Menu title () $ map
-    (\(ch, (gid, goalie)) -> MenuItem ch (goalieSummary goalie) $
-      modify $ GI.setGameGoalie gid) $
-    zip ['1'..] goalies
+  in Menu title () $ zipWith
+    (\ch (gid, goalie) -> MenuItem ch (goalieSummary goalie) $
+      modify $ GI.setGameGoalie gid)
+    ['1'..]
+    goalies
 
 -- | The edit menu
 editMenu :: Menu ()

@@ -164,9 +164,7 @@ numPromptWithFallback pStr fallback act = Prompt
   , promptProcessChar = \ch str -> if isDigit ch
     then str ++ [ch]
     else str
-  , promptAction      = \inStr -> case readMaybe inStr of
-      Nothing -> fallback
-      Just n  -> act n
+  , promptAction      = maybe fallback act . readMaybe
   , promptSpecialKey  = const $ return ()
   }
 
