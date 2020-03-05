@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE FlexibleInstances, OverloadedStrings, RankNTypes #-}
 
 module TypesSpec
   ( Comparable (..)
@@ -33,6 +33,7 @@ module TypesSpec
 import Control.Monad (replicateM)
 import Data.Aeson (FromJSON, ToJSON, decode, encode, toJSON)
 import Data.Aeson.Types (Value (Object))
+import qualified Data.Map.Lazy as M
 import qualified Data.HashMap.Strict as HM
 import Data.Ratio ((%))
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
@@ -1005,3 +1006,48 @@ instance Comparable EditStandingsMode where
   compareTest actual expected =
     it ("should be " ++ show expected) $
       actual `shouldBe` expected
+
+instance Comparable Goalie where
+  compareTest actual expected = do
+
+    describe "gNumber" $
+      it ("should be " ++ show (expected^.gNumber)) $
+        actual^.gNumber `shouldBe` expected^.gNumber
+
+    describe "gName" $
+      it ("should be " ++ show (expected^.gName)) $
+        actual^.gName `shouldBe` expected^.gName
+
+    describe "gRookie" $
+      it ("should be " ++ show (expected^.gRookie)) $
+        actual^.gRookie `shouldBe` expected^.gRookie
+
+    describe "gActive" $
+      it ("should be " ++ show (expected^.gActive)) $
+        actual^.gActive `shouldBe` expected^.gActive
+
+    describe "gYtd" $
+      (actual^.gYtd) `compareTest` (expected^.gYtd)
+
+    describe "gLifetime" $
+      (actual^.gLifetime) `compareTest` (expected^.gLifetime)
+
+instance Comparable (M.Map Int GoalieStats) where
+  compareTest actual expected = do
+
+    let
+      aList = M.toList actual
+      eList = M.toList expected
+
+    it "should have the correct number of elements" $
+      length aList `shouldBe` length eList
+
+    mapM_
+      (\(n, (ka, va), (ke, ve)) -> context ("element " ++ show n) $ do
+
+        context "key" $
+          it ("should be " ++ show ke) $
+            ka `shouldBe` ke
+
+        context "value" $ va `compareTest` ve)
+      (zip3 ([0..] :: [Int]) aList eList)

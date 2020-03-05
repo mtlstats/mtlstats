@@ -87,18 +87,22 @@ setGameGoalie
   -> ProgState
 setGameGoalie gid s = fromMaybe s $ do
   let gs = s^.progMode.gameStateL
-  won  <- gameWon gs
-  lost <- gameLost gs
-  tied <- gs^.overtimeFlag
+  won     <- gameWon gs
+  lost    <- gameLost gs
+  tied    <- gs^.overtimeFlag
+  shutout <- (==0) <$> otherScore gs
+
   let
-    w = if won then 1 else 0
-    l = if lost then 1 else 0
-    t = if tied then 1 else 0
+    w  = if won then 1 else 0
+    l  = if lost then 1 else 0
+    t  = if tied then 1 else 0
+    so = if shutout then 1 else 0
 
     updateStats
-      = (gsWins   +~ w)
-      . (gsLosses +~ l)
-      . (gsTies   +~ t)
+      = (gsWins     +~ w)
+      . (gsLosses   +~ l)
+      . (gsTies     +~ t)
+      . (gsShutouts +~ so)
 
     updateGoalie
       = (gYtd      %~ updateStats)
