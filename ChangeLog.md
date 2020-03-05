@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.13.0
 - Added autocomplete to player position prompt
 - Don't prompt for lifetime stats on rookie player/goalie creation
 - Ask whether a player/goalie is active on creation
