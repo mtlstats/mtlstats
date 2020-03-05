@@ -2,6 +2,7 @@
 
 ## current
 - Fixed a bug that was causing shutouts to not be recorded
+- Output report to a text file (report.txt)
 
 ## 0.13.0
 - Added autocomplete to player position prompt

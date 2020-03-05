@@ -21,13 +21,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.NewGame (newGameC) where
 
-import Control.Monad.Trans.State (gets, modify)
+import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.State (get, gets, modify)
 import Data.Maybe (fromJust, fromMaybe, isJust)
 import Lens.Micro ((^.), (.~))
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
 import Mtlstats.Actions.NewGame
+import Mtlstats.Config
 import Mtlstats.Control.NewGame.GoalieInput
 import Mtlstats.Format
 import Mtlstats.Handlers
@@ -211,9 +213,12 @@ reportC = Controller
       C.EventSpecialKey C.KeyUpArrow   -> modify scrollUp
       C.EventSpecialKey C.KeyDownArrow -> modify scrollDown
       C.EventSpecialKey C.KeyHome      -> modify $ scrollOffset .~ 0
-      C.EventSpecialKey _              -> modify backHome
-      C.EventCharacter _               -> modify backHome
-      _                                -> return ()
+
+      C.EventCharacter '\n' -> do
+        get >>= liftIO . writeFile reportFilename . unlines . report reportCols
+        modify backHome
+
+      _ -> return ()
     return True
   }
 
