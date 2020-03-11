@@ -34,6 +34,7 @@ module Mtlstats.Prompt (
   numPromptWithFallback,
   selectPrompt,
   -- * Individual prompts
+  getDBPrompt,
   newSeasonPrompt,
   playerNumPrompt,
   playerNamePrompt,
@@ -223,6 +224,10 @@ selectPrompt params = Prompt
           spCallback params $ Just sel
     _ -> return ()
   }
+
+-- | Prompts for the database to load
+getDBPrompt :: Prompt
+getDBPrompt = undefined
 
 -- | Prompts for a new player's number
 playerNumPrompt :: Prompt
