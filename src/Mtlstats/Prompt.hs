@@ -32,6 +32,7 @@ module Mtlstats.Prompt (
   namePrompt,
   numPrompt,
   numPromptWithFallback,
+  dbNamePrompt,
   selectPrompt,
   -- * Individual prompts
   getDBPrompt,
@@ -169,6 +170,19 @@ numPromptWithFallback pStr fallback act = Prompt
   , promptSpecialKey  = const $ return ()
   }
 
+-- | Prompts for a database name
+dbNamePrompt
+  :: String
+  -- ^ The prompt string
+  -> (String -> Action ())
+  -- ^ The callback to pass the result to
+  -> Prompt
+dbNamePrompt pStr act = (strPrompt pStr act)
+  { promptProcessChar = \ch -> if isAlphaNum ch || ch == '-'
+    then (++[toUpper ch])
+    else id
+  }
+
 -- | Prompts the user for a filename to save a backup of the database
 -- to
 newSeasonPrompt :: Prompt
@@ -227,7 +241,8 @@ selectPrompt params = Prompt
 
 -- | Prompts for the database to load
 getDBPrompt :: Prompt
-getDBPrompt = undefined
+getDBPrompt = dbNamePrompt "Season database to load: " $
+  modify . (dbName .~)
 
 -- | Prompts for a new player's number
 playerNumPrompt :: Prompt
