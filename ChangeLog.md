@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Ask for database to load on start-up
+
 ## 0.14.0
 - Fixed a bug that was causing shutouts to not be recorded
 - Output report to a text file (report.txt)
