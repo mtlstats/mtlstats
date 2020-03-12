@@ -39,7 +39,7 @@ import Mtlstats.Types
 dispatch :: ProgState -> Controller
 dispatch s = case s^.progMode of
   TitleScreen         -> titleScreenC
-  MainMenu            -> mainMenuC
+  MainMenu            -> mainMenuC s
   NewSeason flag      -> newSeasonC flag
   NewGame gs          -> newGameC gs
   EditMenu            -> editMenuC
@@ -49,11 +49,13 @@ dispatch s = case s^.progMode of
   EditGoalie egs      -> editGoalieC egs
   (EditStandings esm) -> editStandingsC esm
 
-mainMenuC :: Controller
-mainMenuC = Controller
-  { drawController   = const $ drawMenu mainMenu
-  , handleController = menuHandler mainMenu
-  }
+mainMenuC :: ProgState -> Controller
+mainMenuC s = if null $ s^.dbName
+  then promptController getDBPrompt
+  else Controller
+    { drawController   = const $ drawMenu mainMenu
+    , handleController = menuHandler mainMenu
+    }
 
 newSeasonC :: Bool -> Controller
 newSeasonC False = promptController newSeasonPrompt

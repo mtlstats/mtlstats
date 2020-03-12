@@ -32,8 +32,10 @@ module Mtlstats.Prompt (
   namePrompt,
   numPrompt,
   numPromptWithFallback,
+  dbNamePrompt,
   selectPrompt,
   -- * Individual prompts
+  getDBPrompt,
   newSeasonPrompt,
   playerNumPrompt,
   playerNamePrompt,
@@ -168,24 +170,30 @@ numPromptWithFallback pStr fallback act = Prompt
   , promptSpecialKey  = const $ return ()
   }
 
+-- | Prompts for a database name
+dbNamePrompt
+  :: String
+  -- ^ The prompt string
+  -> (String -> Action ())
+  -- ^ The callback to pass the result to
+  -> Prompt
+dbNamePrompt pStr act = (strPrompt pStr act)
+  { promptProcessChar = \ch -> if isAlphaNum ch || ch == '-'
+    then (++[toUpper ch])
+    else id
+  }
+
 -- | Prompts the user for a filename to save a backup of the database
 -- to
 newSeasonPrompt :: Prompt
-newSeasonPrompt = prompt
-  { promptProcessChar = \ch str -> if validChar ch
-    then str ++ [toUpper ch]
-    else str
-  }
-  where
-
-    prompt = strPrompt "Filename to save database: " $ \fn ->
-      if null fn
-      then modify backHome
-      else do
-        saveDatabase $ fn ++ ".json"
-        modify $ progMode .~ NewSeason True
-
-    validChar = (||) <$> isAlphaNum <*> (=='-')
+newSeasonPrompt = dbNamePrompt "Filename for new season: " $ \fn ->
+  if null fn
+  then modify backHome
+  else do
+    saveDatabase
+    modify
+      $ (dbName .~ fn)
+      . (progMode .~ NewSeason True)
 
 -- | Builds a selection prompt
 selectPrompt :: SelectParams a -> Prompt
@@ -223,6 +231,12 @@ selectPrompt params = Prompt
           spCallback params $ Just sel
     _ -> return ()
   }
+
+-- | Prompts for the database to load
+getDBPrompt :: Prompt
+getDBPrompt = dbNamePrompt "Season database to load: " $ \fn -> do
+  modify $ dbName .~ fn
+  loadDatabase
 
 -- | Prompts for a new player's number
 playerNumPrompt :: Prompt

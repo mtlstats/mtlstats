@@ -50,6 +50,7 @@ module Mtlstats.Types (
   -- ** ProgState Lenses
   database,
   progMode,
+  dbName,
   inputBuffer,
   scrollOffset,
   -- ** ProgMode Lenses
@@ -233,6 +234,8 @@ data ProgState = ProgState
   -- ^ The data to be saved
   , _progMode     :: ProgMode
   -- ^ The program's mode
+  , _dbName       :: String
+  -- ^ The name of the database file
   , _inputBuffer  :: String
   -- ^ Buffer for user input
   , _scrollOffset :: Int
@@ -781,6 +784,7 @@ newProgState :: ProgState
 newProgState = ProgState
   { _database     = newDatabase
   , _progMode     = TitleScreen
+  , _dbName       = ""
   , _inputBuffer  = ""
   , _scrollOffset = 0
   }
