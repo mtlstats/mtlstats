@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, ScopedTypeVariables #-}
 
 module Mtlstats.Actions
   ( startNewSeason
@@ -43,12 +43,14 @@ module Mtlstats.Actions
   , backHome
   , scrollUp
   , scrollDown
+  , loadDatabase
   , saveDatabase
   ) where
 
+import Control.Exception (IOException, catch)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.State (gets, modify)
-import Data.Aeson (encodeFile)
+import Data.Aeson (decodeFileStrict, encodeFile)
 import Data.Maybe (fromMaybe)
 import Lens.Micro ((^.), (&), (.~), (%~))
 import System.EasyFile
@@ -216,12 +218,27 @@ scrollUp = scrollOffset %~ max 0 . pred
 scrollDown :: ProgState -> ProgState
 scrollDown = scrollOffset %~ succ
 
+-- | Loads the database
+loadDatabase :: Action ()
+loadDatabase = do
+  db     <- gets (^.database)
+  dbFile <- dbSetup
+  db'    <- liftIO $ catch
+    (fromMaybe db <$> decodeFileStrict dbFile)
+    (\(_ :: IOException) -> return db)
+  modify $ database .~ db'
+
 -- | Saves the database
-saveDatabase :: String -> Action ()
-saveDatabase fn = do
-  db <- gets (^.database)
+saveDatabase :: Action ()
+saveDatabase = do
+  db     <- gets (^.database)
+  dbFile <- dbSetup
+  liftIO $ encodeFile dbFile db
+
+dbSetup :: Action String
+dbSetup = do
+  fn <- gets (^.dbName)
   liftIO $ do
     dir <- getAppUserDataDirectory appName
-    let dbFile = dir </> fn
     createDirectoryIfMissing True dir
-    encodeFile dbFile db
+    return $ dir </> fn ++ ".json"

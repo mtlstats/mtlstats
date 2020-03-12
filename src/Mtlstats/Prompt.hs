@@ -186,21 +186,14 @@ dbNamePrompt pStr act = (strPrompt pStr act)
 -- | Prompts the user for a filename to save a backup of the database
 -- to
 newSeasonPrompt :: Prompt
-newSeasonPrompt = prompt
-  { promptProcessChar = \ch str -> if validChar ch
-    then str ++ [toUpper ch]
-    else str
-  }
-  where
-
-    prompt = strPrompt "Filename to save database: " $ \fn ->
-      if null fn
-      then modify backHome
-      else do
-        saveDatabase $ fn ++ ".json"
-        modify $ progMode .~ NewSeason True
-
-    validChar = (||) <$> isAlphaNum <*> (=='-')
+newSeasonPrompt = dbNamePrompt "Filename for new season: " $ \fn ->
+  if null fn
+  then modify backHome
+  else do
+    saveDatabase
+    modify
+      $ (dbName .~ fn)
+      . (progMode .~ NewSeason True)
 
 -- | Builds a selection prompt
 selectPrompt :: SelectParams a -> Prompt
@@ -241,8 +234,9 @@ selectPrompt params = Prompt
 
 -- | Prompts for the database to load
 getDBPrompt :: Prompt
-getDBPrompt = dbNamePrompt "Season database to load: " $
-  modify . (dbName .~)
+getDBPrompt = dbNamePrompt "Season database to load: " $ \fn -> do
+  modify $ dbName .~ fn
+  loadDatabase
 
 -- | Prompts for a new player's number
 playerNumPrompt :: Prompt

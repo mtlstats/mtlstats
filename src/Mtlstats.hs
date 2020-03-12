@@ -19,23 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-{-# LANGUAGE ScopedTypeVariables #-}
-
 module Mtlstats (initState, mainLoop) where
 
-import Control.Exception (IOException, catch)
 import Control.Monad (void)
 import Control.Monad.Extra (whenM)
-import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.State (get, gets)
-import Data.Aeson (decodeFileStrict)
-import Data.Maybe (fromJust, fromMaybe)
-import Lens.Micro ((&), (.~))
-import System.EasyFile (getAppUserDataDirectory, (</>))
+import Data.Maybe (fromJust)
 import qualified UI.NCurses as C
 
-import Mtlstats.Config
 import Mtlstats.Control
 import Mtlstats.Types
 
@@ -44,15 +36,7 @@ initState :: C.Curses ProgState
 initState = do
   C.setEcho False
   void $ C.setCursorMode C.CursorInvisible
-  db <- liftIO $ do
-    dir <- getAppUserDataDirectory appName
-    let dbFile = dir </> dbFname
-    fromMaybe newDatabase <$> catch
-      (decodeFileStrict dbFile)
-      (\(_ :: IOException) -> return Nothing)
-  return
-    $ newProgState
-    & database .~ db
+  return newProgState
 
 -- | Main program loop
 mainLoop :: Action ()

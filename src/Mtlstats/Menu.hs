@@ -45,7 +45,6 @@ import qualified UI.NCurses as C
 import Mtlstats.Actions
 import qualified Mtlstats.Actions.NewGame.GoalieInput as GI
 import Mtlstats.Actions.EditStandings
-import Mtlstats.Config
 import Mtlstats.Format
 import Mtlstats.Types
 import Mtlstats.Types.Menu
@@ -115,7 +114,7 @@ mainMenu = Menu "MASTER MENU" True
   , MenuItem 'C' "EDIT MENU" $
     modify edit >> return True
   , MenuItem 'E' "EXIT" $
-    saveDatabase dbFname >> return False
+    saveDatabase >> return False
   ]
 
 -- | The new season menu
