@@ -221,12 +221,12 @@ scrollDown = scrollOffset %~ succ
 -- | Loads the database
 loadDatabase :: Action ()
 loadDatabase = do
-  db     <- gets (^.database)
   dbFile <- dbSetup
-  db'    <- liftIO $ catch
-    (fromMaybe db <$> decodeFileStrict dbFile)
-    (\(_ :: IOException) -> return db)
-  modify $ database .~ db'
+  liftIO
+    (catch
+      (decodeFileStrict dbFile)
+      (\(_ :: IOException) -> return Nothing))
+    >>= mapM_ (modify . (database .~))
 
 -- | Saves the database
 saveDatabase :: Action ()
