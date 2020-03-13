@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.15.0
 - Ask for database to load on start-up
 - Add page break to report file
 - Implemented player/goalie deletion
