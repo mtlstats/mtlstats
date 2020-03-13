@@ -23,10 +23,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditGoalie (editGoalieC) where
 
+import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromMaybe)
-import Lens.Micro ((^.))
+import Lens.Micro ((^.), (.~), (%~))
 import UI.NCurses as C
 
+import Mtlstats.Actions
+import Mtlstats.Handlers
 import Mtlstats.Helpers.Goalie
 import Mtlstats.Menu
 import Mtlstats.Menu.EditGoalie
@@ -52,6 +55,7 @@ editC cb =
     EGName          -> nameC
     EGYtd           -> ytdMenuC
     EGLifetime      -> lifetimeMenuC
+    EGDelete        -> deleteC
     EGYtdGames b    -> ytdGamesC b
     EGYtdMins b     -> ytdMinsC b
     EGYtdGoals b    -> ytdGoalsC b
@@ -82,6 +86,38 @@ ytdMenuC _ = menuControllerWith header editGoalieYtdMenu
 
 lifetimeMenuC :: Action () -> Controller
 lifetimeMenuC _ = menuControllerWith header editGoalieLtMenu
+
+deleteC :: Action () -> Controller
+deleteC _ = Controller
+
+  { drawController = \s -> do
+
+    C.drawString $ let
+
+      hdr = fromMaybe [] $ do
+        gid    <- s^.progMode.editGoalieStateL.egsSelectedGoalie
+        goalie <- nth gid $ s^.database.dbGoalies
+        Just $ "Goalie: " ++ goalieDetails goalie ++ "\n\n"
+
+      in hdr ++ "Are you sure you want to delete this goalie? (Y/N)"
+
+    return C.CursorInvisible
+
+  , handleController = \e -> do
+
+    case ynHandler e of
+
+      Just True -> do
+        gets (^.progMode.editGoalieStateL.egsSelectedGoalie) >>= mapM_
+          (\gid -> modify $ database.dbGoalies %~ dropNth gid)
+        modify edit
+
+      Just False -> modify $ progMode.editGoalieStateL.egsMode .~ EGMenu
+      Nothing    -> return ()
+
+    return True
+
+  }
 
 ytdGamesC :: Bool -> Action () -> Controller
 ytdGamesC = curry $ promptController .

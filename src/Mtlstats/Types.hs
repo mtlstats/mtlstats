@@ -378,6 +378,7 @@ data EditPlayerMode
   | EPPosition
   | EPYtd
   | EPLifetime
+  | EPDelete
   | EPYtdGoals Bool
   | EPYtdAssists Bool
   | EPYtdPMin
@@ -403,6 +404,7 @@ data EditGoalieMode
   | EGName
   | EGYtd
   | EGLifetime
+  | EGDelete
   | EGYtdGames    Bool
   | EGYtdMins     Bool
   | EGYtdGoals    Bool

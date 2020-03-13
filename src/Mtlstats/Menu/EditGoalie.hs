@@ -44,6 +44,7 @@ editGoalieMenu = Menu "EDIT GOALTENDER" () $ map
   , ( 'D', "ACTIVE FLAG",         toggleActive   )
   , ( 'E', "YTD STATS",           set EGYtd      )
   , ( 'F', "LIFETIME STATS",      set EGLifetime )
+  , ( 'G', "DELETE RECORD",       set EGDelete   )
   , ( 'R', "RETURN TO EDIT MENU", edit           )
   ]
 

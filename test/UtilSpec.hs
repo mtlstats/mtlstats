@@ -30,6 +30,7 @@ spec :: Spec
 spec = describe "Mtlstats.Util" $ do
   nthSpec
   modifyNthSpec
+  dropNthSpec
   updateMapSpec
   sliceSpec
   capitalizeNameSpec
@@ -63,6 +64,20 @@ modifyNthSpec = describe "modifyNth" $ do
   context "negative index" $
     it "should not modify the value" $
       modifyNth (-1) succ list `shouldBe` [1, 2, 3]
+
+dropNthSpec :: Spec
+dropNthSpec = describe "dropNth" $ mapM_
+
+  (\(label, n, expected) ->
+    context label $
+      it ("should be " ++ show expected) $
+      dropNth n list `shouldBe` expected)
+
+  [ ( "out of bounds", 1, ["foo", "baz"] )
+  , ( "in bounds",     3, list           )
+  ]
+
+  where list = ["foo", "bar", "baz"]
 
 updateMapSpec :: Spec
 updateMapSpec = describe "updateMap" $ do

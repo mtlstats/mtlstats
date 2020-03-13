@@ -45,6 +45,7 @@ editPlayerMenu = Menu "EDIT PLAYER" () $ map
   , ( 'E', "ACTIVE FLAG",         toggleActive   )
   , ( 'F', "YTD STATS",           set EPYtd      )
   , ( 'G', "LIFETIME STATS",      set EPLifetime )
+  , ( 'H', "DELETE RECORD",       set EPDelete   )
   , ( 'R', "RETURN TO EDIT MENU", edit           )
   ]
 

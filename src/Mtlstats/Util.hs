@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Mtlstats.Util
   ( nth
   , modifyNth
+  , dropNth
   , updateMap
   , slice
   , capitalizeName
@@ -55,6 +56,18 @@ modifyNth
 modifyNth n f = zipWith
   (\i x -> if i == n then f x else x)
   [0..]
+
+-- | Attempt to drop the nth element from a list
+dropNth
+  :: Int
+  -- ^ The index of the element to drop
+  -> [a]
+  -- ^ The list to be modified
+  -> [a]
+  -- ^ The modified list
+dropNth n = foldr
+  (\(i, x) acc -> if i == n then acc else x : acc)
+  [] . zip [0..]
 
 -- | Modify a value indexed by a given key in a map using a default
 -- initial value if not present
