@@ -206,7 +206,7 @@ reportC = Controller
     C.drawString $ unlines $ slice
       (s^.scrollOffset)
       (fromInteger $ pred rows)
-      (report (fromInteger $ pred cols) s)
+      (displayReport (fromInteger $ pred cols) s)
     return C.CursorInvisible
   , handleController = \e -> do
     case e of
@@ -215,7 +215,7 @@ reportC = Controller
       C.EventSpecialKey C.KeyHome      -> modify $ scrollOffset .~ 0
 
       C.EventCharacter '\n' -> do
-        get >>= liftIO . writeFile reportFilename . unlines . report reportCols
+        get >>= liftIO . writeFile reportFilename . exportReport reportCols
         modify backHome
 
       _ -> return ()

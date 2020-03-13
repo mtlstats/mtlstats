@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 -}
 
-module Mtlstats.Report (report, gameDate) where
+module Mtlstats.Report (displayReport, exportReport, gameDate) where
 
 import Data.List (sortOn)
 import qualified Data.Map as M
@@ -34,21 +34,37 @@ import Mtlstats.Helpers.Player
 import Mtlstats.Types
 import Mtlstats.Util
 
--- | Generates the report
-report
+-- | Generates the report displayed on screen
+displayReport
   :: Int
   -- ^ The number of columns for the report
   -> ProgState
   -- ^ The program state
   -> [String]
+displayReport width s
+  =  report width s
+  ++ [""]
+  ++ lifetimeStatsReport width s
+
+-- | Generates the report to be exported to file
+exportReport
+  :: Int
+  -- ^ The number of columns in the report
+  -> ProgState
+  -- ^ The program state
+  -> String
+exportReport width s
+  =  unlines (report width s)
+  ++ "\f"
+  ++ unlines (lifetimeStatsReport width s)
+
+report :: Int -> ProgState -> [String]
 report width s
   =  standingsReport width s
   ++ [""]
   ++ gameStatsReport width s
   ++ [""]
   ++ yearToDateStatsReport width s
-  ++ [""]
-  ++ lifetimeStatsReport width s
 
 standingsReport :: Int -> ProgState -> [String]
 standingsReport width s = fromMaybe [] $ do
