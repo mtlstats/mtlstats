@@ -2,6 +2,7 @@
 
 ## current
 - Ask for database to load on start-up
+- Add page break to report file
 
 ## 0.14.0
 - Fixed a bug that was causing shutouts to not be recorded
