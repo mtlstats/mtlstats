@@ -25,7 +25,7 @@ module Mtlstats.Control.EditGoalie (editGoalieC) where
 
 import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromMaybe)
-import Lens.Micro ((^.), (%~))
+import Lens.Micro ((^.), (.~), (%~))
 import UI.NCurses as C
 
 import Mtlstats.Actions
@@ -110,9 +110,9 @@ deleteC _ = Controller
       Just True -> do
         gets (^.progMode.editGoalieStateL.egsSelectedGoalie) >>= mapM_
           (\gid -> modify $ database.dbGoalies %~ dropNth gid)
-        modify editGoalie
+        modify edit
 
-      Just False -> modify editGoalie
+      Just False -> modify $ progMode.editGoalieStateL.egsMode .~ EGMenu
       Nothing    -> return ()
 
     return True

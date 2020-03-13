@@ -23,7 +23,7 @@ module Mtlstats.Control.EditPlayer (editPlayerC) where
 
 import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromMaybe)
-import Lens.Micro ((^.), (%~))
+import Lens.Micro ((^.), (.~), (%~))
 import qualified UI.NCurses as C
 
 import Mtlstats.Actions
@@ -101,9 +101,9 @@ deleteC _ = Controller
       Just True -> do
         gets (^.progMode.editPlayerStateL.epsSelectedPlayer) >>= mapM_
           (\pid -> modify $ database.dbPlayers %~ dropNth pid)
-        modify editPlayer
+        modify edit
 
-      Just False -> modify editPlayer
+      Just False -> modify $ progMode.editPlayerStateL.epsMode .~ EPMenu
       Nothing    -> return ()
 
     return True
