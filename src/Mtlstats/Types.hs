@@ -404,6 +404,7 @@ data EditGoalieMode
   | EGName
   | EGYtd
   | EGLifetime
+  | EGDelete
   | EGYtdGames    Bool
   | EGYtdMins     Bool
   | EGYtdGoals    Bool
