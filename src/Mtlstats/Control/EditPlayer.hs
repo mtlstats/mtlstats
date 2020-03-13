@@ -21,10 +21,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Control.EditPlayer (editPlayerC) where
 
+import Control.Monad.Trans.State (gets, modify)
 import Data.Maybe (fromMaybe)
-import Lens.Micro ((^.))
+import Lens.Micro ((^.), (%~))
 import qualified UI.NCurses as C
 
+import Mtlstats.Actions
+import Mtlstats.Handlers
 import Mtlstats.Helpers.Player
 import Mtlstats.Menu
 import Mtlstats.Menu.EditPlayer
@@ -45,6 +48,7 @@ editPlayerC eps
       EPPosition     -> positionC
       EPYtd          -> ytdC
       EPLifetime     -> lifetimeC
+      EPDelete       -> deleteC
       EPYtdGoals   b -> ytdGoalsC   b
       EPYtdAssists b -> ytdAssistsC b
       EPYtdPMin      -> ytdPMinC
@@ -73,6 +77,38 @@ ytdC _ = menuControllerWith header editPlayerYtdMenu
 
 lifetimeC :: Action () -> Controller
 lifetimeC _ = menuControllerWith header editPlayerLtMenu
+
+deleteC :: Action () -> Controller
+deleteC _ = Controller
+
+  { drawController = \s -> do
+
+    C.drawString $ let
+
+      hdr = fromMaybe [] $ do
+        pid    <- s^.progMode.editPlayerStateL.epsSelectedPlayer
+        player <- nth pid $ s^.database.dbPlayers
+        Just $ "Player: " ++ playerDetails player ++ "\n\n"
+
+      in hdr ++ "Are you sure you want to delete this player? (Y/N)"
+
+    return C.CursorInvisible
+
+  , handleController = \e -> do
+
+    case ynHandler e of
+
+      Just True -> do
+        gets (^.progMode.editPlayerStateL.epsSelectedPlayer) >>= mapM_
+          (\pid -> modify $ database.dbPlayers %~ dropNth pid)
+        modify editPlayer
+
+      Just False -> modify editPlayer
+      Nothing    -> return ()
+
+    return True
+
+  }
 
 ytdGoalsC :: Bool -> Action () -> Controller
 ytdGoalsC batchMode callback = promptController $

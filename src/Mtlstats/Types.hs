@@ -378,6 +378,7 @@ data EditPlayerMode
   | EPPosition
   | EPYtd
   | EPLifetime
+  | EPDelete
   | EPYtdGoals Bool
   | EPYtdAssists Bool
   | EPYtdPMin
