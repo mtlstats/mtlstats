@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- only search for active players/goalies on game data input
+
 ## 0.15.0
 - Ask for database to load on start-up
 - Add page break to report file
