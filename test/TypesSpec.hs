@@ -73,6 +73,7 @@ spec = describe "Mtlstats.Types" $ do
   gmsPointsSpec
   addGameStatsSpec
   playerSearchSpec
+  activePlayerSearchSpec
   playerSearchExactSpec
   modifyPlayerSpec
   playerSummarySpec
@@ -645,6 +646,19 @@ playerSearchSpec = describe "playerSearch" $ mapM_
   , ( "o",    [(0, joe), (1, bob)]   )
   , ( "e",    [(0, joe), (2, steve)] )
   , ( "x",    []                     )
+  ]
+
+activePlayerSearchSpec :: Spec
+activePlayerSearchSpec = describe "activePlayerSearch" $ mapM_
+  (\(sStr, expected) -> context sStr $
+    it ("should return " ++ show expected) $ let
+      ps = [joe, bob, steve & pActive .~ False]
+      in activePlayerSearch sStr ps `shouldBe` expected)
+  --  search, result
+  [ ( "joe",  [(0, joe)]           )
+  , ( "o",    [(0, joe), (1, bob)] )
+  , ( "e",    [(0, joe)]           )
+  , ( "x",    []                   )
   ]
 
 playerSearchExactSpec :: Spec

@@ -176,6 +176,7 @@ module Mtlstats.Types (
   addGameStats,
   -- ** Player Helpers
   playerSearch,
+  activePlayerSearch,
   playerSearchExact,
   modifyPlayer,
   playerSummary,
@@ -1003,6 +1004,23 @@ addGameStats s1 s2 = GameStats
   , _gmsGoalsAgainst = s1^.gmsGoalsAgainst + s2^.gmsGoalsAgainst
   }
 
+-- | Searches through a list of players with a specified criteria
+playerSearchWith
+  :: (Player -> Bool)
+  -- ^ The search criteria
+  -> String
+  -- ^ The search string
+  -> [Player]
+  -- ^ The list of players to search
+  -> [(Int, Player)]
+  -- ^ The matching players with their index numbers
+playerSearchWith criteria sStr =
+  filter match . zip [0..]
+  where
+    match (_, p)
+      =  map toUpper sStr `isInfixOf` map toUpper (p^.pName)
+      && criteria p
+
 -- | Searches through a list of players
 playerSearch
   :: String
@@ -1011,9 +1029,17 @@ playerSearch
   -- ^ The list of players to search
   -> [(Int, Player)]
   -- ^ The matching players with their index numbers
-playerSearch sStr =
-  filter match . zip [0..]
-  where match (_, p) = map toUpper sStr `isInfixOf` map toUpper (p^.pName)
+playerSearch = playerSearchWith $ const True
+
+-- | Searches through a list of players for an active player
+activePlayerSearch
+  :: String
+  -- ^ The search string
+  -> [Player]
+  -- ^ The list of players to search
+  -> [(Int, Player)]
+  -- ^ The matching players with their index numbers
+activePlayerSearch = playerSearchWith (^.pActive)
 
 -- | Searches for a player by exact match on name
 playerSearchExact
