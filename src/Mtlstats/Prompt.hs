@@ -45,6 +45,7 @@ module Mtlstats.Prompt (
   selectPlayerPrompt,
   selectActivePlayerPrompt,
   selectGoaliePrompt,
+  selectActiveGoaliePrompt,
   selectPositionPrompt,
   playerToEditPrompt
 ) where
@@ -316,18 +317,21 @@ selectActivePlayerPrompt
   -> Prompt
 selectActivePlayerPrompt = selectPlayerPromptWith activePlayerSearch
 
--- | Selects a goalie (creating one if necessary)
-selectGoaliePrompt
-  :: String
+-- | Selects a goalie with a specified search criteria (creating the
+-- goalie if necessary)
+selectGoaliePromptWith
+  :: (String -> [Goalie] -> [(Int, Goalie)])
+  -- ^ The search criteria
+  -> String
   -- ^ The prompt string
   -> (Maybe Int -> Action ())
   -- ^ The callback to run (takes the index number of the goalie as
   -- input)
   -> Prompt
-selectGoaliePrompt pStr callback = selectPrompt SelectParams
+selectGoaliePromptWith criteria pStr callback = selectPrompt SelectParams
   { spPrompt       = pStr
   , spSearchHeader = "Goalie select:"
-  , spSearch       = \sStr db -> goalieSearch sStr (db^.dbGoalies)
+  , spSearch       = \sStr db -> criteria sStr (db^.dbGoalies)
   , spSearchExact  = \sStr db -> fst <$> goalieSearchExact sStr (db^.dbGoalies)
   , spElemDesc     = goalieSummary
   , spProcessChar  = capitalizeName
@@ -344,6 +348,26 @@ selectGoaliePrompt pStr callback = selectPrompt SelectParams
         & cgsFailureCallback .~ modify (progMode .~ mode)
     modify $ progMode .~ CreateGoalie cgs
   }
+
+-- | Selects a goalie (creating one if necessary)
+selectGoaliePrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the goalie as
+  -- input)
+  -> Prompt
+selectGoaliePrompt = selectGoaliePromptWith goalieSearch
+
+-- | Selects an active goalie (creating one if necessary)
+selectActiveGoaliePrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the goalie as
+  -- input)
+  -> Prompt
+selectActiveGoaliePrompt = selectGoaliePromptWith activeGoalieSearch
 
 -- | Selects (or creates) a player position
 selectPositionPrompt

@@ -81,6 +81,7 @@ spec = describe "Mtlstats.Types" $ do
   psPointsSpec
   addPlayerStatsSpec
   goalieSearchSpec
+  activeGoalieSearchSpec
   goalieSearchExactSpec
   goalieSummarySpec
   goalieIsActiveSpec
@@ -791,6 +792,28 @@ goalieSearchSpec = describe "goalieSearch" $ do
   context "exact match" $
     it "should return Bob" $
       goalieSearch "bob" goalies `shouldBe` [result 1]
+
+activeGoalieSearchSpec :: Spec
+activeGoalieSearchSpec = describe "activeGoalieSearch" $ do
+  let
+    goalies =
+      [ newGoalie 2 "Joe"
+      , newGoalie 3 "Bob"
+      , newGoalie 5 "Steve" & gActive .~ False
+      ]
+    result n = (n, goalies!!n)
+
+  context "partial match" $
+    it "should return Joe" $
+      activeGoalieSearch "e" goalies `shouldBe` [result 0]
+
+  context "no match" $
+    it "should return an empty list" $
+      activeGoalieSearch "x" goalies `shouldBe` []
+
+  context "exact match" $
+    it "should return Bob" $
+      activeGoalieSearch "bob" goalies `shouldBe` [result 1]
 
 goalieSearchExactSpec :: Spec
 goalieSearchExactSpec = describe "goalieSearchExact" $ do

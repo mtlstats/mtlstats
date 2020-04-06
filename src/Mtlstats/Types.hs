@@ -186,6 +186,7 @@ module Mtlstats.Types (
   addPlayerStats,
   -- ** Goalie Helpers
   goalieSearch,
+  activeGoalieSearch,
   goalieSearchExact,
   goalieSummary,
   goalieIsActive,
@@ -1094,6 +1095,23 @@ addPlayerStats s1 s2 = newPlayerStats
   & psAssists .~ s1^.psAssists + s2^.psAssists
   & psPMin    .~ s1^.psPMin + s2^.psPMin
 
+-- | Searches a list of goalies with a search criteria
+goalieSearchWith
+  :: (Goalie -> Bool)
+  -- ^ The search criteria
+  -> String
+  -- ^ The search string
+  -> [Goalie]
+  -- ^ The list to search
+  -> [(Int, Goalie)]
+  -- ^ The search results with their corresponding index numbers
+goalieSearchWith criteria sStr =
+  filter match . zip [0..]
+  where
+    match (_, g)
+      =  map toUpper sStr `isInfixOf` map toUpper (g^.gName)
+      && criteria g
+
 -- | Searches a list of goalies
 goalieSearch
   :: String
@@ -1102,9 +1120,17 @@ goalieSearch
   -- ^ The list to search
   -> [(Int, Goalie)]
   -- ^ The search results with their corresponding index numbers
-goalieSearch sStr =
-  filter match . zip [0..]
-  where match (_, g) = map toUpper sStr `isInfixOf` map toUpper (g^.gName)
+goalieSearch = goalieSearchWith $ const True
+
+-- | Searches a list of goalies for an active goalie
+activeGoalieSearch
+  :: String
+  -- ^ The search string
+  -> [Goalie]
+  -- ^ The list to search
+  -> [(Int, Goalie)]
+  -- ^ The search results with their corresponding index numbers
+activeGoalieSearch = goalieSearchWith (^.gActive)
 
 -- | Searches a list of goalies for an exact match
 goalieSearchExact
