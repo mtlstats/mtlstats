@@ -36,7 +36,8 @@ import Mtlstats.Types
 
 -- | Prompts for a goalie who played in the game
 selectGameGoaliePrompt :: Prompt
-selectGameGoaliePrompt = selectGoaliePrompt "Which goalie played this game: " $
+selectGameGoaliePrompt = selectActiveGoaliePrompt
+  "Which goalie played this game: " $
   \case
     Nothing -> modify finishGoalieEntry
     Just n  -> modify $ progMode.gameStateL.gameSelectedGoalie  ?~ n
