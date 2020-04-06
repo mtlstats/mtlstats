@@ -43,7 +43,9 @@ module Mtlstats.Prompt (
   goalieNumPrompt,
   goalieNamePrompt,
   selectPlayerPrompt,
+  selectActivePlayerPrompt,
   selectGoaliePrompt,
+  selectActiveGoaliePrompt,
   selectPositionPrompt,
   playerToEditPrompt
 ) where
@@ -263,18 +265,21 @@ goalieNamePrompt :: Prompt
 goalieNamePrompt = namePrompt "Goalie name: " $
   modify . (progMode.createGoalieStateL.cgsName .~)
 
--- | Selects a player (creating one if necessary)
-selectPlayerPrompt
-  :: String
+-- | Selects a player using a specified search function (creating the
+-- player if necessary)
+selectPlayerPromptWith
+  :: (String -> [Player] -> [(Int, Player)])
+  -- ^ The search function
+  -> String
   -- ^ The prompt string
   -> (Maybe Int -> Action ())
   -- ^ The callback to run (takes the index number of the payer as
   -- input)
   -> Prompt
-selectPlayerPrompt pStr callback = selectPrompt SelectParams
+selectPlayerPromptWith sFunc pStr callback = selectPrompt SelectParams
   { spPrompt       = pStr
   , spSearchHeader = "Player select:"
-  , spSearch       = \sStr db -> playerSearch sStr (db^.dbPlayers)
+  , spSearch       = \sStr db -> sFunc sStr (db^.dbPlayers)
   , spSearchExact  = \sStr db -> fst <$> playerSearchExact sStr (db^.dbPlayers)
   , spElemDesc     = playerSummary
   , spProcessChar  = capitalizeName
@@ -292,18 +297,41 @@ selectPlayerPrompt pStr callback = selectPrompt SelectParams
     modify $ progMode .~ CreatePlayer cps
   }
 
--- | Selects a goalie (creating one if necessary)
-selectGoaliePrompt
+-- | Selects a player (creating one if necessary)
+selectPlayerPrompt
   :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the payer as
+  -- input)
+  -> Prompt
+selectPlayerPrompt = selectPlayerPromptWith playerSearch
+
+-- | Selects an active player (creating one if necessary)
+selectActivePlayerPrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the payer as
+  -- input)
+  -> Prompt
+selectActivePlayerPrompt = selectPlayerPromptWith activePlayerSearch
+
+-- | Selects a goalie with a specified search criteria (creating the
+-- goalie if necessary)
+selectGoaliePromptWith
+  :: (String -> [Goalie] -> [(Int, Goalie)])
+  -- ^ The search criteria
+  -> String
   -- ^ The prompt string
   -> (Maybe Int -> Action ())
   -- ^ The callback to run (takes the index number of the goalie as
   -- input)
   -> Prompt
-selectGoaliePrompt pStr callback = selectPrompt SelectParams
+selectGoaliePromptWith criteria pStr callback = selectPrompt SelectParams
   { spPrompt       = pStr
   , spSearchHeader = "Goalie select:"
-  , spSearch       = \sStr db -> goalieSearch sStr (db^.dbGoalies)
+  , spSearch       = \sStr db -> criteria sStr (db^.dbGoalies)
   , spSearchExact  = \sStr db -> fst <$> goalieSearchExact sStr (db^.dbGoalies)
   , spElemDesc     = goalieSummary
   , spProcessChar  = capitalizeName
@@ -320,6 +348,26 @@ selectGoaliePrompt pStr callback = selectPrompt SelectParams
         & cgsFailureCallback .~ modify (progMode .~ mode)
     modify $ progMode .~ CreateGoalie cgs
   }
+
+-- | Selects a goalie (creating one if necessary)
+selectGoaliePrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the goalie as
+  -- input)
+  -> Prompt
+selectGoaliePrompt = selectGoaliePromptWith goalieSearch
+
+-- | Selects an active goalie (creating one if necessary)
+selectActiveGoaliePrompt
+  :: String
+  -- ^ The prompt string
+  -> (Maybe Int -> Action ())
+  -- ^ The callback to run (takes the index number of the goalie as
+  -- input)
+  -> Prompt
+selectActiveGoaliePrompt = selectGoaliePromptWith activeGoalieSearch
 
 -- | Selects (or creates) a player position
 selectPositionPrompt

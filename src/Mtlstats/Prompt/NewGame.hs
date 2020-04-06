@@ -76,7 +76,7 @@ recordGoalPrompt
   -> Int
   -- ^ The goal number
   -> Prompt
-recordGoalPrompt game goal = selectPlayerPrompt
+recordGoalPrompt game goal = selectActivePlayerPrompt
   (  "*** GAME " ++ padNum 2 game ++ " ***\n"
   ++ "Who scored goal number " ++ show goal ++ "? "
   ) $ modify . (progMode.gameStateL.goalBy .~)
@@ -90,7 +90,7 @@ recordAssistPrompt
   -> Int
   -- ^ The assist number
   -> Prompt
-recordAssistPrompt game goal assist = selectPlayerPrompt
+recordAssistPrompt game goal assist = selectActivePlayerPrompt
   (  "*** GAME " ++ padNum 2 game ++ " ***\n"
   ++ "Goal: " ++ show goal ++ "\n"
   ++ "Assist #" ++ show assist ++ ": "
@@ -104,7 +104,7 @@ recordAssistPrompt game goal assist = selectPlayerPrompt
 
 -- | Prompts for the player to assign penalty minutes to
 pMinPlayerPrompt :: Prompt
-pMinPlayerPrompt = selectPlayerPrompt
+pMinPlayerPrompt = selectActivePlayerPrompt
   "Assign penalty minutes to: " $
   \case
     Nothing -> modify $ progMode.gameStateL.gamePMinsRecorded  .~ True

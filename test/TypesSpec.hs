@@ -73,6 +73,7 @@ spec = describe "Mtlstats.Types" $ do
   gmsPointsSpec
   addGameStatsSpec
   playerSearchSpec
+  activePlayerSearchSpec
   playerSearchExactSpec
   modifyPlayerSpec
   playerSummarySpec
@@ -80,6 +81,7 @@ spec = describe "Mtlstats.Types" $ do
   psPointsSpec
   addPlayerStatsSpec
   goalieSearchSpec
+  activeGoalieSearchSpec
   goalieSearchExactSpec
   goalieSummarySpec
   goalieIsActiveSpec
@@ -647,6 +649,19 @@ playerSearchSpec = describe "playerSearch" $ mapM_
   , ( "x",    []                     )
   ]
 
+activePlayerSearchSpec :: Spec
+activePlayerSearchSpec = describe "activePlayerSearch" $ mapM_
+  (\(sStr, expected) -> context sStr $
+    it ("should return " ++ show expected) $ let
+      ps = [joe, bob, steve & pActive .~ False]
+      in activePlayerSearch sStr ps `shouldBe` expected)
+  --  search, result
+  [ ( "joe",  [(0, joe)]           )
+  , ( "o",    [(0, joe), (1, bob)] )
+  , ( "e",    [(0, joe)]           )
+  , ( "x",    []                   )
+  ]
+
 playerSearchExactSpec :: Spec
 playerSearchExactSpec = describe "playerSearchExact" $ mapM_
   (\(sStr, expected) -> context sStr $
@@ -777,6 +792,28 @@ goalieSearchSpec = describe "goalieSearch" $ do
   context "exact match" $
     it "should return Bob" $
       goalieSearch "bob" goalies `shouldBe` [result 1]
+
+activeGoalieSearchSpec :: Spec
+activeGoalieSearchSpec = describe "activeGoalieSearch" $ do
+  let
+    goalies =
+      [ newGoalie 2 "Joe"
+      , newGoalie 3 "Bob"
+      , newGoalie 5 "Steve" & gActive .~ False
+      ]
+    result n = (n, goalies!!n)
+
+  context "partial match" $
+    it "should return Joe" $
+      activeGoalieSearch "e" goalies `shouldBe` [result 0]
+
+  context "no match" $
+    it "should return an empty list" $
+      activeGoalieSearch "x" goalies `shouldBe` []
+
+  context "exact match" $
+    it "should return Bob" $
+      activeGoalieSearch "bob" goalies `shouldBe` [result 1]
 
 goalieSearchExactSpec :: Spec
 goalieSearchExactSpec = describe "goalieSearchExact" $ do
