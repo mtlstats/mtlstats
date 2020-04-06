@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.15.1
 - only search for active players/goalies on game data input
 
 ## 0.15.0
