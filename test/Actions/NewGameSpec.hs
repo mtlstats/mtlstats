@@ -48,61 +48,31 @@ spec = describe "NewGame" $ do
   GoalieInput.spec
 
 overtimeCheckSpec :: Spec
-overtimeCheckSpec = describe "overtimeCheck" $ do
+overtimeCheckSpec = describe "overtimeCheck" $ mapM_
+  (\(label, expectation, gt, home, away, otf) ->
+    context label $
+      it expectation $ let
+        ps = newProgState & progMode.gameStateL
+          %~ (gameType  ?~ gt)
+          .  (homeScore ?~ home)
+          .  (awayScore ?~ away)
 
-  context "tie game" $ do
-    let
-      s = newProgState
-        & progMode.gameStateL
-          %~ (gameType  ?~ HomeGame)
-          .  (homeScore ?~ 1)
-          .  (awayScore ?~ 1)
-        & overtimeCheck
+        ps' = overtimeCheck ps
+        in ps'^.progMode.gameStateL.overtimeFlag `shouldBe` otf)
 
-    it "should clear the home score" $
-      s^.progMode.gameStateL.homeScore `shouldBe` Nothing
+  --  label,       expectation, type,     home, away, ot flag
+  [ ( "home win",  clearFlag,   HomeGame, 2,    1,    Just False )
+  , ( "home loss", leaveFlag,   HomeGame, 1,    2,    Nothing    )
+  , ( "home tie",  setFlag,     HomeGame, 1,    1,    Just True  )
+  , ( "away win",  clearFlag,   AwayGame, 1,    2,    Just False )
+  , ( "away loss", leaveFlag,   AwayGame, 2,    1,    Nothing    )
+  , ( "away tie",  setFlag,     AwayGame, 1,    1,    Just True  )
+  ]
 
-    it "should clear the away score" $
-      s^.progMode.gameStateL.awayScore `shouldBe` Nothing
-
-    it "should leave the overtimeFlag blank" $
-      s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
-
-  context "game won" $ do
-    let
-      s = newProgState
-        & progMode.gameStateL
-          %~ (gameType  ?~ HomeGame)
-          .  (homeScore ?~ 2)
-          .  (awayScore ?~ 1)
-        & overtimeCheck
-
-    it "should not change the home score" $
-      s^.progMode.gameStateL.homeScore `shouldBe` Just 2
-
-    it "should not change the away score" $
-      s^.progMode.gameStateL.awayScore `shouldBe` Just 1
-
-    it "should set the overtimeCheck flag to False" $
-      s^.progMode.gameStateL.overtimeFlag `shouldBe` Just False
-
-  context "game lost" $ do
-    let
-      s = newProgState
-        & progMode.gameStateL
-          %~ (gameType  ?~ HomeGame)
-          .  (homeScore ?~ 1)
-          .  (awayScore ?~ 2)
-        & overtimeCheck
-
-    it "should not change the home score" $
-      s^.progMode.gameStateL.homeScore `shouldBe` Just 1
-
-    it "should not change the away score" $
-      s^.progMode.gameStateL.awayScore `shouldBe` Just 2
-
-    it "should leave the overtimeCheck flag blank" $
-      s^.progMode.gameStateL.overtimeFlag `shouldBe` Nothing
+  where
+    clearFlag = "should set the overtimeFlag to True"
+    setFlag   = "should set the overtimeFlag to False"
+    leaveFlag = "should leave the overtimeFlag as Nothing"
 
 updateGameStatsSpec :: Spec
 updateGameStatsSpec = describe "updateGameStats" $ do

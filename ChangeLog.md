@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- allow ties
+
 ## 0.15.1
 - only search for active players/goalies on game data input
 
