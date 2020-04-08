@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.15.2
 - allow ties
 
 ## 0.15.1
