@@ -43,9 +43,7 @@ import Mtlstats.Util
 overtimeCheck :: ProgState -> ProgState
 overtimeCheck s
   | fromMaybe False $ gameTied $ s^.progMode.gameStateL =
-    s & progMode.gameStateL
-    %~ (homeScore .~ Nothing)
-    .  (awayScore .~ Nothing)
+    s & progMode.gameStateL.overtimeFlag ?~ True
   | fromMaybe False $ gameWon $ s^.progMode.gameStateL =
     s & progMode.gameStateL.overtimeFlag ?~ False
   | otherwise  = s
