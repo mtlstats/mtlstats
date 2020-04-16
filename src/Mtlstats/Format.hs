@@ -129,9 +129,14 @@ month _  = ""
 labelTable :: [(String, String)] -> [String]
 labelTable xs = let
   labelWidth = maximum $ map (length . fst) xs
+  valWidth   = maximum $ map (length . snd) xs
+
   in map
-    (\(label, val) -> right labelWidth label ++ ": " ++ val)
-    xs
+    ( \(label, val)
+      -> right labelWidth label
+      ++ ": "
+      ++ left valWidth val
+    ) xs
 
 -- | Creates a variable column table of numbers with two axes
 numTable

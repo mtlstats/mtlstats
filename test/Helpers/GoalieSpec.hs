@@ -54,7 +54,7 @@ goalieDetailsSpec = describe "goalieDetails" $ let
       .  ( gsTies         .~ 15 )
 
   expected = unlines
-    [ "Number: 1"
+    [ "Number: 1   "
     , "  Name: Joe*"
     , ""
     , "              YTD Lifetime"

@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 module Mtlstats.Prompt.NewGame
   ( gameYearPrompt
+  , gameMonthPrompt
   , gameDayPrompt
   , otherTeamPrompt
   , homeScorePrompt
@@ -47,6 +48,11 @@ import Mtlstats.Types
 gameYearPrompt :: Prompt
 gameYearPrompt = numPrompt "Game year: " $
   modify . (progMode.gameStateL.gameYear ?~)
+
+-- | Prompts for the game month
+gameMonthPrompt :: Prompt
+gameMonthPrompt = numPromptRange 1 12 "Game month: " $
+  modify . (progMode.gameStateL.gameMonth ?~)
 
 -- | Prompts for the day of the month the game took place
 gameDayPrompt :: Prompt
