@@ -50,8 +50,8 @@ playerDetailsSpec = describe "playerDetails" $
         }
 
     expected = unlines
-      [ "  Number: 1"
-      , "    Name: Joe*"
+      [ "  Number: 1     "
+      , "    Name: Joe*  "
       , "Position: centre"
       , ""
       , "             YTD Lifetime"

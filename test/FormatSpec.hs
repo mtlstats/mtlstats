@@ -141,9 +141,9 @@ labelTableSpec = describe "labelTable" $
       ]
 
     expected =
-      [ "   foo: bar"
+      [ "   foo: bar "
       , "   baz: quux"
-      , "longer: x"
+      , "longer: x   "
       ]
 
     in labelTable input `shouldBe` expected

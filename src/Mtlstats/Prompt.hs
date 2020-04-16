@@ -31,6 +31,7 @@ module Mtlstats.Prompt (
   ucStrPrompt,
   namePrompt,
   numPrompt,
+  numPromptRange,
   numPromptWithFallback,
   dbNamePrompt,
   selectPrompt,
@@ -153,6 +154,20 @@ numPrompt
   -- ^ The callback function for the result
   -> Prompt
 numPrompt pStr = numPromptWithFallback pStr $ return ()
+
+-- | Builds a numberic prompt with a range
+numPromptRange
+  :: Int
+  -- ^ The minimum value
+  -> Int
+  -- ^ The maximum value
+  -> String
+  -- ^ The prompt string
+  -> (Int -> Action ())
+  -- ^ The callback function for the result
+  -> Prompt
+numPromptRange nMin nMax pStr callback = numPrompt pStr $ \n ->
+  when (n >= nMin && n <= nMax) $ callback n
 
 -- | Builds a numeric prompt with a fallback action
 numPromptWithFallback

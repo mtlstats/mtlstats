@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- enter months by number
+
 ## 0.15.2
 - allow ties
 

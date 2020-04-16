@@ -62,7 +62,7 @@ gameYearC :: Controller
 gameYearC = promptControllerWith header gameYearPrompt
 
 gameMonthC :: Controller
-gameMonthC = menuControllerWith header gameMonthMenu
+gameMonthC = promptControllerWith monthHeader gameMonthPrompt
 
 gameDayC :: Controller
 gameDayC = promptControllerWith header gameDayPrompt
@@ -225,6 +225,31 @@ reportC = Controller
 header :: ProgState -> C.Update ()
 header s = C.drawString $
   "*** GAME " ++ padNum 2 (s^.database.dbGames) ++ " ***\n"
+
+monthHeader :: ProgState -> C.Update ()
+monthHeader s = do
+  (_, cols) <- C.windowSize
+  header s
+
+  let
+    table = labelTable $ zip (map show ([1..] :: [Int]))
+      [ "JANUARY"
+      , "FEBRUARY"
+      , "MARCH"
+      , "APRIL"
+      , "MAY"
+      , "JUNE"
+      , "JULY"
+      , "AUGUST"
+      , "SEPTEMBER"
+      , "OCTOBER"
+      , "NOVEMBER"
+      , "DECEMBER"
+      ]
+
+  C.drawString $ unlines $
+    map (centre $ fromIntegral $ pred cols) $
+      ["MONTH:", ""] ++ table ++ [""]
 
 gameGoal :: ProgState -> (Int, Int)
 gameGoal s =
