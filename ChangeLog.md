@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.16.0
 - enter months by number
 
 ## 0.15.2
