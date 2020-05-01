@@ -22,13 +22,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 module Actions.NewGame.GoalieInputSpec (spec) where
 
 import qualified Data.Map as M
-import Data.Maybe (fromJust)
 import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Actions.NewGame.GoalieInput
 import Mtlstats.Types
-import Mtlstats.Util
 
 import qualified TypesSpec as TS
 
@@ -79,133 +77,58 @@ finishGoalieEntrySpec = describe "finishGoalieEntry" $ mapM_
     bobStats   = (1, newGoalieStats)
 
 recordGoalieStatsSpec :: Spec
-recordGoalieStatsSpec = describe "recordGoalieStats" $ let
-  goalieStats games mins goals = newGoalieStats
-    & gsGames        .~ games
-    & gsMinsPlayed   .~ mins
-    & gsGoalsAllowed .~ goals
+recordGoalieStatsSpec = describe "recordGoalieStats" $ mapM_
+  ( \(label, input, expected) ->
+    context label $ do
+      let ps = recordGoalieStats input
+      ps `TS.compareTest` expected
+  )
 
-  joe = newGoalie 2 "Joe"
-    & gYtd      .~ goalieStats 10 11 12
-    & gLifetime .~ goalieStats 20 21 22
+  [ ( "No goalie"
+    , noGoalie
+    , noGoalie
+    )
 
-  bob = newGoalie 3 "Bob"
-    & gYtd      .~ goalieStats 30 31 32
-    & gLifetime .~ goalieStats 40 41 42
+  , ( "Missing goalie"
+    , missingGoalie
+    , missingGoalie
+    )
+  ]
 
-  gameState n mins goals = newGameState
-    & gameGoalieStats      .~ M.fromList [(1, goalieStats 1 2 3)]
-    & gameSelectedGoalie   .~ n
-    & gameGoalieMinsPlayed .~ mins
-    & gameGoalsAllowed     .~ goals
+  where
+    noGoalie = defProgState
 
-  progState n mins goals = newProgState
-    & database.dbGoalies  .~ [joe, bob]
-    & progMode.gameStateL .~ gameState n mins goals
+    missingGoalie = defProgState
+      & progMode.gameStateL.gameSelectedGoalie ?~ 99
 
-  in mapM_
-    (\(setName, setGid, mins, goals, joeData, bobData, reset) -> let
-      s = recordGoalieStats $ progState setGid mins goals
-      in context setName $ do
+    defProgState = newProgState
+      & progMode.gameStateL
+        %~ ( gameType  ?~ HomeGame )
+        .  ( homeScore ?~ 2        )
+        .  ( awayScore ?~ 1        )
+      & database.dbGoalies .~ [jim, bob, steve]
 
-        mapM_
-          (\( chkName
-            , chkGid
-            , ( gGames
-              , gMins
-              , gGoals
-              , ytdGames
-              , ytdMins
-              , ytdGoals
-              , ltGames
-              , ltMins
-              , ltGoals
-              )
-            ) -> context chkName $ do
-              let
-                gs     = s^.progMode.gameStateL.gameGoalieStats
-                game   = M.findWithDefault newGoalieStats chkGid gs
-                goalie = fromJust $ nth chkGid $ s^.database.dbGoalies
-                ytd    = goalie^.gYtd
-                lt     = goalie^.gLifetime
+    jim   = mkGoalie 2 "Jim"   1
+    bob   = mkGoalie 3 "Bob"   2
+    steve = mkGoalie 5 "Steve" 3
 
-              context "game" $
-                game `TS.compareTest` goalieStats gGames gMins gGoals
-
-              context "year-to-date" $
-                ytd `TS.compareTest` goalieStats ytdGames ytdMins ytdGoals
-
-              context "lifetime" $
-                lt `TS.compareTest` goalieStats ltGames ltMins ltGoals)
-
-          [ ( "checking Joe", 0, joeData )
-          , ( "checking Bob", 1, bobData )
-          ]
-
-        context "selected goalie" $ let
-          expected = if reset then Nothing else setGid
-          in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.gameSelectedGoalie) `shouldBe` expected
-
-        context "minutes played" $ let
-          expected = if reset then Nothing else mins
-          in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.gameGoalieMinsPlayed) `shouldBe` expected
-
-        context "goals allowed" $ let
-          expected = if reset then Nothing else goals
-          in it ("should be " ++ show expected) $
-            (s^.progMode.gameStateL.gameGoalsAllowed) `shouldBe` expected)
-
-    [ ( "updating Joe"
-      , Just 0
-      , Just 1
-      , Just 2
-      , (1, 1, 2, 11, 12, 14, 21, 22, 24)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , True
-      )
-    , ( "updating Bob"
-      , Just 1
-      , Just 1
-      , Just 2
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 3, 5, 30, 32, 34, 40, 42, 44)
-      , True
-      )
-    , ( "goalie out of bounds"
-      , Just 2
-      , Just 1
-      , Just 2
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    , ( "missing goalie"
-      , Nothing
-      , Just 1
-      , Just 2
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    , ( "missing minutes"
-      , Just 0
-      , Nothing
-      , Just 1
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    , ( "missing goals"
-      , Just 0
-      , Just 1
-      , Nothing
-      , (0, 0, 0, 10, 11, 12, 20, 21, 22)
-      , (1, 2, 3, 30, 31, 32, 40, 41, 42)
-      , False
-      )
-    ]
+    mkGoalie num name n = newGoalie num name
+      & gYtd
+        %~ ( gsGames        .~ n     )
+        .  ( gsMinsPlayed   .~ n + 1 )
+        .  ( gsGoalsAllowed .~ n + 2 )
+        .  ( gsShutouts     .~ n + 3 )
+        .  ( gsWins         .~ n + 4 )
+        .  ( gsLosses       .~ n + 5 )
+        .  ( gsTies         .~ n + 6 )
+      & gLifetime
+        %~ ( gsGames        .~ n + 7  )
+        .  ( gsMinsPlayed   .~ n + 8  )
+        .  ( gsGoalsAllowed .~ n + 9  )
+        .  ( gsShutouts     .~ n + 10 )
+        .  ( gsWins         .~ n + 11 )
+        .  ( gsLosses       .~ n + 12 )
+        .  ( gsTies         .~ n + 13 )
 
 setGameGoalieSpec :: Spec
 setGameGoalieSpec = describe "setGameGoalie" $ mapM_

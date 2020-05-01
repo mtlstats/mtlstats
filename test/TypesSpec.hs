@@ -972,119 +972,222 @@ makeBool = randomIO
 makeName :: IO String
 makeName = replicateM 10 $ randomRIO ('A', 'Z')
 
-instance Comparable GoalieStats where
-  compareTest actual expected = mapM_
-    (\(name, lens) -> describe name $
-      it ("should be " ++ show (expected^.lens)) $
-        actual^.lens `shouldBe` expected^.lens)
-    --  name,             lens
-    [ ( "gsGames",        gsGames        )
-    , ( "gsMinsPlayed",   gsMinsPlayed   )
-    , ( "gsGoalsAllowed", gsGoalsAllowed )
-    , ( "gsWins",         gsWins         )
-    , ( "gsLosses",       gsLosses       )
-    , ( "gsTies",         gsTies         )
-    ]
+instance Comparable ProgState where
+  compareTest act expect = do
+    compareLenses "database"     database     act expect
+    compareLenses "progMode"     progMode     act expect
+    compareLenses "dbName"       dbName       act expect
+    compareLenses "inputBuffer"  inputBuffer  act expect
+    compareLenses "scrollOffset" scrollOffset act expect
+
+instance Comparable ProgMode where
+  compareTest TitleScreen TitleScreen = return ()
+  compareTest MainMenu    MainMenu    = return ()
+
+  compareTest (NewSeason act) (NewSeason expect) =
+    context "NewSeason flag" $
+      act `compareTest` expect
+
+  compareTest (NewGame act) (NewGame expect) =
+    context "NewGame GameState" $
+      act `compareTest` expect
+
+  compareTest EditMenu EditMenu = return ()
+
+  compareTest (CreatePlayer act) (CreatePlayer expect) =
+    context "CreatePlayer CreatePlayerState" $
+      act `compareTest` expect
+
+  compareTest (CreateGoalie act) (CreateGoalie expect) =
+    context "CreateGoalie CreateGoalieState" $
+      act `compareTest` expect
+
+  compareTest (EditPlayer act) (EditPlayer expect) =
+    context "EditPlayer EditPlayerState" $
+      act `compareTest` expect
+
+  compareTest (EditGoalie act) (EditGoalie expect) =
+    context "EditGoalie EditGoalieState" $
+      act `compareTest` expect
+
+  compareTest (EditStandings act) (EditStandings expect) =
+    context "EditStandings EditStandingsMode" $
+      act `compareTest` expect
+
+  compareTest _ _ = fail "ProgMode mismatch"
 
 instance Comparable GameState where
-  compareTest actual expected =
-    it ("should be " ++ show expected) $
-      actual `shouldBe` expected
+  compareTest act expect = do
+    compareLenses "gameYear"             gameYear             act expect
+    compareLenses "gameMonth"            gameMonth            act expect
+    compareLenses "gameDay"              gameDay              act expect
+    compareLenses "gameType"             gameType             act expect
+    compareLenses "otherTeam"            otherTeam            act expect
+    compareLenses "homeScore"            homeScore            act expect
+    compareLenses "awayScore"            awayScore            act expect
+    compareLenses "overtimeFlag"         overtimeFlag         act expect
+    compareLenses "dataVerified"         dataVerified         act expect
+    compareLenses "pointsAccounted"      pointsAccounted      act expect
+    compareLenses "goalBy"               goalBy               act expect
+    compareLenses "assistsBy"            assistsBy            act expect
+    compareLenses "gamePlayerStats"      gamePlayerStats      act expect
+    compareLenses "confirmGoalDataGlag"  confirmGoalDataFlag  act expect
+    compareLenses "gameSelectedPlayer"   gameSelectedPlayer   act expect
+    compareLenses "gamePMinsRecorded"    gamePMinsRecorded    act expect
+    compareLenses "gameGoalieStats"      gameGoalieStats      act expect
+    compareLenses "gameSelectedGoalie"   gameSelectedGoalie   act expect
+    compareLenses "gameGoalieMinsPlayed" gameGoalieMinsPlayed act expect
+    compareLenses "gameGoalsAllowed"     gameGoalsAllowed     act expect
+    compareLenses "gameGoaliesRecorded"  gameGoaliesRecorded  act expect
+    compareLenses "gameGoalieAssigned"   gameGoalieAssigned   act expect
 
-instance Comparable CreatePlayerState where
-  compareTest actual expected = do
+instance Comparable Database where
+  compareTest act expect = do
+    compareLenses "dbPlayers"       dbPlayers       act expect
+    compareLenses "dbGoalies"       dbGoalies       act expect
+    compareLenses "dbGames"         dbGames         act expect
+    compareLenses "dbHomeGameStats" dbHomeGameStats act expect
+    compareLenses "dbAwayGameStats" dbAwayGameStats act expect
 
-    describe "cpsNumber" $
-      it ("should be " ++ show (expected^.cpsNumber)) $
-        actual^.cpsNumber `shouldBe` expected^.cpsNumber
+instance Comparable Player where
+  compareTest act expect = do
+    compareLenses "pNumber"   pNumber   act expect
+    compareLenses "pName"     pName     act expect
+    compareLenses "pPosition" pPosition act expect
+    compareLenses "pRookie"   pRookie   act expect
+    compareLenses "pActive"   pActive   act expect
+    compareLenses "pYtd"      pYtd      act expect
+    compareLenses "pLifetime" pLifetime act expect
 
-    describe "cpsName" $
-      it ("should be " ++ expected^.cpsName) $
-        actual^.cpsName `shouldBe` expected^.cpsName
+instance Comparable [Player] where
+  compareTest = compareLists
 
-    describe "cpsPosition" $
-      it ("should be " ++ expected^.cpsPosition) $
-        actual^.cpsPosition `shouldBe` expected^.cpsPosition
-
-instance Comparable EditPlayerState where
-  compareTest actual expected = do
-
-    describe "epsSelectedPlayer" $
-      it ("should be " ++ show (expected^.epsSelectedPlayer)) $
-        actual^.epsSelectedPlayer `shouldBe` expected^.epsSelectedPlayer
-
-    describe "epsMode" $
-      it ("should be " ++ show (expected^.epsMode)) $
-        actual^.epsMode `shouldBe` expected^.epsMode
-
-instance Comparable EditGoalieState where
-  compareTest actual expected = do
-
-    describe "egsSelectedGoalie" $
-      it ("should be " ++ show (expected^.egsSelectedGoalie)) $
-        actual^.egsSelectedGoalie `shouldBe` expected^.egsSelectedGoalie
-
-    describe "egsMode" $
-      it ("should be " ++ show (expected^.egsMode)) $
-        actual^.egsMode `shouldBe` expected^.egsMode
-
-instance Comparable CreateGoalieState where
-  compareTest actual expected = do
-
-    describe "cgsNuber" $
-      it("should be " ++ show (expected^.cgsNumber)) $
-        actual^.cgsNumber `shouldBe` expected^.cgsNumber
-
-    describe "cgsName" $
-      it ("should be " ++ expected^.cgsName) $
-        actual^.cgsName `shouldBe` expected^.cgsName
-
-instance Comparable EditStandingsMode where
-  compareTest actual expected =
-    it ("should be " ++ show expected) $
-      actual `shouldBe` expected
+instance Comparable PlayerStats where
+  compareTest act expect = do
+    compareLenses "psGoals"   psGoals   act expect
+    compareLenses "psAssists" psAssists act expect
+    compareLenses "psPMin"    psPMin    act expect
 
 instance Comparable Goalie where
-  compareTest actual expected = do
+  compareTest act expect = do
+    compareLenses "gNumber"   gNumber   act expect
+    compareLenses "gName"     gName     act expect
+    compareLenses "gRookie"   gRookie   act expect
+    compareLenses "gActive"   gActive   act expect
+    compareLenses "gYtd"      gYtd      act expect
+    compareLenses "gLifetime" gLifetime act expect
 
-    describe "gNumber" $
-      it ("should be " ++ show (expected^.gNumber)) $
-        actual^.gNumber `shouldBe` expected^.gNumber
+instance Comparable [Goalie] where
+  compareTest = compareLists
 
-    describe "gName" $
-      it ("should be " ++ show (expected^.gName)) $
-        actual^.gName `shouldBe` expected^.gName
+instance Comparable GoalieStats where
+  compareTest act expect = do
+    compareLenses "gsGames"        gsGames        act expect
+    compareLenses "gsMisPlayed"    gsMinsPlayed   act expect
+    compareLenses "gsGoalsAllowed" gsGoalsAllowed act expect
+    compareLenses "gsWins"         gsWins         act expect
+    compareLenses "gsLosses"       gsLosses       act expect
+    compareLenses "gsTies"         gsTies         act expect
 
-    describe "gRookie" $
-      it ("should be " ++ show (expected^.gRookie)) $
-        actual^.gRookie `shouldBe` expected^.gRookie
+instance Comparable GameStats where
+  compareTest act expect = do
+    compareLenses "gmsWins"         gmsWins         act expect
+    compareLenses "gmsLosses"       gmsLosses       act expect
+    compareLenses "gmsOvertime"     gmsOvertime     act expect
+    compareLenses "gmsGoalsFor"     gmsGoalsFor     act expect
+    compareLenses "gmsGoalsAgainst" gmsGoalsAgainst act expect
 
-    describe "gActive" $
-      it ("should be " ++ show (expected^.gActive)) $
-        actual^.gActive `shouldBe` expected^.gActive
+instance Comparable GameType where
+  compareTest = compareVals
 
-    describe "gYtd" $
-      (actual^.gYtd) `compareTest` (expected^.gYtd)
+instance Comparable CreatePlayerState where
+  compareTest act expect = do
+    compareLenses "cpsNumber"   cpsNumber   act expect
+    compareLenses "cpsName"     cpsName     act expect
+    compareLenses "cpsPosition" cpsPosition act expect
 
-    describe "gLifetime" $
-      (actual^.gLifetime) `compareTest` (expected^.gLifetime)
+instance Comparable EditPlayerState where
+  compareTest act expect = do
+    compareLenses "epsSelectedPlayer" epsSelectedPlayer act expect
+    compareLenses "epsMode"           epsMode           act expect
 
-instance Comparable (M.Map Int GoalieStats) where
-  compareTest actual expected = do
+instance Comparable EditPlayerMode where
+  compareTest = compareVals
 
+instance Comparable EditGoalieState where
+  compareTest act expect = do
+    compareLenses "egsSelectedGoalie" egsSelectedGoalie act expect
+    compareLenses "egsMode"           egsMode           act expect
+
+instance Comparable EditGoalieMode where
+  compareTest = compareVals
+
+instance Comparable CreateGoalieState where
+  compareTest act expect = do
+    compareLenses "cgsNumber" cgsNumber act expect
+    compareLenses "cgsName"   cgsName   act expect
+
+instance Comparable EditStandingsMode where
+  compareTest = compareVals
+
+instance  Comparable Int where
+  compareTest = compareVals
+
+instance Comparable Bool where
+  compareTest = compareVals
+
+instance Comparable String where
+  compareTest = compareVals
+
+instance Comparable [Int] where
+  compareTest = compareLists
+
+instance Comparable a => Comparable (Maybe a) where
+  compareTest Nothing  Nothing  = return ()
+  compareTest (Just a) (Just e) = a `compareTest` e
+  compareTest Nothing  (Just _) = error "Unexpectedly received a value"
+  compareTest (Just _) Nothing  = error "Received Nothing"
+
+instance (Ord k, Show k, Comparable v) => Comparable (M.Map k v) where
+  compareTest actM expectM = do
+    context "number of elements" $
+      length actM `compareVals` length expectM
+
+    context "check values" $
+      mapM_
+        ( \k -> context (show k) $
+          M.lookup k actM `compareTest` M.lookup k expectM
+        ) $ M.keys actM
+
+compareLists :: (Comparable a) => [a] -> [a] -> Spec
+compareLists acts expects = do
     let
-      aList = M.toList actual
-      eList = M.toList expected
+      aLen = length acts
+      eLen = length expects
 
-    it "should have the correct number of elements" $
-      length aList `shouldBe` length eList
+    context "count elements" $
+      it ("should be " ++ show eLen) $
+        aLen `shouldBe` eLen
 
-    mapM_
-      (\(n, (ka, va), (ke, ve)) -> context ("element " ++ show n) $ do
+    context "compare elements" $
+      mapM_
+        ( \(n, act, expect) ->
+          context ("element " ++ show n) $
+            expect `compareTest` act
+        ) $ zip3 ([0..] :: [Int]) acts expects
 
-        context "key" $
-          it ("should be " ++ show ke) $
-            ka `shouldBe` ke
+compareVals :: (Eq a, Show a) => a -> a -> Spec
+compareVals expect act =
+  it ("should be " ++ show expect) $
+    act `shouldBe` expect
 
-        context "value" $ va `compareTest` ve)
-      (zip3 ([0..] :: [Int]) aList eList)
+compareLenses
+  :: Comparable b
+  => String
+  -> Lens' a b
+  -> a
+  -> a
+  -> Spec
+compareLenses label lens act expect =
+  describe label $
+    (act^.lens) `compareTest` (expect^.lens)
