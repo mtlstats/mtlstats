@@ -26,7 +26,9 @@ import Lens.Micro ((^.), (&), (.~), (?~), (%~))
 import Test.Hspec (Spec, context, describe, it, shouldBe)
 
 import Mtlstats.Actions.NewGame.GoalieInput
+import Mtlstats.Config
 import Mtlstats.Types
+import Mtlstats.Util
 
 import qualified TypesSpec as TS
 
@@ -93,19 +95,94 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ mapM_
     , missingGoalie
     , missingGoalie
     )
+
+  , ( "Partial game - single goalie"
+    , partialSingle
+    , partialSingle'
+    )
+
+  , ( "Partial game - dual goalie"
+    , partialDual
+    , partialDual'
+    )
+
+  , ( "Full game - no shut out"
+    , fullNoSO
+    , fullNoSO'
+    )
+
+  , ( "Full game - shutout"
+    , fullSO
+    , fullSO'
+    )
   ]
 
   where
-    noGoalie = defProgState
+    noGoalie = defProgState 2 1
 
-    missingGoalie = defProgState
-      & progMode.gameStateL.gameSelectedGoalie ?~ 99
+    missingGoalie = defProgState 2 1
+      & setGoalie 99 gameLength 0
 
-    defProgState = newProgState
+    partialSingle = defProgState 2 1
+      & setGoalie 0 partialGame 0
+
+    partialSingle' = partialSingle
+      & clearGoalie
+      . addStats 0 (mkStats partialGame 0)
+
+    partialDual = defProgState 2 1
+      & setGoalie 1 partialGame 0
+      . addStats 0 (mkStats partialGame 1)
+
+    partialDual' = partialDual
+      & clearGoalie
+      . addStats 1 (mkStats partialGame 0)
+
+    fullNoSO = defProgState 2 1
+      & setGoalie 0 gameLength 1
+
+    fullNoSO' = fullNoSO
+      & (progMode .~ MainMenu)
+      . (updateStats 0 $ gsWins %~ succ)
+
+    fullSO = defProgState 1 0
+      & setGoalie 0 gameLength 0
+
+    fullSO' = fullSO
+      & (progMode .~ MainMenu)
+      . ( updateStats 0
+          $ ( gsWins     %~ succ )
+          . ( gsShutouts %~ succ )
+        )
+
+    setGoalie g mp ga = progMode.gameStateL
+      %~ ( gameSelectedGoalie   ?~ g  )
+      .  ( gameGoalieMinsPlayed ?~ mp )
+      .  ( gameGoalsAllowed     ?~ ga )
+
+    clearGoalie = progMode.gameStateL
+      %~ ( gameSelectedGoalie   .~ Nothing )
+      .  ( gameGoalieMinsPlayed .~ Nothing )
+      .  ( gameGoalsAllowed     .~ Nothing )
+
+    addStats g s = progMode.gameStateL.gameGoalieStats
+      %~ M.insert g s
+
+    updateStats g f = database.dbGoalies
+      %~ modifyNth g
+         ( ( gYtd      %~ f )
+         . ( gLifetime %~ f )
+         )
+
+    mkStats mp ga = newGoalieStats
+      & ( gsMinsPlayed   .~ mp )
+      . ( gsGoalsAllowed .~ ga )
+
+    defProgState h a = newProgState
       & progMode.gameStateL
         %~ ( gameType  ?~ HomeGame )
-        .  ( homeScore ?~ 2        )
-        .  ( awayScore ?~ 1        )
+        .  ( homeScore ?~ h        )
+        .  ( awayScore ?~ a        )
       & database.dbGoalies .~ [jim, bob, steve]
 
     jim   = mkGoalie 2 "Jim"   1
@@ -129,6 +206,8 @@ recordGoalieStatsSpec = describe "recordGoalieStats" $ mapM_
         .  ( gsWins         .~ n + 11 )
         .  ( gsLosses       .~ n + 12 )
         .  ( gsTies         .~ n + 13 )
+
+    partialGame = pred gameLength
 
 setGameGoalieSpec :: Spec
 setGameGoalieSpec = describe "setGameGoalie" $ mapM_
