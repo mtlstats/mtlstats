@@ -38,7 +38,14 @@ import qualified Data.HashMap.Strict as HM
 import Data.Ratio ((%))
 import Lens.Micro (Lens', (&), (^.), (.~), (?~))
 import System.Random (randomIO, randomRIO)
-import Test.Hspec (Spec, context, describe, it, shouldBe)
+import Test.Hspec
+  ( Spec
+  , context
+  , describe
+  , expectationFailure
+  , it
+  , shouldBe
+  )
 
 import Mtlstats.Config
 import Mtlstats.Types
@@ -1014,7 +1021,8 @@ instance Comparable ProgMode where
     context "EditStandings EditStandingsMode" $
       act `compareTest` expect
 
-  compareTest _ _ = fail "ProgMode mismatch"
+  compareTest _ _ = it "should be the expected mode" $
+    expectationFailure "ProgMode mismatch"
 
 instance Comparable GameState where
   compareTest act expect = do
