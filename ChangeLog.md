@@ -1,5 +1,8 @@
 # Changelog for mtlstats
 
+## current
+- Don't automatically start a new game on new season
+
 ## 0.16.0
 - enter months by number
 

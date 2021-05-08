@@ -123,10 +123,10 @@ newSeasonMenu = Menu "SEASON TYPE" ()
     $ resetYtd
     . clearRookies
     . resetStandings
-    . startNewGame
+    . backHome
   , MenuItem 'P' "PLAYOFFS" $ modify
     $ resetStandings
-    . startNewGame
+    . backHome
   ]
 
 -- | The game type menu (home/away)
