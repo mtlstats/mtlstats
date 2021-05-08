@@ -1,6 +1,6 @@
 # Changelog for mtlstats
 
-## current
+## 0.16.1
 - Don't automatically start a new game on new season
 
 ## 0.16.0

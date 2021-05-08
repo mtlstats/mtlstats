@@ -1,7 +1,7 @@
 {- |
 
 mtlstats
-Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe
+Copyright (C) 1984, 1985, 2019, 2020, 2021 Rhéal Lamothe
 <rheal.lamothe@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ titleScreenC = Controller
          ]
       ++ titleText
       ++ [ ""
-         , "Copyright (C) 1984, 1985, 2019, 2020 Rhéal Lamothe"
+         , "Copyright (C) 1984, 1985, 2019, 2020, 2021 Rhéal Lamothe"
          , "<rheal.lamothe@gmail.com>"
          , ""
          , "Press any key to continue..."
